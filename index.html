@@ -56,7 +56,7 @@
             color: white;
             display: flex;
             align-items: center;
-            justify-content: space-between; /* Adjusted for install button */
+            justify-content: space-between;
             gap: 12px;
             backdrop-filter: blur(5px);
         }
@@ -64,7 +64,7 @@
         .pwa-header img { height: 35px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
         .pwa-header h1 { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: 0.5px; }
 
-        /* Install Button (Hidden by default) */
+        /* Install Button */
         #installBtn {
             display: none;
             background: white;
@@ -96,7 +96,7 @@
 
         /* Responsive Layout */
         @media (max-width: 850px) {
-            body { background: #f0fdf4; } /* Lighter bg for mobile body */
+            body { background: #f0fdf4; } 
             .pwa-header { background: var(--primary); color: white; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
             .app-container {
                 flex-direction: column;
@@ -240,6 +240,25 @@
         .hidden { display: none; }
         .loader { text-align: center; color: var(--primary); font-size: 13px; font-weight: 500; margin-top: 5px; display: none; }
 
+        /* --- FOOTER --- */
+        .site-footer {
+            margin-top: auto;
+            padding: 20px;
+            text-align: center;
+            color: #555;
+            font-size: 13px;
+            width: 100%;
+            background: white;
+            border-top: 1px solid #eee;
+        }
+        .dev-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+            transition: color 0.2s;
+        }
+        .dev-link:hover { color: var(--primary-dark); text-decoration: underline; }
+
     </style>
 </head>
 <body>
@@ -298,8 +317,8 @@
                 </div>
                 <div class="input-group">
                     <select id="frameSelect" class="custom-select" onchange="handleFrameChange()">
-                        <option value="custom_taj">Frame 1: মাওলানা তাজ উদ্দিন খান</option>
                         <option value="referendum_2026">Frame 2: গণভোট ২০২৬ (নতুন)</option>
+                        <option value="custom_taj">Frame 1: মাওলানা তাজ উদ্দিন খান</option>
                         <option value="1">Frame 3: দাঁড়িপাল্লায় ভোট দিন</option>
                         <option value="2">Frame 4: নারায়ে তাকবীর</option>
                         <option value="3">Frame 5: লাল সবুজের পতাকা</option>
@@ -360,6 +379,12 @@
 
         </div>
     </div>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        &copy; 2026 নির্বাচনী প্রচারণা ফ্রেম জেনারেটর । নিরাপদ ও সুরক্ষিত<br>
+        Developed by <a href="https://t.me/Mizan0072" target="_blank" class="dev-link">MizaN</a>
+    </footer>
 
 <script>
     // --- 1. PWA CONFIGURATION (Dynamic Manifest & Service Worker) ---
@@ -599,37 +624,99 @@
         ctx.lineJoin = "round";
 
         if (type === "referendum_2026") { 
-            // Border
-            ctx.lineWidth = 40;
-            ctx.strokeStyle = "#006a4e";
-            ctx.strokeRect(0,0,w,h);
-            // Top Banner
-            ctx.fillStyle = "#006a4e";
-            ctx.fillRect(0, 0, w, 200);
-            ctx.fillStyle = "#ffeb3b";
-            ctx.font = "bold 90px 'Hind Siliguri'";
-            ctx.fillText("গণভোট ২০২৬", w/2, 135);
-            // Bottom Banner
-            ctx.fillStyle = "#006a4e";
-            ctx.fillRect(0, h-300, w, 300);
-            // Key Icon
+            // --- FRAME 2: Gonovote 2026 (Premium Redesign) ---
+
+            // 1. Premium Borders
+            ctx.lineWidth = 30;
+            ctx.strokeStyle = "#006a4e"; // Base Green
+            ctx.strokeRect(0, 0, w, h);
+            
+            ctx.lineWidth = 8;
+            ctx.strokeStyle = "#d4af37"; // Metallic Gold
+            ctx.strokeRect(25, 25, w-50, h-50);
+
+            // 2. Bottom Wave Background
             ctx.beginPath();
-            ctx.arc(w - 150, h - 300, 70, 0, 2*Math.PI);
-            ctx.fillStyle = "#fff";
+            ctx.moveTo(0, h-400);
+            ctx.bezierCurveTo(w/2, h-500, w/2, h-300, w, h-450);
+            ctx.lineTo(w, h);
+            ctx.lineTo(0, h);
+            ctx.closePath();
+            
+            // Deep gradient for readability
+            const grad = ctx.createLinearGradient(0, h-500, 0, h);
+            grad.addColorStop(0, "rgba(0, 106, 78, 0.95)");
+            grad.addColorStop(1, "#003322");
+            ctx.fillStyle = grad;
             ctx.fill();
+            
+            // Gold accent line on wave
             ctx.lineWidth = 5;
-            ctx.strokeStyle = "#ffeb3b";
+            ctx.strokeStyle = "#d4af37";
             ctx.stroke();
+
+            // 3. Top Right Badge (Date/Event)
+            ctx.beginPath();
+            ctx.arc(w - 160, 160, 130, 0, 2*Math.PI);
             ctx.fillStyle = "#006a4e";
-            ctx.font = "bold 80px sans-serif";
-            ctx.fillText("✓", w - 150, h - 275);
-            // Text
-            ctx.fillStyle = "#fff";
-            ctx.font = "600 60px 'Hind Siliguri'";
-            ctx.fillText("দেশের চাবি আপনার হাতে", w/2, h - 190);
+            ctx.fill();
+            ctx.strokeStyle = "#fff";
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            
+            ctx.textAlign = "center";
             ctx.fillStyle = "#ffeb3b";
-            ctx.font = "bold 75px 'Hind Siliguri'";
+            ctx.font = "bold 50px 'Hind Siliguri'";
+            ctx.fillText("গণভোট", w - 160, 150);
+            ctx.fillStyle = "#fff";
+            ctx.font = "bold 70px sans-serif";
+            ctx.fillText("2026", w - 160, 220);
+
+            // 4. "Key" Icon (Vector Drawing)
+            // Centered above text
+            const keyY = h - 340;
+            const keyX = w / 2;
+            
+            ctx.save();
+            ctx.translate(keyX, keyY);
+            ctx.rotate(-Math.PI / 4); // Angled key
+            
+            // Handle
+            ctx.beginPath();
+            ctx.arc(0, -60, 40, 0, 2*Math.PI);
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = "#d4af37"; // Gold
+            ctx.stroke();
+            
+            // Shaft
+            ctx.beginPath();
+            ctx.moveTo(0, -20);
+            ctx.lineTo(0, 80);
+            ctx.stroke();
+            
+            // Teeth
+            ctx.beginPath();
+            ctx.moveTo(0, 40); ctx.lineTo(25, 40);
+            ctx.moveTo(0, 65); ctx.lineTo(25, 65);
+            ctx.stroke();
+            
+            ctx.restore();
+
+            // 5. Typography
+            ctx.shadowColor = "rgba(0,0,0,0.5)";
+            ctx.shadowBlur = 5;
+            
+            // Main Slogan
+            ctx.fillStyle = "#fff";
+            ctx.font = "600 55px 'Hind Siliguri'";
+            ctx.fillText("দেশের চাবি আপনার হাতে", w/2, h - 180);
+            
+            // Call to Action
+            ctx.fillStyle = "#ffeb3b"; // Bright Yellow/Gold
+            ctx.font = "bold 70px 'Hind Siliguri'";
             ctx.fillText("পরিবর্তনের জন্য হ্যাঁ ভোট দিন", w/2, h - 80);
+            
+            ctx.shadowColor = "transparent";
 
         } else if (type === "custom_taj") {
             ctx.lineWidth = 40; ctx.strokeStyle = "#006a4e"; ctx.strokeRect(0, 0, w, h);
