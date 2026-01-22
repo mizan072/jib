@@ -183,10 +183,23 @@
             cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
+        /* Logo Selector */
+        .logo-options {
+            display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;
+        }
+        .logo-option {
+            width: 60px; height: 60px;
+            border: 2px solid #e2e8f0; border-radius: 10px;
+            padding: 5px; cursor: pointer; background: white;
+            transition: 0.2s; display: flex; align-items: center; justify-content: center;
+        }
+        .logo-option.selected { border-color: var(--primary); background-color: #f0fdf4; box-shadow: 0 0 0 2px rgba(0, 106, 78, 0.2); }
+        .logo-option img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
         /* Toggle */
         .toggle-row {
             display: flex; align-items: center; justify-content: space-between;
-            background: #f7fafc; padding: 12px 15px; border-radius: 10px;
+            background: #f7fafc; padding: 12px 15px; border-radius: 10px; margin-top: 15px;
         }
         .toggle-label { font-size: 14px; font-weight: 500; color: var(--text-dark); }
         
@@ -284,9 +297,25 @@
                         <span>Zoom Out</span>
                         <span>Zoom In</span>
                     </div>
+
+                    <!-- LOGO SELECTOR -->
+                    <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+                        <label style="font-size: 14px; font-weight: 600; color: #555; display: block; margin-bottom: 8px;">লোগো স্টাইল বাছাই করুন:</label>
+                        <div class="logo-options">
+                            <div class="logo-option selected" id="opt_logo1" onclick="changeLogo('logo1')">
+                                <img src="https://images.weserv.nl/?url=blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiD-zuic22cjZDrKszuJErZZsM3nU4_6XS2VrC_9v7w1VWnfyJZPBjT3zeIpovlMn9w_G9ZW78JsSj7R9JbEUgUUeFdS7Sq04VxqOtvTUWZfwUQEvtwXZ-j83nheWbe3szHQBWeXXDrkwBpnODedpR9LGLzSYxmC8cstN98R-8OUZLVLg6aEZFx_t2a21c/s320/1000129857-removebg-preview.png&output=png" alt="Logo 1">
+                            </div>
+                            <div class="logo-option" id="opt_logo2" onclick="changeLogo('logo2')">
+                                <img src="https://images.weserv.nl/?url=blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEihI-Y5zvRgBVf49y_DtKqQelhV05hiMVumieJsHIKcONCytzDS475wBQdTMP-l5pnsEFmqB8l7UREFbdYC1xBlDPpAr2TeOO6DE_T8BZl2dXhu1I1UJ7QH65v07jM3PBClW_x7e4-UlOuznjWjviAL591Ks9NeSO8PYvbWTvpyDorry2kkc1aSqS34xlg/s320/1000129858-removebg-preview.png&output=png" alt="Logo 2">
+                            </div>
+                            <div class="logo-option" id="opt_logo3" onclick="changeLogo('logo3')">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Bangladesh_Jamaat-e-Islami_Emblem.svg/500px-Bangladesh_Jamaat-e-Islami_Emblem.svg.png" alt="Logo 3">
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="toggle-row" style="margin-top:10px;">
+                <div class="toggle-row">
                     <span class="toggle-label">লোগো দেখান</span>
                     <label style="position:relative; display:inline-block; width:40px; height:24px;">
                         <input type="checkbox" id="showLogo" checked onchange="draw()" style="opacity:0; width:0; height:0;">
@@ -322,10 +351,19 @@
     let logoLoaded = false;
     let externalFrameLoaded = false;
     
-    // Load Logo
-    const LOGO_URL = "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Bangladesh_Jamaat-e-Islami_Emblem.svg/500px-Bangladesh_Jamaat-e-Islami_Emblem.svg.png";
+    // LOGO URLs
+    // Using weserv.nl proxy for the blogger images to ensure safe canvas export
+    const LOGO_URLS = {
+        'logo1': 'https://images.weserv.nl/?url=blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiD-zuic22cjZDrKszuJErZZsM3nU4_6XS2VrC_9v7w1VWnfyJZPBjT3zeIpovlMn9w_G9ZW78JsSj7R9JbEUgUUeFdS7Sq04VxqOtvTUWZfwUQEvtwXZ-j83nheWbe3szHQBWeXXDrkwBpnODedpR9LGLzSYxmC8cstN98R-8OUZLVLg6aEZFx_t2a21c/s320/1000129857-removebg-preview.png&output=png',
+        'logo2': 'https://images.weserv.nl/?url=blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEihI-Y5zvRgBVf49y_DtKqQelhV05hiMVumieJsHIKcONCytzDS475wBQdTMP-l5pnsEFmqB8l7UREFbdYC1xBlDPpAr2TeOO6DE_T8BZl2dXhu1I1UJ7QH65v07jM3PBClW_x7e4-UlOuznjWjviAL591Ks9NeSO8PYvbWTvpyDorry2kkc1aSqS34xlg/s320/1000129858-removebg-preview.png&output=png',
+        'logo3': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Bangladesh_Jamaat-e-Islami_Emblem.svg/500px-Bangladesh_Jamaat-e-Islami_Emblem.svg.png'
+    };
+
+    // Initialize with Logo 1 as it was requested to be "Like logo 1" (or user preference)
+    // Actually, let's stick to the current default which matches the frame style best, or use Logo 1 if new.
+    // I'll initialize with Logo 1 to show the new change.
     logoImg.crossOrigin = "anonymous";
-    logoImg.src = LOGO_URL;
+    logoImg.src = LOGO_URLS['logo1'];
     logoImg.onload = function() {
         logoLoaded = true;
         if(imgLoaded) draw();
@@ -355,6 +393,23 @@
     ctx.fillRect(0,0,1080,1080);
 
     // --- HANDLERS ---
+    
+    function changeLogo(key) {
+        // UI Update
+        document.querySelectorAll('.logo-option').forEach(el => el.classList.remove('selected'));
+        document.getElementById('opt_' + key).classList.add('selected');
+
+        // Logic
+        logoLoaded = false;
+        logoImg = new Image();
+        logoImg.crossOrigin = "anonymous";
+        logoImg.src = LOGO_URLS[key];
+        logoImg.onload = function() {
+            logoLoaded = true;
+            draw();
+        }
+    }
+
     document.getElementById('uploadInput').addEventListener('change', function(e) {
         if (e.target.files && e.target.files[0]) {
             const reader = new FileReader();
