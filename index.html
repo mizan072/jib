@@ -9,7 +9,12 @@
     <meta name="theme-color" content="#006a4e">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="JIB Campaign">
+    <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Bangladesh_Jamaat-e-Islami_Emblem.svg/192px-Bangladesh_Jamaat-e-Islami_Emblem.svg.png">
     <link rel="icon" type="image/png" href="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Bangladesh_Jamaat-e-Islami_Emblem.svg/32px-Bangladesh_Jamaat-e-Islami_Emblem.svg.png">
+
+    <!-- PWA Manifest (Embedded) -->
+    <link rel="manifest" id="my-manifest-placeholder">
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -51,11 +56,28 @@
             color: white;
             display: flex;
             align-items: center;
+            justify-content: space-between; /* Adjusted for install button */
             gap: 12px;
             backdrop-filter: blur(5px);
         }
+        .header-left { display: flex; align-items: center; gap: 12px; }
         .pwa-header img { height: 35px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
         .pwa-header h1 { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: 0.5px; }
+
+        /* Install Button (Hidden by default) */
+        #installBtn {
+            display: none;
+            background: white;
+            color: var(--primary);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            font-family: 'Hind Siliguri', sans-serif;
+        }
 
         /* --- MAIN APP CONTAINER --- */
         .app-container {
@@ -224,8 +246,12 @@
 
     <!-- MOBILE HEADER (PWA Style) -->
     <div class="pwa-header">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Bangladesh_Jamaat-e-Islami_Emblem.svg/100px-Bangladesh_Jamaat-e-Islami_Emblem.svg.png" alt="Logo">
-        <h1>নির্বাচনী ফ্রেম</h1>
+        <div class="header-left">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Bangladesh_Jamaat-e-Islami_Emblem.svg/100px-Bangladesh_Jamaat-e-Islami_Emblem.svg.png" alt="Logo">
+            <h1>নির্বাচনী ফ্রেম</h1>
+        </div>
+        <!-- INSTALL BUTTON -->
+        <button id="installBtn">📲 Install App</button>
     </div>
 
     <div class="app-container">
@@ -336,7 +362,75 @@
     </div>
 
 <script>
-    // --- APP VARIABLES ---
+    // --- 1. PWA CONFIGURATION (Dynamic Manifest & Service Worker) ---
+    
+    // Create Manifest Dynamically
+    const manifest = {
+        "name": "JIB Campaign 2026",
+        "short_name": "JIB Campaign",
+        "start_url": ".",
+        "display": "standalone",
+        "background_color": "#006a4e",
+        "theme_color": "#006a4e",
+        "icons": [
+            {
+                "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Bangladesh_Jamaat-e-Islami_Emblem.svg/192px-Bangladesh_Jamaat-e-Islami_Emblem.svg.png",
+                "sizes": "192x192",
+                "type": "image/png"
+            },
+            {
+                "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Bangladesh_Jamaat-e-Islami_Emblem.svg/512px-Bangladesh_Jamaat-e-Islami_Emblem.svg.png",
+                "sizes": "512x512",
+                "type": "image/png"
+            }
+        ]
+    };
+    
+    // Inject Manifest into DOM
+    const stringManifest = JSON.stringify(manifest);
+    const blobManifest = new Blob([stringManifest], {type: 'application/json'});
+    const manifestURL = URL.createObjectURL(blobManifest);
+    document.querySelector('#my-manifest-placeholder').setAttribute('href', manifestURL);
+
+    // Register Fake Service Worker (Required for PWA Install Prompt)
+    if ('serviceWorker' in navigator) {
+        // We create a dummy SW from a blob because we don't have a separate file
+        const swContent = "self.addEventListener('fetch', (e) => {});"; 
+        const blobSw = new Blob([swContent], {type: 'text/javascript'});
+        const swUrl = URL.createObjectURL(blobSw);
+        navigator.serviceWorker.register(swUrl).catch(console.error);
+    }
+
+    // Handle PWA Install Prompt
+    let deferredPrompt;
+    const installBtn = document.getElementById('installBtn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        // Prevent Chrome 67 and earlier from automatically showing the prompt
+        e.preventDefault();
+        // Stash the event so it can be triggered later.
+        deferredPrompt = e;
+        // Update UI to notify the user they can add to home screen
+        installBtn.style.display = 'block';
+    });
+
+    installBtn.addEventListener('click', (e) => {
+        // Hide our user interface that shows our A2HS button
+        installBtn.style.display = 'none';
+        // Show the prompt
+        deferredPrompt.prompt();
+        // Wait for the user to respond to the prompt
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('User accepted the A2HS prompt');
+            } else {
+                console.log('User dismissed the A2HS prompt');
+            }
+            deferredPrompt = null;
+        });
+    });
+
+    // --- 2. APP VARIABLES ---
     const canvas = document.getElementById('mainCanvas');
     const ctx = canvas.getContext('2d');
     const startMsg = document.getElementById('startMsg');
@@ -352,21 +446,10 @@
     let externalFrameLoaded = false;
     
     // LOGO URLs
-    // Using weserv.nl proxy for the blogger images to ensure safe canvas export
     const LOGO_URLS = {
         'logo1': 'https://images.weserv.nl/?url=blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiD-zuic22cjZDrKszuJErZZsM3nU4_6XS2VrC_9v7w1VWnfyJZPBjT3zeIpovlMn9w_G9ZW78JsSj7R9JbEUgUUeFdS7Sq04VxqOtvTUWZfwUQEvtwXZ-j83nheWbe3szHQBWeXXDrkwBpnODedpR9LGLzSYxmC8cstN98R-8OUZLVLg6aEZFx_t2a21c/s320/1000129857-removebg-preview.png&output=png',
         'logo2': 'https://images.weserv.nl/?url=blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEihI-Y5zvRgBVf49y_DtKqQelhV05hiMVumieJsHIKcONCytzDS475wBQdTMP-l5pnsEFmqB8l7UREFbdYC1xBlDPpAr2TeOO6DE_T8BZl2dXhu1I1UJ7QH65v07jM3PBClW_x7e4-UlOuznjWjviAL591Ks9NeSO8PYvbWTvpyDorry2kkc1aSqS34xlg/s320/1000129858-removebg-preview.png&output=png',
         'logo3': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Bangladesh_Jamaat-e-Islami_Emblem.svg/500px-Bangladesh_Jamaat-e-Islami_Emblem.svg.png'
-    };
-
-    // Initialize with Logo 1 as it was requested to be "Like logo 1" (or user preference)
-    // Actually, let's stick to the current default which matches the frame style best, or use Logo 1 if new.
-    // I'll initialize with Logo 1 to show the new change.
-    logoImg.crossOrigin = "anonymous";
-    logoImg.src = LOGO_URLS['logo1'];
-    logoImg.onload = function() {
-        logoLoaded = true;
-        if(imgLoaded) draw();
     };
 
     const EXTERNAL_FRAMES = {
@@ -380,9 +463,10 @@
     let offsetX = 0;
     let offsetY = 0;
     
+    // Default logo size will be updated on init
     let logoX = 50;
     let logoY = 50;
-    let logoSize = 160;
+    let logoSize = 240; 
     
     let isDraggingUser = false;
     let isDraggingLogo = false;
@@ -392,14 +476,26 @@
     ctx.fillStyle = "white";
     ctx.fillRect(0,0,1080,1080);
 
+    // Initialize with Logo 1
+    logoImg.crossOrigin = "anonymous";
+    logoImg.src = LOGO_URLS['logo1'];
+    logoImg.onload = function() {
+        logoLoaded = true;
+        if(imgLoaded) draw();
+    };
+
     // --- HANDLERS ---
     
     function changeLogo(key) {
-        // UI Update
         document.querySelectorAll('.logo-option').forEach(el => el.classList.remove('selected'));
         document.getElementById('opt_' + key).classList.add('selected');
 
-        // Logic
+        if(key === 'logo3') {
+            logoSize = 160; 
+        } else {
+            logoSize = 240; 
+        }
+
         logoLoaded = false;
         logoImg = new Image();
         logoImg.crossOrigin = "anonymous";
@@ -503,27 +599,20 @@
         ctx.lineJoin = "round";
 
         if (type === "referendum_2026") { 
-            // --- NEW: গণভোট ২০২৬ ফ্রেম ---
-            
             // Border
             ctx.lineWidth = 40;
             ctx.strokeStyle = "#006a4e";
             ctx.strokeRect(0,0,w,h);
-
             // Top Banner
             ctx.fillStyle = "#006a4e";
             ctx.fillRect(0, 0, w, 200);
-            
             ctx.fillStyle = "#ffeb3b";
             ctx.font = "bold 90px 'Hind Siliguri'";
             ctx.fillText("গণভোট ২০২৬", w/2, 135);
-
             // Bottom Banner
             ctx.fillStyle = "#006a4e";
             ctx.fillRect(0, h-300, w, 300);
-
-            // Key Icon (Simplified Art)
-            // Drawing a gold key circle
+            // Key Icon
             ctx.beginPath();
             ctx.arc(w - 150, h - 300, 70, 0, 2*Math.PI);
             ctx.fillStyle = "#fff";
@@ -531,22 +620,18 @@
             ctx.lineWidth = 5;
             ctx.strokeStyle = "#ffeb3b";
             ctx.stroke();
-            
             ctx.fillStyle = "#006a4e";
             ctx.font = "bold 80px sans-serif";
-            ctx.fillText("✓", w - 150, h - 275); // Checkmark
-
+            ctx.fillText("✓", w - 150, h - 275);
             // Text
             ctx.fillStyle = "#fff";
             ctx.font = "600 60px 'Hind Siliguri'";
             ctx.fillText("দেশের চাবি আপনার হাতে", w/2, h - 190);
-            
-            ctx.fillStyle = "#ffeb3b"; // Gold
+            ctx.fillStyle = "#ffeb3b";
             ctx.font = "bold 75px 'Hind Siliguri'";
             ctx.fillText("পরিবর্তনের জন্য হ্যাঁ ভোট দিন", w/2, h - 80);
 
         } else if (type === "custom_taj") {
-            // ... (Taj Uddin Code from previous) ...
             ctx.lineWidth = 40; ctx.strokeStyle = "#006a4e"; ctx.strokeRect(0, 0, w, h);
             ctx.beginPath(); ctx.moveTo(0, h-320); ctx.quadraticCurveTo(w/2, h-380, w, h-320); ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath();
             const grad = ctx.createLinearGradient(0, h-350, 0, h); grad.addColorStop(0, "#004d38"); grad.addColorStop(1, "#002a1e"); 
