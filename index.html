@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campaign Frame Generator | Bangladesh Jamaat-e-Islami</title>
+    
+    <!-- Google Fonts: Hind Siliguri -->
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- STYLISH DESIGN SYSTEM --- */
+        :root {
+            --primary: #006a4e;
+            --primary-dark: #004d38;
+            --accent: #f42a41;
+            --bg-gradient: linear-gradient(135deg, #006a4e 0%, #004d38 100%);
+            --glass-bg: rgba(255, 255, 255, 0.95);
+            --shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        body {
+            font-family: 'Hind Siliguri', sans-serif;
+            background: var(--bg-gradient);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .app-card {
+            background: var(--glass-bg);
+            width: 100%;
+            max-width: 1000px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: row; /* Desktop Default */
+            backdrop-filter: blur(10px);
+        }
+
+        /* Mobile Layout */
+        @media (max-width: 850px) {
+            .app-card { flex-direction: column; }
+            body { padding: 15px 10px; align-items: flex-start; }
+            .canvas-area { padding: 30px 20px; }
+            .controls-area { padding: 25px 20px; }
+        }
+
+        /* --- LEFT: CANVAS AREA --- */
+        .canvas-area {
+            flex: 1;
+            background: #f1f3f5;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .canvas-wrapper {
+            width: 100%;
+            max-width: 450px;
+            aspect-ratio: 1 / 1;
+            background: white;
+            border: 4px solid white;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            transition: transform 0.2s;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            cursor: move; /* Indicates draggable */
+            touch-action: none;
+            display: block;
+        }
+
+        .instruction-overlay {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #888;
+            pointer-events: none;
+            width: 90%;
+            z-index: 10;
+            background: rgba(255,255,255,0.8);
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .tip-badge {
+            margin-top: 15px;
+            background: rgba(0, 106, 78, 0.1);
+            color: var(--primary);
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* --- RIGHT: CONTROLS AREA --- */
+        .controls-area {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+            max-height: 100vh;
+        }
+
+        .header { margin-bottom: 10px; }
+        .header h1 { color: var(--primary); margin: 0; font-size: 28px; line-height: 1.2; }
+        .header h2 { font-size: 15px; color: #666; margin: 5px 0 0 0; font-weight: 400; }
+
+        .control-group {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #eee;
+            transition: 0.2s;
+        }
+        .control-group:hover { border-color: #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+
+        label { display: block; font-weight: 600; margin-bottom: 10px; color: #333; font-size: 14px; }
+
+        /* Stylish Buttons */
+        .btn {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            width: 100%; padding: 14px; border: none; border-radius: 10px;
+            font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s;
+            font-family: 'Hind Siliguri', sans-serif;
+        }
+
+        .btn-upload {
+            background: white;
+            border: 2px dashed var(--primary);
+            color: var(--primary);
+        }
+        .btn-upload:hover { background: #f0fdf4; border-style: solid; }
+
+        .btn-download {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(0, 106, 78, 0.3);
+        }
+        .btn-download:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0, 106, 78, 0.4); }
+
+        /* Form Elements */
+        select {
+            width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd;
+            font-family: inherit; font-size: 15px; background: #f8f9fa; cursor: pointer;
+            appearance: none; /* Custom arrow can be added here if needed */
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+        }
+        
+        input[type=range] {
+            width: 100%; cursor: pointer;
+        }
+
+        /* Checkbox */
+        .checkbox-wrapper {
+            display: flex; align-items: center; gap: 8px; margin-top: 8px;
+            font-size: 14px; color: #555;
+            cursor: pointer;
+        }
+        input[type="checkbox"] {
+            width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary);
+        }
+
+        .hidden { display: none; }
+        .loader { display: none; color: var(--primary); font-size: 14px; font-weight: 600; text-align: center; margin-top: 5px; }
+
+    </style>
+</head>
+<body>
+
+<div class="app-card">
+    <!-- LEFT: Canvas Preview -->
+    <div class="canvas-area">
+        <div class="canvas-wrapper" id="canvasContainer">
+            <!-- 1080x1080 Resolution -->
+            <canvas id="mainCanvas" width="1080" height="1080"></canvas>
+            
+            <div class="instruction-overlay" id="startMsg">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <br>শুরু করতে ছবি আপলোড করুন
+            </div>
+        </div>
+        <div class="tip-badge">
+            👆 ছবি এবং লোগো টেনে পজিশন ঠিক করুন
+        </div>
+    </div>
+
+    <!-- RIGHT: Controls -->
+    <div class="controls-area">
+        <div class="header">
+            <h1>বাংলাদেশ জামায়াতে ইসলামী</h1>
+            <h2>ডিজিটাল নির্বাচনী প্রচারণা ফ্রেম</h2>
+        </div>
+
+        <!-- 1. Upload -->
+        <div class="control-group">
+            <label>১. আপনার ছবি দিন</label>
+            <button class="btn btn-upload" onclick="document.getElementById('uploadInput').click()">
+                <span>📷</span> গ্যালারি থেকে ছবি নিন
+            </button>
+            <input type="file" id="uploadInput" class="hidden" accept="image/*">
+        </div>
+
+        <!-- 2. Frame Select -->
+        <div class="control-group">
+            <label>২. ফ্রেম ডিজাইন বাছাই করুন</label>
+            <select id="frameSelect" onchange="handleFrameChange()">
+                <option value="1">Frame 1: দাঁড়িপাল্লায় ভোট দিন</option>
+                <option value="2">Frame 2: নারায়ে তাকবীর</option>
+                <option value="3">Frame 3: লাল সবুজের পতাকা</option>
+                <option value="4">Frame 4: JustHasib Style 1</option>
+                <option value="5">Frame 5: JustHasib Style 2</option>
+                <option value="6">Frame 6: JustHasib Style 3</option>
+            </select>
+            <div id="frameLoader" class="loader">ফ্রেম লোড হচ্ছে...</div>
+        </div>
+
+        <!-- 3. Zoom & Options -->
+        <div class="control-group">
+            <label>৩. ছবি অ্যাডজাস্টমেন্ট</label>
+            <input type="range" id="zoomRange" min="0.5" max="3" step="0.1" value="1" oninput="handleZoom()">
+            
+            <div class="checkbox-wrapper">
+                <input type="checkbox" id="showLogo" checked onchange="draw()">
+                <label for="showLogo">দলীয় লোগো দেখান</label>
+            </div>
+        </div>
+
+        <!-- 4. Download -->
+        <button class="btn btn-download" onclick="downloadImage()">
+            <span>⬇️</span> ফ্রেমসহ ছবি ডাউনলোড করুন
+        </button>
+    </div>
+</div>
+
+<script>
+    // --- APP VARIABLES ---
+    const canvas = document.getElementById('mainCanvas');
+    const ctx = canvas.getContext('2d');
+    const startMsg = document.getElementById('startMsg');
+    const frameLoader = document.getElementById('frameLoader');
+    
+    // Assets
+    let userImg = new Image();
+    let logoImg = new Image();
+    let externalFrameImg = new Image(); // Holds the loaded frame image for 4, 5, 6
+    
+    let imgLoaded = false;
+    let logoLoaded = false;
+    let externalFrameLoaded = false;
+    
+    // Load Logo
+    const LOGO_URL = "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Bangladesh_Jamaat-e-Islami_Emblem.svg/500px-Bangladesh_Jamaat-e-Islami_Emblem.svg.png";
+    logoImg.crossOrigin = "anonymous";
+    logoImg.src = LOGO_URL;
+    logoImg.onload = function() {
+        logoLoaded = true;
+        if(imgLoaded) draw();
+    };
+
+    // External Frame URLs (Proxied via weserv.nl to fix CORS/Security errors)
+    const EXTERNAL_FRAMES = {
+        "4": "https://images.weserv.nl/?url=justhasib.com/frame/frame1.png&output=png",
+        "5": "https://images.weserv.nl/?url=justhasib.com/frame/frame2.png&output=png",
+        "6": "https://images.weserv.nl/?url=justhasib.com/frame/frame3.png&output=png"
+    };
+
+    // --- STATE MANAGEMENT ---
+    let scale = 1;
+    let offsetX = 0;
+    let offsetY = 0;
+    
+    let logoX = 40;
+    let logoY = 40;
+    let logoSize = 150;
+    
+    let isDraggingUser = false;
+    let isDraggingLogo = false;
+    let startX, startY;
+
+    // Initial Paint
+    ctx.fillStyle = "white";
+    ctx.fillRect(0,0,1080,1080);
+
+    // --- 1. UPLOAD HANDLER ---
+    document.getElementById('uploadInput').addEventListener('change', function(e) {
+        if (e.target.files && e.target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                userImg = new Image();
+                userImg.onload = function() {
+                    imgLoaded = true;
+                    startMsg.style.display = 'none'; 
+                    resetPosition(); 
+                    handleFrameChange(); // Redraw with current frame
+                }
+                userImg.src = event.target.result;
+            }
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    });
+
+    // --- 2. FRAME CHANGE HANDLER ---
+    function handleFrameChange() {
+        const frameType = document.getElementById('frameSelect').value;
+        
+        // If it's a code-based frame (1-3)
+        if (["1", "2", "3"].includes(frameType)) {
+            externalFrameLoaded = false; // Disable image overlay
+            draw();
+        } 
+        // If it's an image-based frame (4-6)
+        else {
+            frameLoader.style.display = 'block';
+            externalFrameImg = new Image();
+            externalFrameImg.crossOrigin = "anonymous";
+            externalFrameImg.src = EXTERNAL_FRAMES[frameType];
+            
+            externalFrameImg.onload = function() {
+                externalFrameLoaded = true;
+                frameLoader.style.display = 'none';
+                draw();
+            };
+            
+            externalFrameImg.onerror = function() {
+                frameLoader.style.display = 'none';
+                alert("ফ্রেম লোড করতে সমস্যা হয়েছে। ইন্টারনেট কানেকশন চেক করুন।");
+            };
+        }
+    }
+
+    // --- 3. POSITIONING HELPER ---
+    function resetPosition() {
+        // "Cover" logic
+        const sX = canvas.width / userImg.width;
+        const sY = canvas.height / userImg.height;
+        scale = Math.max(sX, sY); 
+        
+        offsetX = (canvas.width - userImg.width * scale) / 2;
+        offsetY = (canvas.height - userImg.height * scale) / 2;
+        
+        document.getElementById('zoomRange').value = 1;
+        logoX = 40; logoY = 40;
+    }
+
+    function handleZoom() {
+        if(!imgLoaded) return;
+        const sliderVal = parseFloat(document.getElementById('zoomRange').value);
+        const sX = canvas.width / userImg.width;
+        const sY = canvas.height / userImg.height;
+        const baseScale = Math.max(sX, sY);
+        scale = baseScale * sliderVal;
+        draw();
+    }
+
+    // --- 4. MAIN DRAWING ENGINE ---
+    function draw() {
+        // Clear
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // A. Layer 0: User Image
+        if (imgLoaded) {
+            ctx.drawImage(userImg, offsetX, offsetY, userImg.width * scale, userImg.height * scale);
+        }
+
+        // B. Layer 1: Frame
+        const frameType = document.getElementById('frameSelect').value;
+        
+        if (externalFrameLoaded && ["4", "5", "6"].includes(frameType)) {
+            // Draw External Image Frame
+            ctx.drawImage(externalFrameImg, 0, 0, canvas.width, canvas.height);
+        } else {
+            // Draw Code Frame
+            drawDigitalFrame(frameType);
+        }
+        
+        // C. Layer 2: Logo
+        if(logoLoaded && document.getElementById('showLogo').checked) {
+            ctx.shadowColor = "rgba(0,0,0,0.3)";
+            ctx.shadowBlur = 10;
+            ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
+            ctx.shadowBlur = 0; 
+        }
+    }
+
+    // --- CODE FRAME DRAWER (1-3) ---
+    function drawDigitalFrame(type) {
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.textAlign = "center";
+
+        if (type === "1") { // Classic
+            ctx.strokeStyle = "#006a4e"; ctx.lineWidth = 40; ctx.strokeRect(0, 0, w, h);
+            ctx.fillStyle = "#006a4e"; ctx.fillRect(0, h - 250, w, 250);
+            ctx.fillStyle = "white"; ctx.font = "bold 80px 'Hind Siliguri'"; ctx.fillText("বাংলাদেশ জামায়াতে ইসলামী", w/2, h - 150);
+            ctx.fillStyle = "#ffeb3b"; ctx.font = "bold 70px 'Hind Siliguri'"; ctx.fillText("দাঁড়িপাল্লায় ভোট দিন", w/2, h - 60);
+
+        } else if (type === "2") { // Religious
+            const grad = ctx.createLinearGradient(0,0,w,0); grad.addColorStop(0, "#004d38"); grad.addColorStop(1, "#006a4e");
+            ctx.fillStyle = grad; ctx.fillRect(0, 0, w, 220);
+            ctx.fillStyle = "#ffeb3b"; ctx.font = "60px 'Hind Siliguri'"; ctx.fillText("নারায়ে তাকবীর", w/2 + 60, 90);
+            ctx.fillStyle = "white"; ctx.font = "bold 90px 'Hind Siliguri'"; ctx.fillText("আল্লাহু আকবার", w/2, 180);
+            ctx.fillStyle = "#006a4e"; ctx.fillRect(0, h - 140, w, 140);
+            ctx.fillStyle = "white"; ctx.font = "bold 60px 'Hind Siliguri'"; ctx.fillText("বাংলাদেশ জামায়াতে ইসলামী", w/2, h - 50);
+
+        } else if (type === "3") { // Flag
+            ctx.fillStyle = "rgba(0, 106, 78, 0.9)"; ctx.fillRect(0, 0, w, 130);
+            ctx.fillStyle = "#f42a41"; ctx.fillRect(0, h - 180, w, 180);
+            ctx.beginPath(); ctx.arc(w - 100, h - 250, 60, 0, 2 * Math.PI); ctx.fillStyle = "#f42a41"; ctx.fill();
+            ctx.fillStyle = "white"; ctx.font = "bold 60px 'Hind Siliguri'"; ctx.fillText("দেশ গড়ার শপথ নিন", w/2, 90);
+            ctx.font = "bold 70px 'Hind Siliguri'"; ctx.fillText("জামায়াতে ইসলামীকে ভোট দিন", w/2, h - 70);
+        }
+    }
+
+    // --- 5. DRAG LOGIC ---
+    const container = document.getElementById('canvasContainer');
+    
+    function getCanvasCoordinates(e) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY,
+            rawX: clientX,
+            rawY: clientY
+        };
+    }
+
+    function startDrag(e) {
+        if(!imgLoaded) return;
+        const pos = getCanvasCoordinates(e);
+        
+        if(logoLoaded && document.getElementById('showLogo').checked &&
+           pos.x > logoX && pos.x < logoX + logoSize &&
+           pos.y > logoY && pos.y < logoY + logoSize) {
+            isDraggingLogo = true;
+        } else {
+            isDraggingUser = true;
+        }
+        startX = pos.rawX;
+        startY = pos.rawY;
+    }
+
+    function moveDrag(e) {
+        if(!isDraggingUser && !isDraggingLogo) return;
+        const pos = getCanvasCoordinates(e);
+        const rect = canvas.getBoundingClientRect();
+        const scaleRatio = canvas.width / rect.width;
+        
+        const dx = (pos.rawX - startX) * scaleRatio;
+        const dy = (pos.rawY - startY) * scaleRatio;
+        
+        if(isDraggingLogo) { logoX += dx; logoY += dy; }
+        else { offsetX += dx; offsetY += dy; }
+        
+        startX = pos.rawX; startY = pos.rawY;
+        draw();
+        if(e.cancelable) e.preventDefault();
+    }
+
+    function endDrag() { isDraggingUser = false; isDraggingLogo = false; }
+
+    container.addEventListener('mousedown', startDrag);
+    window.addEventListener('mousemove', moveDrag);
+    window.addEventListener('mouseup', endDrag);
+    container.addEventListener('touchstart', startDrag, {passive: false});
+    window.addEventListener('touchmove', moveDrag, {passive: false});
+    window.addEventListener('touchend', endDrag);
+
+    // --- 6. DOWNLOAD ---
+    function downloadImage() {
+        if(!imgLoaded) { alert("অনুগ্রহ করে প্রথমে একটি ছবি আপলোড করুন।"); return; }
+        const link = document.createElement('a');
+        link.download = `jib-campaign-${Date.now()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    }
+</script>
+
+</body>
+</html>
