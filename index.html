@@ -1,808 +1,546 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JIB Campaign Generator 2026</title>
+    <title>Pro Sports Scorecard</title>
     
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#006a4e">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="JIB Campaign">
-    <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Bangladesh_Jamaat-e-Islami_Emblem.svg/192px-Bangladesh_Jamaat-e-Islami_Emblem.svg.png">
-    <link rel="icon" type="image/png" href="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Bangladesh_Jamaat-e-Islami_Emblem.svg/32px-Bangladesh_Jamaat-e-Islami_Emblem.svg.png">
-
-    <!-- PWA Manifest (Embedded) -->
-    <link rel="manifest" id="my-manifest-placeholder">
-
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Ad Script -->
+    <script src='//libtl.com/sdk.js' data-zone='9743120' data-sdk='show_9743120'></script>
+
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-        /* --- GREEN THEME SYSTEM --- */
-        :root {
-            --primary: #006a4e;         /* JIB Green */
-            --primary-dark: #004d38;
-            --primary-light: #e6fffa;
-            --accent: #d32f2f;          /* Red Accent for contrast */
-            --gold: #ffb300;            /* Gold for highlights */
-            --text-dark: #1a202c;
-            --text-light: #718096;
-            --bg-gradient: linear-gradient(180deg, #006a4e 0%, #004d38 100%);
-            --glass-panel: rgba(255, 255, 255, 0.98);
-            --radius: 16px;
-        }
-
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-        body {
-            font-family: 'Hind Siliguri', sans-serif;
-            background: var(--bg-gradient); /* Full Green Background */
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--text-dark);
-        }
-
-        /* --- MOBILE PWA HEADER --- */
-        .pwa-header {
-            width: 100%;
-            padding: 15px 20px;
-            background: rgba(0,0,0,0.1);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            backdrop-filter: blur(5px);
-        }
-        .header-left { display: flex; align-items: center; gap: 12px; }
-        .pwa-header img { height: 35px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
-        .pwa-header h1 { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: 0.5px; }
-
-        /* Install Button */
-        #installBtn {
-            display: none;
-            background: white;
-            color: var(--primary);
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 13px;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            font-family: 'Hind Siliguri', sans-serif;
-        }
-
-        /* --- MAIN APP CONTAINER --- */
-        .app-container {
-            flex: 1;
-            width: 100%;
-            max-width: 1000px;
-            background: var(--glass-panel);
-            margin: 20px;
-            border-radius: var(--radius);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            display: flex;
-            flex-direction: row;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        /* Responsive Layout */
-        @media (max-width: 850px) {
-            body { background: #f0fdf4; } 
-            .pwa-header { background: var(--primary); color: white; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-            .app-container {
-                flex-direction: column;
-                margin: 0;
-                border-radius: 0;
-                box-shadow: none;
-                background: transparent;
-                border: none;
-            }
-            .canvas-area { background: white !important; border-bottom: 1px solid #eee; padding: 20px !important; }
-            .controls-area { background: white; padding: 20px !important; border-radius: 20px 20px 0 0; margin-top: -20px; box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.05); }
-        }
-
-        /* --- LEFT: CANVAS AREA --- */
-        .canvas-area {
-            flex: 1.1;
-            background: var(--primary-light);
-            padding: 40px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .canvas-wrapper {
-            width: 100%;
-            max-width: 450px;
-            aspect-ratio: 1 / 1;
-            background-color: #fff;
-            /* Checkerboard pattern */
-            background-image: 
-                linear-gradient(45deg, #eee 25%, transparent 25%), 
-                linear-gradient(-45deg, #eee 25%, transparent 25%), 
-                linear-gradient(45deg, transparent 75%, #eee 75%), 
-                linear-gradient(-45deg, transparent 75%, #eee 75%);
-            background-size: 20px 20px;
-            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-            border-radius: 8px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            overflow: hidden;
-            position: relative;
-            border: 4px solid white;
-        }
-
-        canvas { width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
-        canvas:active { cursor: grabbing; }
-
-        .instruction-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: rgba(255,255,255,0.95); z-index: 10;
-            text-align: center; color: #718096;
-        }
-        .instruction-overlay h3 { margin: 10px 0 5px; color: var(--primary); }
-
-        /* --- RIGHT: CONTROLS AREA --- */
-        .controls-area {
-            flex: 1;
-            padding: 40px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .section-title {
-            display: flex; align-items: center; gap: 10px;
-            font-size: 16px; font-weight: 700; color: var(--primary);
-            margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;
-        }
-        .section-title svg { width: 18px; height: 18px; }
-
-        /* Custom Inputs */
-        .input-group {
-            background: white; border: 1px solid #e2e8f0; border-radius: 12px;
-            padding: 15px; transition: 0.2s;
-        }
-        .input-group:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 106, 78, 0.1); }
-
-        /* Select Box */
-        .custom-select {
-            width: 100%; border: none; background: transparent;
-            font-family: inherit; font-size: 15px; font-weight: 500; color: var(--text-dark);
-            cursor: pointer; padding: 5px 0; outline: none;
-        }
-
-        /* Upload Button */
-        .upload-btn {
-            width: 100%; padding: 12px;
-            background: var(--primary-light); border: 2px dashed var(--primary);
-            border-radius: 12px; color: var(--primary);
-            font-weight: 600; font-size: 15px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            transition: 0.2s;
-        }
-        .upload-btn:hover { background: #d1fae5; }
-
-        /* Slider */
-        input[type=range] {
-            width: 100%; height: 6px; background: #cbd5e0; border-radius: 3px; appearance: none;
-        }
-        input[type=range]::-webkit-slider-thumb {
-            appearance: none; width: 22px; height: 22px;
-            background: var(--primary); border: 3px solid white; border-radius: 50%;
-            cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        /* Logo Selector */
-        .logo-options {
-            display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;
-        }
-        .logo-option {
-            width: 60px; height: 60px;
-            border: 2px solid #e2e8f0; border-radius: 10px;
-            padding: 5px; cursor: pointer; background: white;
-            transition: 0.2s; display: flex; align-items: center; justify-content: center;
-        }
-        .logo-option.selected { border-color: var(--primary); background-color: #f0fdf4; box-shadow: 0 0 0 2px rgba(0, 106, 78, 0.2); }
-        .logo-option img { max-width: 100%; max-height: 100%; object-fit: contain; }
-
-        /* Toggle */
-        .toggle-row {
-            display: flex; align-items: center; justify-content: space-between;
-            background: #f7fafc; padding: 12px 15px; border-radius: 10px; margin-top: 15px;
-        }
-        .toggle-label { font-size: 14px; font-weight: 500; color: var(--text-dark); }
+        body { font-family: 'Hind Siliguri', sans-serif; touch-action: pan-y; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .canvas-container { touch-action: none; }
         
-        /* Action Button */
-        .download-btn {
-            margin-top: auto;
-            background: var(--primary);
-            color: white; border: none; padding: 16px; border-radius: 12px;
-            font-size: 18px; font-weight: 700; cursor: pointer;
-            box-shadow: 0 4px 6px -1px rgba(0, 106, 78, 0.4);
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            transition: transform 0.1s;
-        }
-        .download-btn:active { transform: scale(0.98); }
-
-        .hidden { display: none; }
-        .loader { text-align: center; color: var(--primary); font-size: 13px; font-weight: 500; margin-top: 5px; display: none; }
-
-        /* --- FOOTER --- */
-        .site-footer {
-            margin-top: auto;
-            padding: 20px;
-            text-align: center;
-            color: #555;
-            font-size: 13px;
-            width: 100%;
-            background: white;
-            border-top: 1px solid #eee;
-        }
-        .dev-link {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 700;
-            transition: color 0.2s;
-        }
-        .dev-link:hover { color: var(--primary-dark); text-decoration: underline; }
-
+        /* Modal Animation */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-backdrop { animation: fadeIn 0.2s ease-out; }
+        .modal-content { animation: scaleIn 0.3s ease-out; }
     </style>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-900">
+    <div id="root"></div>
 
-    <!-- MOBILE HEADER (PWA Style) -->
-    <div class="pwa-header">
-        <div class="header-left">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Bangladesh_Jamaat-e-Islami_Emblem.svg/100px-Bangladesh_Jamaat-e-Islami_Emblem.svg.png" alt="Logo">
-            <h1>নির্বাচনী ফ্রেম</h1>
-        </div>
-        <!-- INSTALL BUTTON -->
-        <button id="installBtn">📲 Install App</button>
-    </div>
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
 
-    <div class="app-container">
-        <!-- LEFT: CANVAS PREVIEW -->
-        <div class="canvas-area">
-            <div class="canvas-wrapper" id="canvasContainer">
-                <!-- 1080x1080 Canvas for Social Media -->
-                <canvas id="mainCanvas" width="1080" height="1080"></canvas>
+        // --- Icons ---
+        const IconDownload = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>;
+        const IconUpload = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path></svg>;
+        const IconRefresh = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>;
+        const IconSwap = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m7 2 10 10-10 10"></path><path d="M17 12H3"></path></svg>;
+        const IconMove = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="5 9 2 12 5 15"></polyline><polyline points="9 5 12 2 15 5"></polyline><polyline points="15 19 12 22 9 19"></polyline><polyline points="19 9 22 12 19 15"></polyline><line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line></svg>;
+        const IconZoomIn = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>;
+        const IconEye = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>;
+        const IconPlay = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>;
+
+        function App() {
+            const canvasRef = useRef(null);
+            const [activeTab, setActiveTab] = useState('match');
+            const [bgImage, setBgImage] = useState(null);
+            
+            // Ad State
+            const [showAdModal, setShowAdModal] = useState(false);
+            const [adsWatched, setAdsWatched] = useState(0);
+            const [isLoadingAd, setIsLoadingAd] = useState(false);
+            
+            // Image Transform State
+            const [imgPos, setImgPos] = useState({ x: 0, y: 0, scale: 1 });
+            const gestureStart = useRef({ x: 0, y: 0, dist: 0, scale: 1, imgX: 0, imgY: 0, mode: null });
+
+            // Default Data
+            const [formData, setFormData] = useState({
+                badgeText: 'খেলাধুলার খবর',
+                title: 'আইসিসি টি-টোয়েন্টি বিশ্বকাপ',
+                team1: 'ইংল্যান্ড',
+                team1Score: '১৮৪/৭',
+                team1Overs: '(২০ ওভার)',
+                team1Color: '#ffd700',
+                team2: 'নেপাল',
+                team2Score: '১৮০/৬',
+                team2Overs: '(২০ ওভার)',
+                team2Color: '#ffd700',
+                result: 'নেপালকে ৪ রানে হারিয়েছে ইংল্যান্ড',
+                resultColor: '#ffd700',
+                footerHandle: 'Ekattortv.Khelajog',
+                primaryColor: '#990000',
+                secondaryColor: '#4a0000',
+                bgOpacity: 0.9
+            });
+
+            // Handle Image Upload & Auto-Fit
+            const handleImageUpload = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            setBgImage(img);
+                            const W = 1080;
+                            const H = 1200;
+                            const scale = Math.max(W / img.width, H / img.height);
+                            const x = (W - img.width * scale) / 2;
+                            const y = (H - img.height * scale) / 2;
+                            setImgPos({ x, y, scale });
+                        };
+                        img.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            const resetImage = () => {
+                if(bgImage) {
+                    const W = 1080;
+                    const H = 1200;
+                    const scale = Math.max(W / bgImage.width, H / bgImage.height);
+                    const x = (W - bgImage.width * scale) / 2;
+                    const y = (H - bgImage.height * scale) / 2;
+                    setImgPos({ x, y, scale });
+                }
+            };
+
+            // --- TOUCH GESTURE LOGIC ---
+            const handleTouchStart = (e) => {
+                const t = e.touches;
+                if (t.length === 1) {
+                    gestureStart.current = { mode: 'pan', x: t[0].clientX, y: t[0].clientY, imgX: imgPos.x, imgY: imgPos.y };
+                } else if (t.length === 2) {
+                    const dist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+                    gestureStart.current = { mode: 'zoom', dist: dist, scale: imgPos.scale };
+                }
+            };
+
+            const handleTouchMove = (e) => {
+                if (!gestureStart.current.mode) return;
+                e.preventDefault(); 
+                const rect = e.target.getBoundingClientRect();
+                const canvasScaleFactor = 1080 / rect.width; 
+                const t = e.touches;
                 
-                <!-- Instruction Overlay -->
-                <div class="instruction-overlay" id="startMsg">
-                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#006a4e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                    <h3>ছবি যোগ করুন</h3>
-                    <p style="font-size:13px;">ফ্রেমে বসানোর জন্য আপনার ছবি আপলোড করুন</p>
-                </div>
-            </div>
+                if (t.length === 1 && gestureStart.current.mode === 'pan') {
+                    const dx = (t[0].clientX - gestureStart.current.x) * canvasScaleFactor;
+                    const dy = (t[0].clientY - gestureStart.current.y) * canvasScaleFactor;
+                    setImgPos(prev => ({ ...prev, x: gestureStart.current.imgX + dx, y: gestureStart.current.imgY + dy }));
+                } else if (t.length === 2 && gestureStart.current.mode === 'zoom') {
+                    const dist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+                    const scaleChange = dist / gestureStart.current.dist;
+                    setImgPos(prev => ({ ...prev, scale: gestureStart.current.scale * scaleChange }));
+                }
+            };
+
+            const handleEnd = () => { gestureStart.current.mode = null; };
+            const handleMouseDown = (e) => { gestureStart.current = { mode: 'pan', x: e.clientX, y: e.clientY, imgX: imgPos.x, imgY: imgPos.y }; };
+            const handleMouseMove = (e) => {
+                if (gestureStart.current.mode === 'pan') {
+                    const rect = e.target.getBoundingClientRect();
+                    const canvasScaleFactor = 1080 / rect.width;
+                    const dx = (e.clientX - gestureStart.current.x) * canvasScaleFactor;
+                    const dy = (e.clientY - gestureStart.current.y) * canvasScaleFactor;
+                    setImgPos(prev => ({ ...prev, x: gestureStart.current.imgX + dx, y: gestureStart.current.imgY + dy }));
+                }
+            };
+
+            // --- CANVAS LOGIC ---
+            const measureText = (ctx, text, fontSize, fontWeight = 'bold') => {
+                ctx.font = `${fontWeight} ${fontSize}px "Hind Siliguri", sans-serif`;
+                return ctx.measureText(text).width;
+            };
+
+            const drawText = (ctx, text, x, y, fontSize, color, align = 'center', fontWeight = 'bold') => {
+                ctx.font = `${fontWeight} ${fontSize}px "Hind Siliguri", sans-serif`;
+                ctx.fillStyle = color;
+                ctx.textAlign = align;
+                ctx.fillText(text, x, y);
+            };
+
+            useEffect(() => {
+                const canvas = canvasRef.current;
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                const W = 1080;
+                const H = 1200;
+                const splitY = 700;
+                canvas.width = W;
+                canvas.height = H;
+
+                // 1. Background
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fillRect(0, 0, W, H);
+
+                // 2. Image
+                if (bgImage) {
+                    ctx.save();
+                    ctx.translate(imgPos.x, imgPos.y);
+                    ctx.scale(imgPos.scale, imgPos.scale);
+                    ctx.drawImage(bgImage, 0, 0);
+                    ctx.restore();
+                } else {
+                    const grd = ctx.createLinearGradient(0, 0, 0, splitY);
+                    grd.addColorStop(0, '#334155');
+                    grd.addColorStop(1, '#1e293b');
+                    ctx.fillStyle = grd;
+                    ctx.fillRect(0, 0, W, H);
+                    drawText(ctx, "Upload Image", W/2, H/2 - 20, 50, "#64748b", "center");
+                }
+
+                // 3. Info Section (Overlay)
+                ctx.save();
+                ctx.globalAlpha = formData.bgOpacity; 
+                const gradient = ctx.createLinearGradient(0, splitY, 0, H);
+                gradient.addColorStop(0, formData.primaryColor); 
+                gradient.addColorStop(1, formData.secondaryColor);
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, splitY, W, H - splitY);
+                
+                const titleBoxY = splitY + 60;
+                const titleBoxW = 800;
+                const titleBoxH = 90;
+                const titleBoxX = (W - titleBoxW) / 2;
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; 
+                ctx.fillRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH);
+                
+                const footerH = 60;
+                const footerY = H - footerH;
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(0, footerY, W, footerH);
+                ctx.restore(); 
+
+                // 4. Badge
+                const badgeW = 320;
+                const badgeH = 70;
+                const badgeX = W - badgeW - 40;
+                const badgeY = 40;
+                
+                // FB Icon
+                ctx.beginPath();
+                ctx.arc(badgeX + 45, badgeY + 35, 22, 0, Math.PI * 2);
+                ctx.fillStyle = '#1877F2';
+                ctx.fill();
+                drawText(ctx, "f", badgeX + 45, badgeY + 48, 35, "#fff", "center", "bold");
+                
+                // Badge Text (Shadow)
+                ctx.save();
+                ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+                ctx.shadowBlur = 6;
+                ctx.shadowOffsetX = 2;
+                ctx.shadowOffsetY = 2;
+                drawText(ctx, formData.badgeText, badgeX + 80, badgeY + 48, 32, '#fff', 'left', 'bold');
+                ctx.restore();
+
+                // 5. Borders & Text
+                ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH);
+                drawText(ctx, formData.title, W / 2, titleBoxY + 60, 50, '#fff', 'center', 'bold');
+
+                // 6. Scores
+                const scoresY = titleBoxY + 160;
+                const leftCenter = W * 0.25; 
+                const rightCenter = W * 0.75;
+                
+                // TEAM 1
+                drawText(ctx, formData.team1, leftCenter, scoresY, 65, formData.team1Color, 'center', 'bold');
+                const t1ScoreSize = 60; const t1OverSize = 35; const t1Padding = 15;
+                const t1ScoreWidth = measureText(ctx, formData.team1Score, t1ScoreSize, 'bold');
+                const t1OverWidth = measureText(ctx, formData.team1Overs, t1OverSize, 'normal');
+                const t1TotalWidth = t1ScoreWidth + t1Padding + t1OverWidth;
+                const t1StartX = leftCenter - (t1TotalWidth / 2);
+
+                ctx.textAlign = 'left';
+                ctx.font = `bold ${t1ScoreSize}px "Hind Siliguri", sans-serif`;
+                ctx.fillStyle = '#fff';
+                ctx.fillText(formData.team1Score, t1StartX, scoresY + 80);
+                
+                ctx.font = `normal ${t1OverSize}px "Hind Siliguri", sans-serif`;
+                ctx.fillStyle = '#ddd';
+                ctx.fillText(formData.team1Overs, t1StartX + t1ScoreWidth + t1Padding, scoresY + 80);
+
+                // Divider
+                ctx.beginPath();
+                ctx.moveTo(W / 2, scoresY - 20);
+                ctx.lineTo(W / 2, scoresY + 100);
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+                ctx.stroke();
+
+                // TEAM 2
+                drawText(ctx, formData.team2, rightCenter, scoresY, 65, formData.team2Color, 'center', 'bold');
+                const t2ScoreWidth = measureText(ctx, formData.team2Score, t1ScoreSize, 'bold');
+                const t2OverWidth = measureText(ctx, formData.team2Overs, t1OverSize, 'normal');
+                const t2TotalWidth = t2ScoreWidth + t1Padding + t2OverWidth;
+                const t2StartX = rightCenter - (t2TotalWidth / 2);
+
+                ctx.textAlign = 'left';
+                ctx.font = `bold ${t1ScoreSize}px "Hind Siliguri", sans-serif`;
+                ctx.fillStyle = '#fff';
+                ctx.fillText(formData.team2Score, t2StartX, scoresY + 80);
+
+                ctx.font = `normal ${t1OverSize}px "Hind Siliguri", sans-serif`;
+                ctx.fillStyle = '#ddd';
+                ctx.fillText(formData.team2Overs, t2StartX + t2ScoreWidth + t1Padding, scoresY + 80);
+
+                // 7. Result
+                const resultY = scoresY + 180;
+                drawText(ctx, formData.result, W / 2, resultY, 48, formData.resultColor, 'center', 'bold');
+
+                // 8. Footer
+                const footerText = `f  |  X  |  YouTube       ${formData.footerHandle}`;
+                drawText(ctx, footerText, W / 2, footerY + 40, 24, '#94a3b8', 'center', 'normal');
+
+            }, [bgImage, formData, imgPos]);
+
+            const handleChange = (e) => {
+                setFormData({ ...formData, [e.target.name]: e.target.value });
+            };
+
+            const swapTeams = () => {
+                setFormData(prev => ({
+                    ...prev,
+                    team1: prev.team2,
+                    team1Score: prev.team2Score,
+                    team1Overs: prev.team2Overs,
+                    team2: prev.team1,
+                    team2Score: prev.team1Score,
+                    team2Overs: prev.team1Overs,
+                }));
+            };
+
+            // --- AD & DOWNLOAD LOGIC ---
             
-            <div style="margin-top:15px; display:flex; gap:8px; font-size:13px; color:#555; background:white; padding:6px 12px; border-radius:20px; box-shadow:0 2px 5px rgba(0,0,0,0.05);">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
-                <span>ছবি এবং লোগো টেনে পজিশন করুন</span>
-            </div>
-        </div>
+            const handleDownloadClick = () => {
+                // Open the ad modal instead of downloading immediately
+                setShowAdModal(true);
+            };
 
-        <!-- RIGHT: CONTROLS -->
-        <div class="controls-area">
-            
-            <!-- Upload -->
-            <div>
-                <div class="section-title">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    ছবি আপলোড
-                </div>
-                <button class="upload-btn" onclick="document.getElementById('uploadInput').click()">
-                    গ্যালারি থেকে ছবি নিন
-                </button>
-                <input type="file" id="uploadInput" class="hidden" accept="image/*">
-            </div>
+            const watchAd = () => {
+                if (typeof window.show_9743120 !== 'function') {
+                    alert('Ad system is initializing, please try again in a moment.');
+                    return;
+                }
 
-            <!-- Frame Selection -->
-            <div>
-                <div class="section-title">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>
-                    ডিজাইন বাছাই
-                </div>
-                <div class="input-group">
-                    <select id="frameSelect" class="custom-select" onchange="handleFrameChange()">
-                        <option value="referendum_2026">Frame 2: গণভোট ২০২৬ (নতুন)</option>
-                        <option value="custom_taj">Frame 1: মাওলানা তাজ উদ্দিন খান</option>
-                        <option value="1">Frame 3: দাঁড়িপাল্লায় ভোট দিন</option>
-                        <option value="2">Frame 4: নারায়ে তাকবীর</option>
-                        <option value="3">Frame 5: লাল সবুজের পতাকা</option>
-                        <option value="4">Style 6: Simple Frame</option>
-                        <option value="5">Style 7: Border Frame</option>
-                        <option value="6">Style 8: Artistic Frame</option>
-                    </select>
-                </div>
-                <div id="frameLoader" class="loader">ফ্রেম ডাউনলোড হচ্ছে...</div>
-            </div>
+                setIsLoadingAd(true);
+                
+                window.show_9743120().then(() => {
+                    setIsLoadingAd(false);
+                    const newCount = adsWatched + 1;
+                    setAdsWatched(newCount);
+                    
+                    if (newCount >= 3) {
+                       // Trigger actual download after a short delay to show completion
+                       setTimeout(() => {
+                           performDownload();
+                           setShowAdModal(false);
+                           setAdsWatched(0); // Reset for next time
+                       }, 500);
+                    }
+                }).catch(err => {
+                    console.error(err);
+                    setIsLoadingAd(false);
+                    alert("Ad failed to load. Please check your internet connection.");
+                });
+            };
 
-            <!-- Adjustment -->
-            <div>
-                <div class="section-title">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-                    কাস্টমাইজেশন
-                </div>
-                <div class="input-group" style="padding: 20px 15px;">
-                    <input type="range" id="zoomRange" min="0.5" max="3" step="0.1" value="1" oninput="handleZoom()">
-                    <div style="display:flex; justify-content:space-between; margin-top:5px; font-size:12px; color:#aaa;">
-                        <span>Zoom Out</span>
-                        <span>Zoom In</span>
+            const performDownload = () => {
+                const canvas = canvasRef.current;
+                const link = document.createElement('a');
+                link.download = `scorecard-${Date.now()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            };
+
+            return (
+                <div className="min-h-screen pb-20 md:pb-8">
+                    
+                    {/* AD MODAL */}
+                    {showAdModal && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm modal-backdrop">
+                            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center modal-content border border-gray-200">
+                                <div className="bg-red-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <IconDownload />
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">Free Download</h3>
+                                <p className="text-gray-500 text-sm mb-6">
+                                    To keep this tool free, please watch 3 short ads to download your high-quality image.
+                                </p>
+                                
+                                {/* Progress Bar */}
+                                <div className="mb-6 bg-gray-200 rounded-full h-4 overflow-hidden">
+                                    <div 
+                                        className="bg-red-600 h-full transition-all duration-500 ease-out" 
+                                        style={{ width: `${(adsWatched / 3) * 100}%` }}
+                                    ></div>
+                                </div>
+                                <p className="text-sm font-bold text-gray-700 mb-6">
+                                    Ads Watched: <span className="text-red-600">{adsWatched} / 3</span>
+                                </p>
+
+                                <button 
+                                    onClick={watchAd} 
+                                    disabled={isLoadingAd}
+                                    className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+                                >
+                                    {isLoadingAd ? 'Loading Ad...' : (adsWatched >= 3 ? 'Starting Download...' : 'Watch Ad')}
+                                    {!isLoadingAd && adsWatched < 3 && <IconPlay />}
+                                </button>
+                                
+                                <button 
+                                    onClick={() => setShowAdModal(false)}
+                                    className="mt-4 text-xs text-gray-400 hover:text-gray-600 underline"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Top Navbar */}
+                    <div className="bg-white border-b sticky top-0 z-20 px-4 py-3 flex items-center justify-between shadow-sm">
+                        <h1 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <span className="text-red-600 bg-red-100 p-1.5 rounded-lg"><IconRefresh /></span>
+                            Sports Card Pro
+                        </h1>
+                        <button 
+                            onClick={handleDownloadClick}
+                            className="bg-slate-900 text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 active:scale-95 transition-transform"
+                        >
+                            <IconDownload /> Save
+                        </button>
                     </div>
 
-                    <!-- LOGO SELECTOR -->
-                    <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
-                        <label style="font-size: 14px; font-weight: 600; color: #555; display: block; margin-bottom: 8px;">লোগো স্টাইল বাছাই করুন:</label>
-                        <div class="logo-options">
-                            <div class="logo-option selected" id="opt_logo1" onclick="changeLogo('logo1')">
-                                <img src="https://images.weserv.nl/?url=blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiD-zuic22cjZDrKszuJErZZsM3nU4_6XS2VrC_9v7w1VWnfyJZPBjT3zeIpovlMn9w_G9ZW78JsSj7R9JbEUgUUeFdS7Sq04VxqOtvTUWZfwUQEvtwXZ-j83nheWbe3szHQBWeXXDrkwBpnODedpR9LGLzSYxmC8cstN98R-8OUZLVLg6aEZFx_t2a21c/s320/1000129857-removebg-preview.png&output=png" alt="Logo 1">
+                    <div className="max-w-2xl mx-auto p-4 space-y-6">
+                        
+                        {/* Canvas Area */}
+                        <div className="bg-slate-800 rounded-xl overflow-hidden shadow-2xl border border-slate-700 aspect-[1080/1200] relative group canvas-container touch-none">
+                            <canvas 
+                                ref={canvasRef} 
+                                className="w-full h-full object-contain cursor-move touch-none"
+                                onTouchStart={handleTouchStart}
+                                onTouchMove={handleTouchMove}
+                                onTouchEnd={handleEnd}
+                                onMouseDown={handleMouseDown}
+                                onMouseMove={handleMouseMove}
+                                onMouseUp={handleEnd}
+                                onMouseLeave={handleEnd}
+                            ></canvas>
+                            
+                            {/* Image Controls Overlay */}
+                            <div className="absolute top-4 right-4 flex flex-col gap-2">
+                                <button onClick={resetImage} className="bg-black/50 text-white p-2 rounded-full backdrop-blur-sm hover:bg-black/70" title="Reset Image">
+                                    <IconRefresh />
+                                </button>
                             </div>
-                            <div class="logo-option" id="opt_logo2" onclick="changeLogo('logo2')">
-                                <img src="https://images.weserv.nl/?url=blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEihI-Y5zvRgBVf49y_DtKqQelhV05hiMVumieJsHIKcONCytzDS475wBQdTMP-l5pnsEFmqB8l7UREFbdYC1xBlDPpAr2TeOO6DE_T8BZl2dXhu1I1UJ7QH65v07jM3PBClW_x7e4-UlOuznjWjviAL591Ks9NeSO8PYvbWTvpyDorry2kkc1aSqS34xlg/s320/1000129858-removebg-preview.png&output=png" alt="Logo 2">
+
+                            {!bgImage && (
+                                <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                                    <span className="bg-white/90 text-slate-800 px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+                                        Upload Image Below
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Image Controls */}
+                        {bgImage && (
+                            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
+                                <IconMove />
+                                <span className="text-xs text-slate-500 font-medium w-24">Drag Image</span>
+                                <div className="h-6 w-px bg-slate-200"></div>
+                                <IconZoomIn />
+                                <input 
+                                    type="range" 
+                                    min="0.1" 
+                                    max="5" 
+                                    step="0.05"
+                                    value={imgPos.scale}
+                                    onChange={(e) => setImgPos(prev => ({ ...prev, scale: parseFloat(e.target.value) }))}
+                                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                                />
                             </div>
-                            <div class="logo-option" id="opt_logo3" onclick="changeLogo('logo3')">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Bangladesh_Jamaat-e-Islami_Emblem.svg/500px-Bangladesh_Jamaat-e-Islami_Emblem.svg.png" alt="Logo 3">
+                        )}
+
+                        {/* Editor Controls */}
+                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                            <div className="flex border-b bg-slate-50">
+                                <button onClick={() => setActiveTab('match')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'match' ? 'bg-white text-red-600 border-t-2 border-red-600' : 'text-slate-500'}`}>Match Info</button>
+                                <button onClick={() => setActiveTab('teams')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'teams' ? 'bg-white text-red-600 border-t-2 border-red-600' : 'text-slate-500'}`}>Teams</button>
+                                <button onClick={() => setActiveTab('style')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'style' ? 'bg-white text-red-600 border-t-2 border-red-600' : 'text-slate-500'}`}>Style</button>
+                            </div>
+
+                            <div className="p-5">
+                                {activeTab === 'match' && (
+                                    <div className="space-y-4">
+                                        <div className="relative group">
+                                            <input type="file" accept="image/*" onChange={handleImageUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                                            <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 flex items-center justify-center gap-3 bg-slate-50 group-hover:bg-slate-100 transition-colors">
+                                                <div className="bg-white p-2 rounded-full shadow-sm text-slate-600"><IconUpload /></div>
+                                                <div className="text-left"><p className="text-sm font-semibold text-slate-700">Change Photo</p></div>
+                                            </div>
+                                        </div>
+                                        <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Title" />
+                                        <input type="text" name="badgeText" value={formData.badgeText} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Badge" />
+                                        <textarea name="result" value={formData.result} onChange={handleChange} rows="2" className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Result"></textarea>
+                                    </div>
+                                )}
+
+                                {activeTab === 'teams' && (
+                                    <div className="space-y-5">
+                                        <button onClick={swapTeams} className="w-full py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2"><IconSwap /> Swap</button>
+                                        
+                                        <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 space-y-3">
+                                            <div className="flex justify-between"><h3 className="text-xs font-bold text-amber-800">TEAM 1 (Left)</h3><input type="color" name="team1Color" value={formData.team1Color} onChange={handleChange} className="w-6 h-6 rounded-full overflow-hidden border-none" /></div>
+                                            <input type="text" name="team1" value={formData.team1} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm" />
+                                            <div className="flex gap-2"><input type="text" name="team1Score" value={formData.team1Score} onChange={handleChange} className="flex-1 px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm" /><input type="text" name="team1Overs" value={formData.team1Overs} onChange={handleChange} className="w-24 px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm" /></div>
+                                        </div>
+
+                                        <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-3">
+                                            <div className="flex justify-between"><h3 className="text-xs font-bold text-blue-800">TEAM 2 (Right)</h3><input type="color" name="team2Color" value={formData.team2Color} onChange={handleChange} className="w-6 h-6 rounded-full overflow-hidden border-none" /></div>
+                                            <input type="text" name="team2" value={formData.team2} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm" />
+                                            <div className="flex gap-2"><input type="text" name="team2Score" value={formData.team2Score} onChange={handleChange} className="flex-1 px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm" /><input type="text" name="team2Overs" value={formData.team2Overs} onChange={handleChange} className="w-24 px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm" /></div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {activeTab === 'style' && (
+                                    <div className="space-y-5">
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2"><IconEye /> Background Opacity</label>
+                                            <input type="range" min="0" max="1" step="0.05" value={formData.bgOpacity} onChange={(e) => setFormData({...formData, bgOpacity: parseFloat(e.target.value)})} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                                            <div className="flex justify-between text-xs text-slate-400 mt-1"><span>Transparent</span><span>Solid</span></div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Background Gradient</label>
+                                            <div className="flex gap-2"><input type="color" name="primaryColor" value={formData.primaryColor} onChange={handleChange} className="h-10 w-full rounded-lg" /><input type="color" name="secondaryColor" value={formData.secondaryColor} onChange={handleChange} className="h-10 w-full rounded-lg" /></div>
+                                        </div>
+                                        <input type="text" name="footerHandle" value={formData.footerHandle} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Footer Text" />
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <div class="toggle-row">
-                    <span class="toggle-label">লোগো দেখান</span>
-                    <label style="position:relative; display:inline-block; width:40px; height:24px;">
-                        <input type="checkbox" id="showLogo" checked onchange="draw()" style="opacity:0; width:0; height:0;">
-                        <span style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#ccc; border-radius:34px; transition:.4s;" class="slider"></span>
-                        <style>.slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; } input:checked + .slider { background-color: var(--primary); } input:checked + .slider:before { transform: translateX(16px); }</style>
-                    </label>
-                </div>
-            </div>
-
-            <!-- Download -->
-            <button class="download-btn" onclick="downloadImage()">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                ডাউনলোড করুন
-            </button>
-            <div style="text-align:center; font-size:12px; color:#999;">সোশ্যাল মিডিয়ার জন্য হাই-কোয়ালিটি (HD)</div>
-
-        </div>
-    </div>
-
-    <!-- FOOTER -->
-    <footer class="site-footer">
-        &copy; 2026 নির্বাচনী প্রচারণা ফ্রেম জেনারেটর । নিরাপদ ও সুরক্ষিত<br>
-        Developed by <a href="https://t.me/Mizan0072" target="_blank" class="dev-link">MizaN</a>
-    </footer>
-
-<script>
-    // --- 1. PWA CONFIGURATION (Dynamic Manifest & Service Worker) ---
-    
-    // Create Manifest Dynamically
-    const manifest = {
-        "name": "JIB Campaign 2026",
-        "short_name": "JIB Campaign",
-        "start_url": ".",
-        "display": "standalone",
-        "background_color": "#006a4e",
-        "theme_color": "#006a4e",
-        "icons": [
-            {
-                "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Bangladesh_Jamaat-e-Islami_Emblem.svg/192px-Bangladesh_Jamaat-e-Islami_Emblem.svg.png",
-                "sizes": "192x192",
-                "type": "image/png"
-            },
-            {
-                "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Bangladesh_Jamaat-e-Islami_Emblem.svg/512px-Bangladesh_Jamaat-e-Islami_Emblem.svg.png",
-                "sizes": "512x512",
-                "type": "image/png"
-            }
-        ]
-    };
-    
-    // Inject Manifest into DOM
-    const stringManifest = JSON.stringify(manifest);
-    const blobManifest = new Blob([stringManifest], {type: 'application/json'});
-    const manifestURL = URL.createObjectURL(blobManifest);
-    document.querySelector('#my-manifest-placeholder').setAttribute('href', manifestURL);
-
-    // Register Fake Service Worker (Required for PWA Install Prompt)
-    if ('serviceWorker' in navigator) {
-        // We create a dummy SW from a blob because we don't have a separate file
-        const swContent = "self.addEventListener('fetch', (e) => {});"; 
-        const blobSw = new Blob([swContent], {type: 'text/javascript'});
-        const swUrl = URL.createObjectURL(blobSw);
-        navigator.serviceWorker.register(swUrl).catch(console.error);
-    }
-
-    // Handle PWA Install Prompt
-    let deferredPrompt;
-    const installBtn = document.getElementById('installBtn');
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        // Prevent Chrome 67 and earlier from automatically showing the prompt
-        e.preventDefault();
-        // Stash the event so it can be triggered later.
-        deferredPrompt = e;
-        // Update UI to notify the user they can add to home screen
-        installBtn.style.display = 'block';
-    });
-
-    installBtn.addEventListener('click', (e) => {
-        // Hide our user interface that shows our A2HS button
-        installBtn.style.display = 'none';
-        // Show the prompt
-        deferredPrompt.prompt();
-        // Wait for the user to respond to the prompt
-        deferredPrompt.userChoice.then((choiceResult) => {
-            if (choiceResult.outcome === 'accepted') {
-                console.log('User accepted the A2HS prompt');
-            } else {
-                console.log('User dismissed the A2HS prompt');
-            }
-            deferredPrompt = null;
-        });
-    });
-
-    // --- 2. APP VARIABLES ---
-    const canvas = document.getElementById('mainCanvas');
-    const ctx = canvas.getContext('2d');
-    const startMsg = document.getElementById('startMsg');
-    const frameLoader = document.getElementById('frameLoader');
-    
-    // Assets
-    let userImg = new Image();
-    let logoImg = new Image();
-    let externalFrameImg = new Image();
-    
-    let imgLoaded = false;
-    let logoLoaded = false;
-    let externalFrameLoaded = false;
-    
-    // LOGO URLs
-    const LOGO_URLS = {
-        'logo1': 'https://images.weserv.nl/?url=blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiD-zuic22cjZDrKszuJErZZsM3nU4_6XS2VrC_9v7w1VWnfyJZPBjT3zeIpovlMn9w_G9ZW78JsSj7R9JbEUgUUeFdS7Sq04VxqOtvTUWZfwUQEvtwXZ-j83nheWbe3szHQBWeXXDrkwBpnODedpR9LGLzSYxmC8cstN98R-8OUZLVLg6aEZFx_t2a21c/s320/1000129857-removebg-preview.png&output=png',
-        'logo2': 'https://images.weserv.nl/?url=blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEihI-Y5zvRgBVf49y_DtKqQelhV05hiMVumieJsHIKcONCytzDS475wBQdTMP-l5pnsEFmqB8l7UREFbdYC1xBlDPpAr2TeOO6DE_T8BZl2dXhu1I1UJ7QH65v07jM3PBClW_x7e4-UlOuznjWjviAL591Ks9NeSO8PYvbWTvpyDorry2kkc1aSqS34xlg/s320/1000129858-removebg-preview.png&output=png',
-        'logo3': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Bangladesh_Jamaat-e-Islami_Emblem.svg/500px-Bangladesh_Jamaat-e-Islami_Emblem.svg.png'
-    };
-
-    const EXTERNAL_FRAMES = {
-        "4": "https://images.weserv.nl/?url=justhasib.com/frame/frame1.png&output=png",
-        "5": "https://images.weserv.nl/?url=justhasib.com/frame/frame2.png&output=png",
-        "6": "https://images.weserv.nl/?url=justhasib.com/frame/frame3.png&output=png"
-    };
-
-    // --- STATE ---
-    let scale = 1;
-    let offsetX = 0;
-    let offsetY = 0;
-    
-    // Default logo size will be updated on init
-    let logoX = 50;
-    let logoY = 50;
-    let logoSize = 240; 
-    
-    let isDraggingUser = false;
-    let isDraggingLogo = false;
-    let startX, startY;
-
-    // Initial Paint
-    ctx.fillStyle = "white";
-    ctx.fillRect(0,0,1080,1080);
-
-    // Initialize with Logo 1
-    logoImg.crossOrigin = "anonymous";
-    logoImg.src = LOGO_URLS['logo1'];
-    logoImg.onload = function() {
-        logoLoaded = true;
-        if(imgLoaded) draw();
-    };
-
-    // --- HANDLERS ---
-    
-    function changeLogo(key) {
-        document.querySelectorAll('.logo-option').forEach(el => el.classList.remove('selected'));
-        document.getElementById('opt_' + key).classList.add('selected');
-
-        if(key === 'logo3') {
-            logoSize = 160; 
-        } else {
-            logoSize = 240; 
+            );
         }
 
-        logoLoaded = false;
-        logoImg = new Image();
-        logoImg.crossOrigin = "anonymous";
-        logoImg.src = LOGO_URLS[key];
-        logoImg.onload = function() {
-            logoLoaded = true;
-            draw();
-        }
-    }
-
-    document.getElementById('uploadInput').addEventListener('change', function(e) {
-        if (e.target.files && e.target.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                userImg = new Image();
-                userImg.onload = function() {
-                    imgLoaded = true;
-                    startMsg.style.display = 'none'; 
-                    resetPosition(); 
-                    handleFrameChange(); 
-                }
-                userImg.src = event.target.result;
-            }
-            reader.readAsDataURL(e.target.files[0]);
-        }
-    });
-
-    function handleFrameChange() {
-        const frameType = document.getElementById('frameSelect').value;
-        if (["custom_taj", "referendum_2026", "1", "2", "3"].includes(frameType)) {
-            externalFrameLoaded = false;
-            draw();
-        } else {
-            frameLoader.style.display = 'block';
-            externalFrameImg = new Image();
-            externalFrameImg.crossOrigin = "anonymous";
-            externalFrameImg.src = EXTERNAL_FRAMES[frameType];
-            externalFrameImg.onload = function() {
-                externalFrameLoaded = true;
-                frameLoader.style.display = 'none';
-                draw();
-            };
-        }
-    }
-
-    function resetPosition() {
-        const sX = canvas.width / userImg.width;
-        const sY = canvas.height / userImg.height;
-        scale = Math.max(sX, sY); 
-        offsetX = (canvas.width - userImg.width * scale) / 2;
-        offsetY = (canvas.height - userImg.height * scale) / 2;
-        document.getElementById('zoomRange').value = 1;
-        logoX = 50; logoY = 50;
-    }
-
-    function handleZoom() {
-        if(!imgLoaded) return;
-        const sliderVal = parseFloat(document.getElementById('zoomRange').value);
-        const sX = canvas.width / userImg.width;
-        const sY = canvas.height / userImg.height;
-        const baseScale = Math.max(sX, sY);
-        scale = baseScale * sliderVal;
-        draw();
-    }
-
-    // --- DRAW ENGINE ---
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        if (imgLoaded) {
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-            ctx.drawImage(userImg, offsetX, offsetY, userImg.width * scale, userImg.height * scale);
-        }
-
-        const frameType = document.getElementById('frameSelect').value;
-        
-        if (externalFrameLoaded && ["4", "5", "6"].includes(frameType)) {
-            ctx.drawImage(externalFrameImg, 0, 0, canvas.width, canvas.height);
-        } else {
-            drawDigitalFrame(frameType);
-        }
-        
-        if(logoLoaded && document.getElementById('showLogo').checked) {
-            ctx.shadowColor = "rgba(0,0,0,0.3)";
-            ctx.shadowBlur = 15;
-            ctx.shadowOffsetY = 5;
-            ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
-            ctx.shadowColor = "transparent";
-            ctx.shadowBlur = 0;
-            ctx.shadowOffsetY = 0;
-        }
-    }
-
-    function drawDigitalFrame(type) {
-        const w = canvas.width;
-        const h = canvas.height;
-        ctx.textAlign = "center";
-        ctx.lineJoin = "round";
-
-        if (type === "referendum_2026") { 
-            // --- FRAME 2: Gonovote 2026 (Premium Redesign) ---
-
-            // 1. Premium Borders
-            ctx.lineWidth = 30;
-            ctx.strokeStyle = "#006a4e"; // Base Green
-            ctx.strokeRect(0, 0, w, h);
-            
-            ctx.lineWidth = 8;
-            ctx.strokeStyle = "#d4af37"; // Metallic Gold
-            ctx.strokeRect(25, 25, w-50, h-50);
-
-            // 2. Bottom Wave Background
-            ctx.beginPath();
-            ctx.moveTo(0, h-400);
-            ctx.bezierCurveTo(w/2, h-500, w/2, h-300, w, h-450);
-            ctx.lineTo(w, h);
-            ctx.lineTo(0, h);
-            ctx.closePath();
-            
-            // Deep gradient for readability
-            const grad = ctx.createLinearGradient(0, h-500, 0, h);
-            grad.addColorStop(0, "rgba(0, 106, 78, 0.95)");
-            grad.addColorStop(1, "#003322");
-            ctx.fillStyle = grad;
-            ctx.fill();
-            
-            // Gold accent line on wave
-            ctx.lineWidth = 5;
-            ctx.strokeStyle = "#d4af37";
-            ctx.stroke();
-
-            // 3. Top Right Badge (Date/Event)
-            ctx.beginPath();
-            ctx.arc(w - 160, 160, 130, 0, 2*Math.PI);
-            ctx.fillStyle = "#006a4e";
-            ctx.fill();
-            ctx.strokeStyle = "#fff";
-            ctx.lineWidth = 4;
-            ctx.stroke();
-            
-            ctx.textAlign = "center";
-            ctx.fillStyle = "#ffeb3b";
-            ctx.font = "bold 50px 'Hind Siliguri'";
-            ctx.fillText("গণভোট", w - 160, 150);
-            ctx.fillStyle = "#fff";
-            ctx.font = "bold 70px sans-serif";
-            ctx.fillText("2026", w - 160, 220);
-
-            // 4. "Key" Icon (Vector Drawing)
-            // Centered above text
-            const keyY = h - 340;
-            const keyX = w / 2;
-            
-            ctx.save();
-            ctx.translate(keyX, keyY);
-            ctx.rotate(-Math.PI / 4); // Angled key
-            
-            // Handle
-            ctx.beginPath();
-            ctx.arc(0, -60, 40, 0, 2*Math.PI);
-            ctx.lineWidth = 10;
-            ctx.strokeStyle = "#d4af37"; // Gold
-            ctx.stroke();
-            
-            // Shaft
-            ctx.beginPath();
-            ctx.moveTo(0, -20);
-            ctx.lineTo(0, 80);
-            ctx.stroke();
-            
-            // Teeth
-            ctx.beginPath();
-            ctx.moveTo(0, 40); ctx.lineTo(25, 40);
-            ctx.moveTo(0, 65); ctx.lineTo(25, 65);
-            ctx.stroke();
-            
-            ctx.restore();
-
-            // 5. Typography
-            ctx.shadowColor = "rgba(0,0,0,0.5)";
-            ctx.shadowBlur = 5;
-            
-            // Main Slogan
-            ctx.fillStyle = "#fff";
-            ctx.font = "600 55px 'Hind Siliguri'";
-            ctx.fillText("দেশের চাবি আপনার হাতে", w/2, h - 180);
-            
-            // Call to Action
-            ctx.fillStyle = "#ffeb3b"; // Bright Yellow/Gold
-            ctx.font = "bold 70px 'Hind Siliguri'";
-            ctx.fillText("পরিবর্তনের জন্য হ্যাঁ ভোট দিন", w/2, h - 80);
-            
-            ctx.shadowColor = "transparent";
-
-        } else if (type === "custom_taj") {
-            ctx.lineWidth = 40; ctx.strokeStyle = "#006a4e"; ctx.strokeRect(0, 0, w, h);
-            ctx.beginPath(); ctx.moveTo(0, h-320); ctx.quadraticCurveTo(w/2, h-380, w, h-320); ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath();
-            const grad = ctx.createLinearGradient(0, h-350, 0, h); grad.addColorStop(0, "#004d38"); grad.addColorStop(1, "#002a1e"); 
-            ctx.fillStyle = grad; ctx.fill();
-            ctx.beginPath(); ctx.moveTo(0, h-320); ctx.quadraticCurveTo(w/2, h-380, w, h-320); ctx.lineWidth = 15; ctx.strokeStyle = "#f42a41"; ctx.stroke();
-            ctx.shadowColor = "rgba(0,0,0,0.5)"; ctx.shadowBlur = 5;
-            ctx.fillStyle = "#fff"; ctx.font = "600 35px 'Hind Siliguri'"; ctx.fillText("মেহেরপুর–১ আসনের সংসদ সদস্য প্রার্থী", w/2, h - 230);
-            ctx.fillStyle = "#ffeb3b"; ctx.font = "bold 65px 'Hind Siliguri'"; ctx.fillText("মাওলানা তাজ উদ্দিন খান", w/2, h - 150);
-            ctx.fillStyle = "white"; ctx.font = "500 40px 'Hind Siliguri'"; ctx.fillText("বাংলাদেশ জামায়াতে ইসলামী", w/2, h - 90);
-            ctx.fillStyle = "#fff"; ctx.font = "bold 50px 'Hind Siliguri'"; ctx.fillText("দাঁড়িপাল্লা মার্কায় ভোট দিন", w/2, h - 30);
-            ctx.shadowColor = "transparent";
-
-        } else if (type === "1") { 
-            ctx.strokeStyle = "#006a4e"; ctx.lineWidth = 50; ctx.strokeRect(0, 0, w, h);
-            const grad = ctx.createLinearGradient(0, h-260, 0, h); grad.addColorStop(0, "#006a4e"); grad.addColorStop(1, "#004d38");
-            ctx.fillStyle = grad; ctx.fillRect(0, h - 260, w, 260);
-            ctx.fillStyle = "white"; ctx.font = "bold 80px 'Hind Siliguri'"; ctx.shadowColor="rgba(0,0,0,0.3)"; ctx.shadowBlur=4; ctx.fillText("বাংলাদেশ জামায়াতে ইসলামী", w/2, h - 160);
-            ctx.fillStyle = "#ffeb3b"; ctx.font = "bold 70px 'Hind Siliguri'"; ctx.fillText("দাঁড়িপাল্লায় ভোট দিন", w/2, h - 60); ctx.shadowColor="transparent";
-
-        } else if (type === "2") { 
-            const grad = ctx.createLinearGradient(0,0,w,0); grad.addColorStop(0, "#004d38"); grad.addColorStop(1, "#006a4e");
-            ctx.fillStyle = grad; ctx.fillRect(0, 0, w, 230);
-            ctx.fillStyle = "#ffeb3b"; ctx.font = "60px 'Hind Siliguri'"; ctx.fillText("নারায়ে তাকবীর", w/2 + 60, 95);
-            ctx.fillStyle = "white"; ctx.font = "bold 95px 'Hind Siliguri'"; ctx.shadowColor="rgba(0,0,0,0.5)"; ctx.shadowBlur=10; ctx.fillText("আল্লাহু আকবার", w/2, 190); ctx.shadowColor="transparent";
-            ctx.fillStyle = "#006a4e"; ctx.fillRect(0, h - 150, w, 150);
-            ctx.fillStyle = "white"; ctx.font = "bold 65px 'Hind Siliguri'"; ctx.fillText("বাংলাদেশ জামায়াতে ইসলামী", w/2, h - 55);
-
-        } else if (type === "3") { 
-            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(w, 0); ctx.lineTo(w, 150); ctx.bezierCurveTo(w/2, 220, w/3, 80, 0, 150); ctx.closePath();
-            const topGrad = ctx.createLinearGradient(0, 0, w, 0); topGrad.addColorStop(0, "#006a4e"); topGrad.addColorStop(1, "#008562"); ctx.fillStyle = topGrad; ctx.fill();
-            ctx.beginPath(); ctx.moveTo(0, h); ctx.lineTo(w, h); ctx.lineTo(w, h - 250); ctx.bezierCurveTo(w * 0.75, h - 350, w * 0.25, h - 150, 0, h - 280); ctx.closePath(); ctx.fillStyle = "#006a4e"; ctx.fill();
-            ctx.beginPath(); ctx.arc(w - 120, h - 280, 80, 0, 2 * Math.PI); ctx.fillStyle = "#f42a41"; ctx.shadowColor = "rgba(0,0,0,0.2)"; ctx.shadowBlur = 15; ctx.fill(); ctx.shadowColor = "transparent";
-            ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "600 50px 'Hind Siliguri'"; ctx.fillText("দেশ গড়ার শপথ নিন", w/2, 110);
-            ctx.font = "bold 70px 'Hind Siliguri'"; ctx.shadowColor = "rgba(0,0,0,0.3)"; ctx.shadowBlur = 4; ctx.fillText("জামায়াতে ইসলামীকে ভোট দিন", w/2, h - 60);
-            ctx.font = "400 35px 'Hind Siliguri'"; ctx.fillStyle = "#ffd700"; ctx.fillText("সৎ লোকের শাসন চাই", w/2, h - 150); ctx.shadowColor = "transparent"; ctx.strokeStyle = "#006a4e"; ctx.lineWidth = 20; ctx.strokeRect(0,0,w,h);
-        }
-    }
-
-    // --- DRAG ---
-    const container = document.getElementById('canvasContainer');
-    function getCanvasCoordinates(e) {
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        let clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        let clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY, rawX: clientX, rawY: clientY };
-    }
-    function startDrag(e) {
-        if(!imgLoaded) return;
-        const pos = getCanvasCoordinates(e);
-        if(logoLoaded && document.getElementById('showLogo').checked && pos.x > logoX && pos.x < logoX + logoSize && pos.y > logoY && pos.y < logoY + logoSize) {
-            isDraggingLogo = true;
-        } else { isDraggingUser = true; }
-        startX = pos.rawX; startY = pos.rawY;
-    }
-    function moveDrag(e) {
-        if(!isDraggingUser && !isDraggingLogo) return;
-        const pos = getCanvasCoordinates(e);
-        const rect = canvas.getBoundingClientRect();
-        const scaleRatio = canvas.width / rect.width;
-        const dx = (pos.rawX - startX) * scaleRatio;
-        const dy = (pos.rawY - startY) * scaleRatio;
-        if(isDraggingLogo) { logoX += dx; logoY += dy; } else { offsetX += dx; offsetY += dy; }
-        startX = pos.rawX; startY = pos.rawY;
-        draw();
-        if(e.cancelable) e.preventDefault();
-    }
-    function endDrag() { isDraggingUser = false; isDraggingLogo = false; }
-    container.addEventListener('mousedown', startDrag);
-    window.addEventListener('mousemove', moveDrag);
-    window.addEventListener('mouseup', endDrag);
-    container.addEventListener('touchstart', startDrag, {passive: false});
-    window.addEventListener('touchmove', moveDrag, {passive: false});
-    window.addEventListener('touchend', endDrag);
-
-    // --- DOWNLOAD ---
-    function downloadImage() {
-        if(!imgLoaded) { alert("অনুগ্রহ করে প্রথমে একটি ছবি আপলোড করুন।"); return; }
-        const link = document.createElement('a');
-        link.download = `JIB-Campaign-${Date.now()}.png`;
-        link.href = canvas.toDataURL('image/png', 1.0);
-        link.click();
-    }
-</script>
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
 </html>
