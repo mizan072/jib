@@ -63,7 +63,7 @@
             const [showAdModal, setShowAdModal] = useState(false);
             const [adsWatched, setAdsWatched] = useState(0);
             const [isLoadingAd, setIsLoadingAd] = useState(false);
-            const [isDownloadReady, setIsDownloadReady] = useState(false); // New state to fix browser blocking
+            const [isDownloadReady, setIsDownloadReady] = useState(false);
             
             // Image Transform State
             const [imgPos, setImgPos] = useState({ x: 0, y: 0, scale: 1 });
@@ -365,7 +365,33 @@
                 });
             };
 
-            // MANUAL DOWNLOAD FUNCTION (Triggered by user click)
+            // FIXED DOWNLOAD FUNCTION
+            const performDownload = () => {
+                const canvas = canvasRef.current;
+                if (!canvas) return;
+
+                // Use toBlob for robust downloading on mobile
+                canvas.toBlob((blob) => {
+                    if (!blob) {
+                        alert("Error generating image.");
+                        return;
+                    }
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.download = `scorecard-${Date.now()}.png`;
+                    link.href = url;
+                    document.body.appendChild(link);
+                    link.click();
+                    
+                    // Cleanup
+                    setTimeout(() => {
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
+                    }, 100);
+                }, 'image/png');
+            };
+
+            // MANUAL DOWNLOAD TRIGGER
             const handleFinalDownload = () => {
                 performDownload();
                 // Reset after successful click
@@ -374,16 +400,6 @@
                     setAdsWatched(0);
                     setIsDownloadReady(false);
                 }, 1000);
-            };
-
-            const performDownload = () => {
-                const canvas = canvasRef.current;
-                const link = document.createElement('a');
-                link.download = `scorecard-${Date.now()}.png`;
-                link.href = canvas.toDataURL('image/png');
-                document.body.appendChild(link); // Required for some browsers
-                link.click();
-                document.body.removeChild(link);
             };
 
             return (
