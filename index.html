@@ -24,49 +24,6 @@
     <!-- Babel for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- CloudStorage Polyfill to fix Version 6.0 Error -->
-    <script>
-        (function() {
-            if (window.Telegram && window.Telegram.WebApp) {
-                // Check if CloudStorage is missing or if we are on an old version
-                if (!window.Telegram.WebApp.CloudStorage || parseFloat(window.Telegram.WebApp.version) < 6.9) {
-                    console.log("Polyfilling CloudStorage for older Telegram version...");
-                    window.Telegram.WebApp.CloudStorage = {
-                        getItem: function(key, callback) {
-                            var val = localStorage.getItem('tg_cloud_' + key);
-                            if (callback) callback(null, val);
-                        },
-                        setItem: function(key, value, callback) {
-                            localStorage.setItem('tg_cloud_' + key, value);
-                            if (callback) callback(null, true);
-                        },
-                        getItems: function(keys, callback) {
-                            var result = {};
-                            keys.forEach(function(k) {
-                                result[k] = localStorage.getItem('tg_cloud_' + k);
-                            });
-                            if (callback) callback(null, result);
-                        },
-                        removeItem: function(key, callback) {
-                            localStorage.removeItem('tg_cloud_' + key);
-                            if (callback) callback(null, true);
-                        },
-                        removeItems: function(keys, callback) {
-                            keys.forEach(function(k) {
-                                localStorage.removeItem('tg_cloud_' + k);
-                            });
-                            if (callback) callback(null, true);
-                        },
-                        getKeys: function(callback) {
-                            // Simple mock, returns empty or filtered keys
-                            if (callback) callback(null, []);
-                        }
-                    };
-                }
-            }
-        })();
-    </script>
-
     <style>
         body { font-family: 'Hind Siliguri', sans-serif; touch-action: pan-y; background-color: var(--tg-theme-bg-color, #f8fafc); color: var(--tg-theme-text-color, #0f172a); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -87,7 +44,7 @@
         const { useState, useEffect, useRef } = React;
 
         // --- Icons ---
-        const IconDownload = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>;
+        const IconDownload = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>;
         const IconUpload = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path></svg>;
         const IconRefresh = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>;
         const IconSwap = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m7 2 10 10-10 10"></path><path d="M17 12H3"></path></svg>;
@@ -387,62 +344,62 @@
                 setShowAdModal(true);
             };
 
-            const handleAdSuccess = () => {
+            // Helper to advance ad count
+            const incrementAdCount = () => {
                 setIsLoadingAd(false);
-                const newCount = adsWatched + 1;
-                setAdsWatched(newCount);
-                
-                if (newCount >= 3) {
-                   setIsDownloadReady(true);
-                }
-            };
-
-            const watchAd = () => {
-                // Check if AdBlocker / Script is loaded
-                if (typeof window.show_9743120 !== 'function') {
-                    // Fail-safe: If ad blocker is on, warn user but maybe let them proceed?
-                    // For now, let's treat it as a network failure and skip to success to not block user.
-                    alert('Ad system blocked or not loaded. Skipping ad...');
-                    handleAdSuccess();
-                    return;
-                }
-
-                setIsLoadingAd(true);
-                
-                window.show_9743120().then(() => {
-                    handleAdSuccess();
-                }).catch(err => {
-                    console.error(err);
-                    // On error (no fill), we also skip to success so user isn't stuck
-                    alert("Ad failed to load (No Fill/Network). Skipping this ad...");
-                    handleAdSuccess();
+                setAdsWatched(prev => {
+                    const newCount = prev + 1;
+                    if (newCount >= 3) {
+                       setIsDownloadReady(true);
+                    }
+                    return newCount;
                 });
             };
 
-            // FIXED DOWNLOAD FUNCTION
+            const watchAd = () => {
+                setIsLoadingAd(true);
+                
+                // Fallback Timer: If ad takes longer than 5s, assume success
+                const adTimeout = setTimeout(() => {
+                    console.log("Ad timeout - forcing success");
+                    incrementAdCount();
+                }, 5000);
+
+                if (typeof window.show_9743120 !== 'function') {
+                    // Ad blocker or script fail
+                    clearTimeout(adTimeout);
+                    setTimeout(() => incrementAdCount(), 2000); // Simulate delay
+                    return;
+                }
+                
+                window.show_9743120().then(() => {
+                    clearTimeout(adTimeout);
+                    incrementAdCount();
+                }).catch(err => {
+                    clearTimeout(adTimeout);
+                    console.log("Ad error - skipping", err);
+                    incrementAdCount(); // Skip faulty ad
+                });
+            };
+
+            // FIXED DOWNLOAD FUNCTION (Robust for Mobile)
             const performDownload = () => {
                 const canvas = canvasRef.current;
                 if (!canvas) return;
 
-                // Use toBlob for robust downloading on mobile
-                canvas.toBlob((blob) => {
-                    if (!blob) {
-                        alert("Error generating image.");
-                        return;
-                    }
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.download = `scorecard-${Date.now()}.png`;
-                    link.href = url;
-                    document.body.appendChild(link);
-                    link.click();
-                    
-                    // Cleanup
-                    setTimeout(() => {
-                        document.body.removeChild(link);
-                        URL.revokeObjectURL(url);
-                    }, 100);
-                }, 'image/png');
+                // Create Data URL
+                const dataUrl = canvas.toDataURL('image/png', 1.0);
+                
+                // Trigger Download
+                const link = document.createElement('a');
+                link.download = `scorecard-${Date.now()}.png`;
+                link.href = dataUrl;
+                document.body.appendChild(link);
+                link.click();
+                
+                setTimeout(() => {
+                    document.body.removeChild(link);
+                }, 100);
             };
 
             // MANUAL DOWNLOAD TRIGGER
@@ -453,7 +410,7 @@
                     setShowAdModal(false);
                     setAdsWatched(0);
                     setIsDownloadReady(false);
-                }, 1000);
+                }, 1500);
             };
 
             return (
