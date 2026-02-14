@@ -135,7 +135,7 @@
             const [formData, setFormData] = useState({
                 badgeText: 'proscorecard_bot',
                 title: 'আইসিসি টি-টোয়েন্টি বিশ্বকাপ',
-                footerHandle: 'এই রকম পোস্টার তৈরি করুন এই টেলিগ্রাম বট দিয়েঃ  @proscorecard_bot',
+                // Removed footerHandle from state as it's now fixed
                 primaryColor: '#990000',
                 secondaryColor: '#4a0000',
                 bgOpacity: 0.9,
@@ -369,7 +369,9 @@
                     drawText(ctx, "ব্রেকিং নিউজ", 230, newsY - 80, 35, '#fff', 'center', 'bold');
                 }
 
-                drawText(ctx, formData.footerHandle, W / 2, footerY + 40, 24, '#94a3b8', 'center', 'normal');
+                // FIXED FOOTER TEXT
+                const footerText = 'এই রকম পোস্টার তৈরি করুন এই টেলিগ্রাম বট দিয়েঃ  @proscorecard_bot';
+                drawText(ctx, footerText, W / 2, footerY + 40, 24, '#94a3b8', 'center', 'normal');
 
             }, [bgImage, formData, imgPos, appMode]);
 
@@ -552,7 +554,7 @@
                                     <div className="space-y-5">
                                         <div><label className="block text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2"><IconEye /> Opacity</label><input type="range" min="0" max="1" step="0.05" value={formData.bgOpacity} onChange={(e) => setFormData({...formData, bgOpacity: parseFloat(e.target.value)})} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" /></div>
                                         <div><label className="block text-xs font-bold text-slate-400 uppercase mb-2">Gradient</label><div className="flex gap-2"><input type="color" name="primaryColor" value={formData.primaryColor} onChange={handleChange} className="h-10 w-full rounded-lg" /><input type="color" name="secondaryColor" value={formData.secondaryColor} onChange={handleChange} className="h-10 w-full rounded-lg" /></div></div>
-                                        <input type="text" name="footerHandle" value={formData.footerHandle} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Footer Text" />
+                                        {/* Input for footerHandle removed */}
                                     </div>
                                 )}
                             </div>
