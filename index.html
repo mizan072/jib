@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Scorecard Bot App</title>
+    <title>Sports Poster Bot</title>
     
     <!-- Telegram Web App Script -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -44,7 +44,7 @@
         const { useState, useEffect, useRef } = React;
 
         // --- Icons ---
-        const IconDownload = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>;
+        const IconDownload = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>;
         const IconUpload = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path></svg>;
         const IconRefresh = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>;
         const IconSwap = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m7 2 10 10-10 10"></path><path d="M17 12H3"></path></svg>;
@@ -53,9 +53,13 @@
         const IconEye = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>;
         const IconPlay = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>;
         const IconCheck = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
+        const IconCalendar = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>;
 
         function App() {
             const canvasRef = useRef(null);
+            
+            // App Mode: 'scorecard' or 'schedule'
+            const [appMode, setAppMode] = useState('scorecard');
             const [activeTab, setActiveTab] = useState('match');
             const [bgImage, setBgImage] = useState(null);
             
@@ -71,29 +75,38 @@
 
             // Default Data
             const [formData, setFormData] = useState({
+                // Common
                 badgeText: 'খেলাধুলার খবর',
                 title: 'আইসিসি টি-টোয়েন্টি বিশ্বকাপ',
-                team1: 'ইংল্যান্ড',
-                team1Score: '১৮৪/৭',
-                team1Overs: '(২০ ওভার)',
-                team1Color: '#ffd700',
-                team2: 'নেপাল',
-                team2Score: '১৮০/৬',
-                team2Overs: '(২০ ওভার)',
-                team2Color: '#ffd700',
-                result: 'নেপালকে ৪ রানে হারিয়েছে ইংল্যান্ড',
-                resultColor: '#ffd700',
                 footerHandle: 'এই রকম পোস্টার তৈরি করুন এই টেলিগ্রাম বট দিয়েঃ  @proscorecard_bot',
                 primaryColor: '#990000',
                 secondaryColor: '#4a0000',
-                bgOpacity: 0.9
+                bgOpacity: 0.9,
+                
+                // Teams (Shared)
+                team1: 'ইংল্যান্ড',
+                team1Color: '#ffd700',
+                team2: 'নেপাল',
+                team2Color: '#ffd700',
+
+                // Scorecard Specific
+                team1Score: '১৮৪/৭',
+                team1Overs: '(২০ ওভার)',
+                team2Score: '১৮০/৬',
+                team2Overs: '(২০ ওভার)',
+                result: 'নেপালকে ৪ রানে হারিয়েছে ইংল্যান্ড',
+                resultColor: '#ffd700',
+
+                // Schedule Specific
+                matchDate: '২০ অক্টোবর, ২০২৫',
+                matchTime: 'দুপুর ২:০০টা',
+                matchVenue: 'শেরে বাংলা স্টেডিয়াম',
             });
 
             // Initialize Telegram Mini App
             useEffect(() => {
                 if (window.Telegram && window.Telegram.WebApp) {
                     window.Telegram.WebApp.ready();
-                    // Safe expand check
                     if (window.Telegram.WebApp.expand) {
                         window.Telegram.WebApp.expand(); 
                     }
@@ -201,7 +214,7 @@
                 ctx.fillStyle = '#1a1a1a';
                 ctx.fillRect(0, 0, W, H);
 
-                // 2. Image
+                // 2. Image OR Default Cricket Field
                 if (bgImage) {
                     ctx.save();
                     ctx.translate(imgPos.x, imgPos.y);
@@ -209,12 +222,41 @@
                     ctx.drawImage(bgImage, 0, 0);
                     ctx.restore();
                 } else {
-                    const grd = ctx.createLinearGradient(0, 0, 0, splitY);
-                    grd.addColorStop(0, '#334155');
-                    grd.addColorStop(1, '#1e293b');
-                    ctx.fillStyle = grd;
-                    ctx.fillRect(0, 0, W, H);
-                    drawText(ctx, "Upload Image", W/2, H/2 - 20, 50, "#64748b", "center");
+                    // Default Cricket Field Background
+                    const grass = ctx.createLinearGradient(0, 0, 0, splitY);
+                    grass.addColorStop(0, '#1b5e20');
+                    grass.addColorStop(1, '#4caf50');
+                    ctx.fillStyle = grass;
+                    ctx.fillRect(0, 0, W, splitY);
+                    
+                    // Simple Pitch
+                    ctx.fillStyle = '#e0c097';
+                    ctx.fillRect(W/2 - 60, splitY/2 - 200, 120, 400);
+                    
+                    // Pitch details
+                    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(W/2 - 60, splitY/2 - 200, 120, 400);
+                    
+                    // Crease lines
+                    ctx.beginPath();
+                    ctx.moveTo(W/2 - 60, splitY/2 - 150);
+                    ctx.lineTo(W/2 + 60, splitY/2 - 150);
+                    ctx.moveTo(W/2 - 60, splitY/2 + 150);
+                    ctx.lineTo(W/2 + 60, splitY/2 + 150);
+                    ctx.stroke();
+
+                    // Wickets (Simple)
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(W/2 - 15, splitY/2 - 190, 5, 40); // Top
+                    ctx.fillRect(W/2, splitY/2 - 190, 5, 40);
+                    ctx.fillRect(W/2 + 15, splitY/2 - 190, 5, 40);
+                    
+                    ctx.fillRect(W/2 - 15, splitY/2 + 150, 5, 40); // Bottom
+                    ctx.fillRect(W/2, splitY/2 + 150, 5, 40);
+                    ctx.fillRect(W/2 + 15, splitY/2 + 150, 5, 40);
+
+                    drawText(ctx, "Upload Image", W/2, splitY/2, 50, "rgba(255,255,255,0.5)", "center");
                 }
 
                 // 3. Info Section (Overlay)
@@ -226,7 +268,8 @@
                 ctx.fillStyle = gradient;
                 ctx.fillRect(0, splitY, W, H - splitY);
                 
-                const titleBoxY = splitY + 60;
+                // ADJUSTED LAYOUT FOR OVERLAP FIX
+                const titleBoxY = splitY + 40; // Moved up slightly (was +60)
                 const titleBoxW = 800;
                 const titleBoxH = 90;
                 const titleBoxX = (W - titleBoxW) / 2;
@@ -252,7 +295,7 @@
                 ctx.fill();
                 drawText(ctx, "f", badgeX + 45, badgeY + 48, 35, "#fff", "center", "bold");
                 
-                // Badge Text (Shadow)
+                // Badge Text
                 ctx.save();
                 ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
                 ctx.shadowBlur = 6;
@@ -261,66 +304,101 @@
                 drawText(ctx, formData.badgeText, badgeX + 80, badgeY + 48, 32, '#fff', 'left', 'bold');
                 ctx.restore();
 
-                // 5. Borders & Text
+                // 5. Borders & Title
                 ctx.strokeStyle = 'rgba(255,255,255,0.4)';
                 ctx.lineWidth = 2;
                 ctx.strokeRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH);
                 drawText(ctx, formData.title, W / 2, titleBoxY + 60, 50, '#fff', 'center', 'bold');
 
-                // 6. Scores
-                const scoresY = titleBoxY + 160;
+                // 6. CONTENT LOGIC (Based on appMode)
+                const scoresY = titleBoxY + 160; 
                 const leftCenter = W * 0.25; 
                 const rightCenter = W * 0.75;
-                
-                // TEAM 1
-                drawText(ctx, formData.team1, leftCenter, scoresY, 65, formData.team1Color, 'center', 'bold');
-                const t1ScoreSize = 60; const t1OverSize = 35; const t1Padding = 15;
-                const t1ScoreWidth = measureText(ctx, formData.team1Score, t1ScoreSize, 'bold');
-                const t1OverWidth = measureText(ctx, formData.team1Overs, t1OverSize, 'normal');
-                const t1TotalWidth = t1ScoreWidth + t1Padding + t1OverWidth;
-                const t1StartX = leftCenter - (t1TotalWidth / 2);
 
-                ctx.textAlign = 'left';
-                ctx.font = `bold ${t1ScoreSize}px "Hind Siliguri", sans-serif`;
-                ctx.fillStyle = '#fff';
-                ctx.fillText(formData.team1Score, t1StartX, scoresY + 80);
-                
-                ctx.font = `normal ${t1OverSize}px "Hind Siliguri", sans-serif`;
-                ctx.fillStyle = '#ddd';
-                ctx.fillText(formData.team1Overs, t1StartX + t1ScoreWidth + t1Padding, scoresY + 80);
+                if (appMode === 'scorecard') {
+                    // --- SCORECARD MODE ---
+                    
+                    // TEAM 1
+                    drawText(ctx, formData.team1, leftCenter, scoresY, 65, formData.team1Color, 'center', 'bold');
+                    const t1ScoreSize = 60; const t1OverSize = 35; const t1Padding = 15;
+                    const t1ScoreWidth = measureText(ctx, formData.team1Score, t1ScoreSize, 'bold');
+                    const t1OverWidth = measureText(ctx, formData.team1Overs, t1OverSize, 'normal');
+                    const t1StartX = leftCenter - ((t1ScoreWidth + t1Padding + t1OverWidth) / 2);
 
-                // Divider
-                ctx.beginPath();
-                ctx.moveTo(W / 2, scoresY - 20);
-                ctx.lineTo(W / 2, scoresY + 100);
-                ctx.lineWidth = 4;
-                ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-                ctx.stroke();
+                    ctx.textAlign = 'left';
+                    ctx.font = `bold ${t1ScoreSize}px "Hind Siliguri", sans-serif`;
+                    ctx.fillStyle = '#fff';
+                    ctx.fillText(formData.team1Score, t1StartX, scoresY + 80);
+                    ctx.font = `normal ${t1OverSize}px "Hind Siliguri", sans-serif`;
+                    ctx.fillStyle = '#ddd';
+                    ctx.fillText(formData.team1Overs, t1StartX + t1ScoreWidth + t1Padding, scoresY + 80);
 
-                // TEAM 2
-                drawText(ctx, formData.team2, rightCenter, scoresY, 65, formData.team2Color, 'center', 'bold');
-                const t2ScoreWidth = measureText(ctx, formData.team2Score, t1ScoreSize, 'bold');
-                const t2OverWidth = measureText(ctx, formData.team2Overs, t1OverSize, 'normal');
-                const t2TotalWidth = t2ScoreWidth + t1Padding + t2OverWidth;
-                const t2StartX = rightCenter - (t2TotalWidth / 2);
+                    // Divider
+                    ctx.beginPath();
+                    ctx.moveTo(W / 2, scoresY - 20);
+                    ctx.lineTo(W / 2, scoresY + 100);
+                    ctx.lineWidth = 4;
+                    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+                    ctx.stroke();
 
-                ctx.textAlign = 'left';
-                ctx.font = `bold ${t1ScoreSize}px "Hind Siliguri", sans-serif`;
-                ctx.fillStyle = '#fff';
-                ctx.fillText(formData.team2Score, t2StartX, scoresY + 80);
+                    // TEAM 2
+                    drawText(ctx, formData.team2, rightCenter, scoresY, 65, formData.team2Color, 'center', 'bold');
+                    const t2ScoreWidth = measureText(ctx, formData.team2Score, t1ScoreSize, 'bold');
+                    const t2OverWidth = measureText(ctx, formData.team2Overs, t1OverSize, 'normal');
+                    const t2StartX = rightCenter - ((t2ScoreWidth + t1Padding + t2OverWidth) / 2);
 
-                ctx.font = `normal ${t1OverSize}px "Hind Siliguri", sans-serif`;
-                ctx.fillStyle = '#ddd';
-                ctx.fillText(formData.team2Overs, t2StartX + t2ScoreWidth + t1Padding, scoresY + 80);
+                    ctx.textAlign = 'left';
+                    ctx.font = `bold ${t1ScoreSize}px "Hind Siliguri", sans-serif`;
+                    ctx.fillStyle = '#fff';
+                    ctx.fillText(formData.team2Score, t2StartX, scoresY + 80);
+                    ctx.font = `normal ${t1OverSize}px "Hind Siliguri", sans-serif`;
+                    ctx.fillStyle = '#ddd';
+                    ctx.fillText(formData.team2Overs, t2StartX + t2ScoreWidth + t1Padding, scoresY + 80);
 
-                // 7. Result
-                const resultY = scoresY + 180;
-                drawText(ctx, formData.result, W / 2, resultY, 48, formData.resultColor, 'center', 'bold');
+                    // Result
+                    const resultY = scoresY + 180;
+                    drawText(ctx, formData.result, W / 2, resultY, 48, formData.resultColor, 'center', 'bold');
+
+                } else {
+                    // --- SCHEDULE MODE (COMPACTED TO FIX OVERLAP) ---
+                    
+                    // TEAM 1 (Left, Large)
+                    drawText(ctx, formData.team1, leftCenter - 20, scoresY + 40, 80, formData.team1Color, 'center', 'bold');
+                    
+                    // VS Circle
+                    ctx.beginPath();
+                    ctx.arc(W / 2, scoresY + 30, 50, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                    ctx.fill();
+                    ctx.lineWidth = 3;
+                    ctx.strokeStyle = '#fff';
+                    ctx.stroke();
+                    drawText(ctx, "VS", W / 2, scoresY + 45, 40, '#fff', 'center', 'bold');
+
+                    // TEAM 2 (Right, Large)
+                    drawText(ctx, formData.team2, rightCenter + 20, scoresY + 40, 80, formData.team2Color, 'center', 'bold');
+
+                    // Details Section (Moved up slightly)
+                    const detailsY = scoresY + 130; // Was +160
+                    
+                    // Box for details (Height Reduced to 100)
+                    const dBoxW = 700;
+                    const dBoxH = 100; // Was 140
+                    const dBoxX = (W - dBoxW) / 2;
+                    
+                    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                    ctx.roundRect ? ctx.roundRect(dBoxX, detailsY, dBoxW, dBoxH, 20) : ctx.fillRect(dBoxX, detailsY, dBoxW, dBoxH);
+                    ctx.fill();
+
+                    // Text Lines (Centered in new box)
+                    drawText(ctx, formData.matchDate, W / 2, detailsY + 45, 40, '#fff', 'center', 'bold');
+                    drawText(ctx, `${formData.matchTime}  |  ${formData.matchVenue}`, W / 2, detailsY + 85, 30, '#ddd', 'center', 'normal');
+                }
 
                 // 8. Footer
                 drawText(ctx, formData.footerHandle, W / 2, footerY + 40, 24, '#94a3b8', 'center', 'normal');
 
-            }, [bgImage, formData, imgPos]);
+            }, [bgImage, formData, imgPos, appMode]);
 
             const handleChange = (e) => {
                 setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -332,9 +410,11 @@
                     team1: prev.team2,
                     team1Score: prev.team2Score,
                     team1Overs: prev.team2Overs,
+                    team1Color: prev.team2Color,
                     team2: prev.team1,
                     team2Score: prev.team1Score,
                     team2Overs: prev.team1Overs,
+                    team2Color: prev.team1Color,
                 }));
             };
 
@@ -344,31 +424,22 @@
                 setShowAdModal(true);
             };
 
-            // Helper to advance ad count
             const incrementAdCount = () => {
                 setIsLoadingAd(false);
                 setAdsWatched(prev => {
                     const newCount = prev + 1;
-                    if (newCount >= 3) {
-                       setIsDownloadReady(true);
-                    }
+                    if (newCount >= 3) setIsDownloadReady(true);
                     return newCount;
                 });
             };
 
             const watchAd = () => {
                 setIsLoadingAd(true);
-                
-                // Fallback Timer: If ad takes longer than 5s, assume success
-                const adTimeout = setTimeout(() => {
-                    console.log("Ad timeout - forcing success");
-                    incrementAdCount();
-                }, 5000);
+                const adTimeout = setTimeout(() => { incrementAdCount(); }, 5000);
 
                 if (typeof window.show_9743120 !== 'function') {
-                    // Ad blocker or script fail
                     clearTimeout(adTimeout);
-                    setTimeout(() => incrementAdCount(), 2000); // Simulate delay
+                    setTimeout(() => incrementAdCount(), 1500);
                     return;
                 }
                 
@@ -377,35 +448,30 @@
                     incrementAdCount();
                 }).catch(err => {
                     clearTimeout(adTimeout);
-                    console.log("Ad error - skipping", err);
-                    incrementAdCount(); // Skip faulty ad
+                    incrementAdCount();
                 });
             };
 
-            // FIXED DOWNLOAD FUNCTION (Robust for Mobile)
             const performDownload = () => {
                 const canvas = canvasRef.current;
                 if (!canvas) return;
-
-                // Create Data URL
-                const dataUrl = canvas.toDataURL('image/png', 1.0);
-                
-                // Trigger Download
-                const link = document.createElement('a');
-                link.download = `scorecard-${Date.now()}.png`;
-                link.href = dataUrl;
-                document.body.appendChild(link);
-                link.click();
-                
-                setTimeout(() => {
-                    document.body.removeChild(link);
-                }, 100);
+                canvas.toBlob((blob) => {
+                    if (!blob) { alert("Error generating image."); return; }
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.download = `poster-${Date.now()}.png`;
+                    link.href = url;
+                    document.body.appendChild(link);
+                    link.click();
+                    setTimeout(() => {
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
+                    }, 100);
+                }, 'image/png');
             };
 
-            // MANUAL DOWNLOAD TRIGGER
             const handleFinalDownload = () => {
                 performDownload();
-                // Reset after successful click
                 setTimeout(() => {
                     setShowAdModal(false);
                     setAdsWatched(0);
@@ -427,71 +493,64 @@
                                     {isDownloadReady ? 'Ready to Save!' : 'Free Download'}
                                 </h3>
                                 <p className="text-gray-500 text-sm mb-6">
-                                    {isDownloadReady 
-                                        ? "Thank you! Click the button below to save your image." 
-                                        : "To keep this tool free, please watch 3 short ads to download your high-quality image."}
+                                    {isDownloadReady ? "Click below to save." : "Watch 3 short ads to download your poster."}
                                 </p>
                                 
-                                {/* Progress Bar */}
                                 {!isDownloadReady && (
                                     <>
                                         <div className="mb-6 bg-gray-200 rounded-full h-4 overflow-hidden">
-                                            <div 
-                                                className="bg-red-600 h-full transition-all duration-500 ease-out" 
-                                                style={{ width: `${(adsWatched / 3) * 100}%` }}
-                                            ></div>
+                                            <div className="bg-red-600 h-full transition-all duration-500 ease-out" style={{ width: `${(adsWatched / 3) * 100}%` }}></div>
                                         </div>
-                                        <p className="text-sm font-bold text-gray-700 mb-6">
-                                            Ads Watched: <span className="text-red-600">{adsWatched} / 3</span>
-                                        </p>
+                                        <p className="text-sm font-bold text-gray-700 mb-6">Ads Watched: <span className="text-red-600">{adsWatched} / 3</span></p>
                                     </>
                                 )}
 
-                                {/* BUTTONS */}
                                 {isDownloadReady ? (
-                                    <button 
-                                        onClick={handleFinalDownload} 
-                                        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2"
-                                    >
+                                    <button onClick={handleFinalDownload} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2">
                                         <IconDownload /> Download Now
                                     </button>
                                 ) : (
-                                    <button 
-                                        onClick={watchAd} 
-                                        disabled={isLoadingAd}
-                                        className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
-                                    >
-                                        {isLoadingAd ? 'Loading Ad...' : 'Watch Ad'}
-                                        {!isLoadingAd && <IconPlay />}
+                                    <button onClick={watchAd} disabled={isLoadingAd} className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70">
+                                        {isLoadingAd ? 'Loading Ad...' : 'Watch Ad'} {!isLoadingAd && <IconPlay />}
                                     </button>
                                 )}
                                 
-                                <button 
-                                    onClick={() => setShowAdModal(false)}
-                                    className="mt-4 text-xs text-gray-400 hover:text-gray-600 underline"
-                                >
-                                    Cancel
-                                </button>
+                                <button onClick={() => setShowAdModal(false)} className="mt-4 text-xs text-gray-400 hover:text-gray-600 underline">Cancel</button>
                             </div>
                         </div>
                     )}
 
                     {/* Top Navbar */}
                     <div className="bg-white border-b sticky top-0 z-20 px-4 py-3 flex items-center justify-between shadow-sm">
-                        <h1 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                            <span className="text-red-600 bg-red-100 p-1.5 rounded-lg"><IconRefresh /></span>
-                            Scorecard Bot
-                        </h1>
-                        <button 
-                            onClick={handleDownloadClick}
-                            className="bg-slate-900 text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 active:scale-95 transition-transform"
-                        >
+                        <div>
+                            <h1 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                <span className="text-red-600 bg-red-100 p-1.5 rounded-lg"><IconRefresh /></span>
+                                Poster Bot
+                            </h1>
+                        </div>
+                        <button onClick={handleDownloadClick} className="bg-slate-900 text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 active:scale-95 transition-transform">
                             <IconDownload /> Save
                         </button>
                     </div>
 
                     <div className="max-w-2xl mx-auto p-4 space-y-6">
                         
+                        {/* MODE SWITCHER */}
+                        <div className="bg-white p-2 rounded-xl shadow-sm border border-slate-200 flex">
+                            <button 
+                                onClick={() => setAppMode('scorecard')} 
+                                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${appMode === 'scorecard' ? 'bg-red-600 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
+                            >
+                                Scorecard
+                            </button>
+                            <button 
+                                onClick={() => setAppMode('schedule')} 
+                                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${appMode === 'schedule' ? 'bg-red-600 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
+                            >
+                                Schedule
+                            </button>
+                        </div>
+
                         {/* Canvas Area */}
                         <div className="bg-slate-800 rounded-xl overflow-hidden shadow-2xl border border-slate-700 aspect-[1080/1200] relative group canvas-container touch-none">
                             <canvas 
@@ -515,9 +574,7 @@
 
                             {!bgImage && (
                                 <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                                    <span className="bg-white/90 text-slate-800 px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-                                        Upload Image Below
-                                    </span>
+                                    <span className="bg-white/90 text-slate-800 px-4 py-2 rounded-full text-sm font-bold shadow-lg">Upload Image Below</span>
                                 </div>
                             )}
                         </div>
@@ -525,26 +582,16 @@
                         {/* Image Controls */}
                         {bgImage && (
                             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
-                                <IconMove />
-                                <span className="text-xs text-slate-500 font-medium w-24">Drag Image</span>
-                                <div className="h-6 w-px bg-slate-200"></div>
-                                <IconZoomIn />
-                                <input 
-                                    type="range" 
-                                    min="0.1" 
-                                    max="5" 
-                                    step="0.05"
-                                    value={imgPos.scale}
-                                    onChange={(e) => setImgPos(prev => ({ ...prev, scale: parseFloat(e.target.value) }))}
-                                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
-                                />
+                                <IconMove /> <span className="text-xs text-slate-500 font-medium w-24">Drag Image</span>
+                                <div className="h-6 w-px bg-slate-200"></div> <IconZoomIn />
+                                <input type="range" min="0.1" max="5" step="0.05" value={imgPos.scale} onChange={(e) => setImgPos(prev => ({ ...prev, scale: parseFloat(e.target.value) }))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
                             </div>
                         )}
 
                         {/* Editor Controls */}
                         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                             <div className="flex border-b bg-slate-50">
-                                <button onClick={() => setActiveTab('match')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'match' ? 'bg-white text-red-600 border-t-2 border-red-600' : 'text-slate-500'}`}>Match Info</button>
+                                <button onClick={() => setActiveTab('match')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'match' ? 'bg-white text-red-600 border-t-2 border-red-600' : 'text-slate-500'}`}>Info</button>
                                 <button onClick={() => setActiveTab('teams')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'teams' ? 'bg-white text-red-600 border-t-2 border-red-600' : 'text-slate-500'}`}>Teams</button>
                                 <button onClick={() => setActiveTab('style')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'style' ? 'bg-white text-red-600 border-t-2 border-red-600' : 'text-slate-500'}`}>Style</button>
                             </div>
@@ -552,6 +599,7 @@
                             <div className="p-5">
                                 {activeTab === 'match' && (
                                     <div className="space-y-4">
+                                        {/* Image Upload */}
                                         <div className="relative group">
                                             <input type="file" accept="image/*" onChange={handleImageUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
                                             <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 flex items-center justify-center gap-3 bg-slate-50 group-hover:bg-slate-100 transition-colors">
@@ -559,26 +607,48 @@
                                                 <div className="text-left"><p className="text-sm font-semibold text-slate-700">Change Photo</p></div>
                                             </div>
                                         </div>
-                                        <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Title" />
-                                        <input type="text" name="badgeText" value={formData.badgeText} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Badge" />
-                                        <textarea name="result" value={formData.result} onChange={handleChange} rows="2" className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Result"></textarea>
+                                        
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <input type="text" name="badgeText" value={formData.badgeText} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Badge (e.g. News)" />
+                                            <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Tournament" />
+                                        </div>
+
+                                        {/* Conditional Inputs */}
+                                        {appMode === 'scorecard' ? (
+                                            <textarea name="result" value={formData.result} onChange={handleChange} rows="2" className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Result Text (e.g. Won by 4 runs)"></textarea>
+                                        ) : (
+                                            <div className="space-y-3 p-3 bg-slate-50 rounded-lg border">
+                                                <h4 className="text-xs font-bold text-slate-500 uppercase flex items-center gap-2"><IconCalendar /> Schedule Details</h4>
+                                                <input type="text" name="matchDate" value={formData.matchDate} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Date (e.g. 20 Oct)" />
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <input type="text" name="matchTime" value={formData.matchTime} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Time" />
+                                                    <input type="text" name="matchVenue" value={formData.matchVenue} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Venue" />
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
 
                                 {activeTab === 'teams' && (
                                     <div className="space-y-5">
-                                        <button onClick={swapTeams} className="w-full py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2"><IconSwap /> Swap</button>
+                                        <button onClick={swapTeams} className="w-full py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2"><IconSwap /> Swap Sides</button>
                                         
+                                        {/* Team 1 */}
                                         <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 space-y-3">
                                             <div className="flex justify-between"><h3 className="text-xs font-bold text-amber-800">TEAM 1 (Left)</h3><input type="color" name="team1Color" value={formData.team1Color} onChange={handleChange} className="w-6 h-6 rounded-full overflow-hidden border-none" /></div>
-                                            <input type="text" name="team1" value={formData.team1} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm" />
-                                            <div className="flex gap-2"><input type="text" name="team1Score" value={formData.team1Score} onChange={handleChange} className="flex-1 px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm" /><input type="text" name="team1Overs" value={formData.team1Overs} onChange={handleChange} className="w-24 px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm" /></div>
+                                            <input type="text" name="team1" value={formData.team1} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm font-bold" placeholder="Team Name" />
+                                            {appMode === 'scorecard' && (
+                                                <div className="flex gap-2"><input type="text" name="team1Score" value={formData.team1Score} onChange={handleChange} className="flex-1 px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm" placeholder="Score" /><input type="text" name="team1Overs" value={formData.team1Overs} onChange={handleChange} className="w-24 px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm" placeholder="Overs" /></div>
+                                            )}
                                         </div>
 
+                                        {/* Team 2 */}
                                         <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-3">
                                             <div className="flex justify-between"><h3 className="text-xs font-bold text-blue-800">TEAM 2 (Right)</h3><input type="color" name="team2Color" value={formData.team2Color} onChange={handleChange} className="w-6 h-6 rounded-full overflow-hidden border-none" /></div>
-                                            <input type="text" name="team2" value={formData.team2} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm" />
-                                            <div className="flex gap-2"><input type="text" name="team2Score" value={formData.team2Score} onChange={handleChange} className="flex-1 px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm" /><input type="text" name="team2Overs" value={formData.team2Overs} onChange={handleChange} className="w-24 px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm" /></div>
+                                            <input type="text" name="team2" value={formData.team2} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm font-bold" placeholder="Team Name" />
+                                            {appMode === 'scorecard' && (
+                                                <div className="flex gap-2"><input type="text" name="team2Score" value={formData.team2Score} onChange={handleChange} className="flex-1 px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm" placeholder="Score" /><input type="text" name="team2Overs" value={formData.team2Overs} onChange={handleChange} className="w-24 px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm" placeholder="Overs" /></div>
+                                            )}
                                         </div>
                                     </div>
                                 )}
