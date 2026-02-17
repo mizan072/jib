@@ -40,14 +40,11 @@
                     .catch(err => console.log('SW failed', err));
             });
         }
-
-        // Suppress CloudStorage error
         const originalError = console.error;
         console.error = function(...args) {
             if (args[0] && typeof args[0] === 'string' && args[0].includes('CloudStorage is not supported')) return;
             originalError.apply(console, args);
         };
-        // Polyfill
         window.addEventListener('DOMContentLoaded', () => {
             if (window.Telegram && window.Telegram.WebApp && !window.Telegram.WebApp.CloudStorage) {
                 window.Telegram.WebApp.CloudStorage = {
@@ -68,7 +65,6 @@
         .modal-content { animation: scaleIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        /* PWA Install Prompt Style */
         .install-prompt { position: fixed; bottom: 20px; left: 20px; right: 20px; z-index: 100; animation: slideUp 0.4s ease-out; }
         @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
@@ -94,29 +90,25 @@
         const IconQuote = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/></svg>;
         const IconClose = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
         const IconInstall = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>;
+        const IconTrash = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>;
 
         function App() {
             const canvasRef = useRef(null);
             const [appMode, setAppMode] = useState('scorecard');
             const [activeTab, setActiveTab] = useState('match');
             const [bgImage, setBgImage] = useState(null);
+            const [bgImage2, setBgImage2] = useState(null); // Second Image State
             const [showAdModal, setShowAdModal] = useState(false);
             const [adsWatched, setAdsWatched] = useState(0);
             const [isLoadingAd, setIsLoadingAd] = useState(false);
             const [isDownloadReady, setIsDownloadReady] = useState(false);
             const [imgPos, setImgPos] = useState({ x: 0, y: 0, scale: 1 });
             const gestureStart = useRef({ x: 0, y: 0, dist: 0, scale: 1, imgX: 0, imgY: 0, mode: null });
-
-            // PWA Install Prompt State
             const [deferredPrompt, setDeferredPrompt] = useState(null);
             const [showInstallPrompt, setShowInstallPrompt] = useState(false);
 
             useEffect(() => {
-                const handler = (e) => {
-                    e.preventDefault();
-                    setDeferredPrompt(e);
-                    setShowInstallPrompt(true);
-                };
+                const handler = (e) => { e.preventDefault(); setDeferredPrompt(e); setShowInstallPrompt(true); };
                 window.addEventListener('beforeinstallprompt', handler);
                 return () => window.removeEventListener('beforeinstallprompt', handler);
             }, []);
@@ -125,20 +117,15 @@
                 if (deferredPrompt) {
                     deferredPrompt.prompt();
                     const { outcome } = await deferredPrompt.userChoice;
-                    if (outcome === 'accepted') {
-                        setDeferredPrompt(null);
-                        setShowInstallPrompt(false);
-                    }
+                    if (outcome === 'accepted') { setDeferredPrompt(null); setShowInstallPrompt(false); }
                 }
             };
 
             const [formData, setFormData] = useState({
                 badgeText: 'proscorecard_bot',
                 title: 'আইসিসি টি-টোয়েন্টি বিশ্বকাপ',
-                // Removed footerHandle from state as it's now fixed
-                primaryColor: '#990000',
-                secondaryColor: '#4a0000',
-                bgOpacity: 0.9,
+                footerHandle: 'এই রকম পোস্টার তৈরি করুন এই টেলিগ্রাম বট দিয়েঃ  @proscorecard_bot',
+                primaryColor: '#990000', secondaryColor: '#4a0000', bgOpacity: 0.9,
                 team1: 'ইংল্যান্ড', team1Color: '#ffd700',
                 team2: 'নেপাল', team2Color: '#ffd700',
                 team1Score: '১৮৪/৭', team1Overs: '(২০ ওভার)',
@@ -150,7 +137,7 @@
                 quoteText: 'আমাদের লক্ষ্য এখন বিশ্বকাপ জয় করা। আমরা সেরাটা দিয়েই চেষ্টা করবো।', quoteAuthor: 'নাজমুল হোসেন শান্ত, অধিনায়ক'
             });
 
-            // Initial Setup
+            // Initial Default Image
             useEffect(() => {
                 if (window.Telegram && window.Telegram.WebApp) {
                     window.Telegram.WebApp.ready();
@@ -161,24 +148,25 @@
                 img.src = "https://images.unsplash.com/photo-1531415074968-036ba1b575da?q=80&w=1080&auto=format&fit=crop";
                 img.onload = () => {
                     setBgImage(img);
-                    const W = 1080, H = 1200;
-                    const scale = Math.max(W / img.width, H / img.height);
-                    setImgPos({ x: (W - img.width * scale) / 2, y: (H - img.height * scale) / 2, scale });
+                    setImgPos({ x: 0, y: 0, scale: 1 }); // Center handled in draw
                 };
             }, []);
 
-            // Handle Image Upload
-            const handleImageUpload = (e) => {
+            // Image Uploaders
+            const handleImageUpload = (e, isSecond = false) => {
                 const file = e.target.files[0];
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = (event) => {
                         const img = new Image();
                         img.onload = () => {
-                            setBgImage(img);
-                            const W = 1080, H = 1200;
-                            const scale = Math.max(W / img.width, H / img.height);
-                            setImgPos({ x: (W - img.width * scale) / 2, y: (H - img.height * scale) / 2, scale });
+                            if (isSecond) setBgImage2(img);
+                            else {
+                                setBgImage(img);
+                                const W = 1080, H = 1200;
+                                const scale = Math.max(W / img.width, H / img.height);
+                                setImgPos({ x: (W - img.width * scale) / 2, y: (H - img.height * scale) / 2, scale });
+                            }
                         };
                         img.src = event.target.result;
                     };
@@ -194,14 +182,35 @@
                 }
             };
 
-            // Touch Logic
+            // Canvas Helper: Draw Covered Image
+            const drawCover = (ctx, img, x, y, w, h) => {
+                const imgRatio = img.width / img.height;
+                const targetRatio = w / h;
+                let sx, sy, sw, sh;
+                
+                if (imgRatio > targetRatio) {
+                    sh = img.height;
+                    sw = img.height * targetRatio;
+                    sy = 0;
+                    sx = (img.width - sw) / 2;
+                } else {
+                    sw = img.width;
+                    sh = img.width / targetRatio;
+                    sx = 0;
+                    sy = (img.height - sh) / 2;
+                }
+                ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+            };
+
+            // Touch Logic (Only for Single Image)
             const handleTouchStart = (e) => {
+                if (bgImage2) return; // Disable if dual mode
                 const t = e.touches;
                 if (t.length === 1) gestureStart.current = { mode: 'pan', x: t[0].clientX, y: t[0].clientY, imgX: imgPos.x, imgY: imgPos.y };
                 else if (t.length === 2) gestureStart.current = { mode: 'zoom', dist: Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY), scale: imgPos.scale };
             };
             const handleTouchMove = (e) => {
-                if (!gestureStart.current.mode) return;
+                if (!gestureStart.current.mode || bgImage2) return;
                 e.preventDefault();
                 const rect = e.target.getBoundingClientRect();
                 const canvasScaleFactor = 1080 / rect.width;
@@ -214,9 +223,11 @@
                 }
             };
             const handleEnd = () => { gestureStart.current.mode = null; };
-            const handleMouseDown = (e) => { gestureStart.current = { mode: 'pan', x: e.clientX, y: e.clientY, imgX: imgPos.x, imgY: imgPos.y }; };
+            
+            // Mouse (PC Testing)
+            const handleMouseDown = (e) => { if(!bgImage2) gestureStart.current = { mode: 'pan', x: e.clientX, y: e.clientY, imgX: imgPos.x, imgY: imgPos.y }; };
             const handleMouseMove = (e) => {
-                if (gestureStart.current.mode === 'pan') {
+                if (gestureStart.current.mode === 'pan' && !bgImage2) {
                     const rect = e.target.getBoundingClientRect();
                     const canvasScaleFactor = 1080 / rect.width;
                     setImgPos(prev => ({ ...prev, x: gestureStart.current.imgX + (e.clientX - gestureStart.current.x) * canvasScaleFactor, y: gestureStart.current.imgY + (e.clientY - gestureStart.current.y) * canvasScaleFactor }));
@@ -230,10 +241,10 @@
 
             const wrapText = (ctx, text, x, y, maxWidth, lineHeight) => {
                 const words = text.split(' ');
-                let line = '', testLine = '', lineCount = 0;
+                let line = '', testLine = '';
                 for(let n = 0; n < words.length; n++) {
                     testLine = line + words[n] + ' ';
-                    if (ctx.measureText(testLine).width > maxWidth && n > 0) { ctx.fillText(line, x, y); line = words[n] + ' '; y += lineHeight; lineCount++; }
+                    if (ctx.measureText(testLine).width > maxWidth && n > 0) { ctx.fillText(line, x, y); line = words[n] + ' '; y += lineHeight; }
                     else { line = testLine; }
                 }
                 ctx.fillText(line, x, y);
@@ -255,7 +266,16 @@
 
                 ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, W, H);
 
-                if (bgImage) {
+                // --- IMAGE DRAWING LOGIC ---
+                if (bgImage && bgImage2) {
+                    // DUAL MODE (Automatic Layout)
+                    drawCover(ctx, bgImage, 0, 0, W/2, H);
+                    drawCover(ctx, bgImage2, W/2, 0, W/2, H);
+                    // Divider
+                    ctx.beginPath(); ctx.moveTo(W/2, 0); ctx.lineTo(W/2, H); 
+                    ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 2; ctx.stroke();
+                } else if (bgImage) {
+                    // SINGLE MODE (Manual Control)
                     ctx.save();
                     ctx.translate(imgPos.x, imgPos.y);
                     ctx.scale(imgPos.scale, imgPos.scale);
@@ -268,6 +288,7 @@
                     drawText(ctx, "Loading Image...", W/2, H/2, 50, "#fff", "center");
                 }
 
+                // --- OVERLAYS ---
                 ctx.save();
                 ctx.globalAlpha = formData.bgOpacity; 
                 const gradient = ctx.createLinearGradient(0, splitY, 0, H);
@@ -351,10 +372,8 @@
                     const pStatY = scoresY - 20; 
                     drawText(ctx, formData.playerStatMain, W/2, pStatY + 40, 130, formData.team1Color, 'center', 'bold'); 
                     drawText(ctx, formData.playerStatSub, W/2, pStatY + 90, 40, '#fff', 'center', 'normal');
-                    
                     ctx.beginPath(); ctx.moveTo(W/2 - 150, pStatY + 120); ctx.lineTo(W/2 + 150, pStatY + 120); 
                     ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 2; ctx.stroke();
-
                     drawText(ctx, formData.playerName, W/2, pStatY + 180, 60, '#fff', 'center', 'bold'); 
 
                 } else if (appMode === 'news') {
@@ -369,11 +388,10 @@
                     drawText(ctx, "ব্রেকিং নিউজ", 230, newsY - 80, 35, '#fff', 'center', 'bold');
                 }
 
-                // FIXED FOOTER TEXT
                 const footerText = 'এই রকম পোস্টার তৈরি করুন এই টেলিগ্রাম বট দিয়েঃ  @proscorecard_bot';
                 drawText(ctx, footerText, W / 2, footerY + 40, 24, '#94a3b8', 'center', 'normal');
 
-            }, [bgImage, formData, imgPos, appMode]);
+            }, [bgImage, bgImage2, formData, imgPos, appMode]);
 
             const handleChange = (e) => { setFormData({ ...formData, [e.target.name]: e.target.value }); };
             
@@ -386,14 +404,12 @@
 
             const handleDownloadClick = () => setShowAdModal(true);
             const incrementAdCount = () => { setIsLoadingAd(false); setAdsWatched(p => { const n = p + 1; if (n >= 3) setIsDownloadReady(true); return n; }); };
-            
             const watchAd = () => {
                 setIsLoadingAd(true);
                 const adTimeout = setTimeout(() => incrementAdCount(), 5000);
                 if (typeof window.show_9743120 !== 'function') { clearTimeout(adTimeout); setTimeout(() => incrementAdCount(), 1500); return; }
                 window.show_9743120().then(() => { clearTimeout(adTimeout); incrementAdCount(); }).catch(() => { clearTimeout(adTimeout); incrementAdCount(); });
             };
-
             const performDownload = () => {
                 const canvas = canvasRef.current;
                 if (!canvas) return;
@@ -407,7 +423,6 @@
                     setTimeout(() => { document.body.removeChild(link); URL.revokeObjectURL(url); }, 100);
                 }, 'image/png');
             };
-
             const handleFinalDownload = () => { performDownload(); setTimeout(() => { setShowAdModal(false); setAdsWatched(0); setIsDownloadReady(false); }, 1500); };
 
             return (
@@ -417,10 +432,7 @@
                         <div className="install-prompt bg-slate-900 text-white p-4 rounded-xl shadow-2xl flex items-center justify-between border border-slate-700">
                             <div className="flex items-center gap-3">
                                 <div className="bg-red-600 p-2 rounded-lg"><IconInstall /></div>
-                                <div>
-                                    <h4 className="font-bold text-sm">Install App</h4>
-                                    <p className="text-xs text-slate-400">Add to Home Screen for better experience</p>
-                                </div>
+                                <div><h4 className="font-bold text-sm">Install App</h4><p className="text-xs text-slate-400">Add to Home Screen</p></div>
                             </div>
                             <div className="flex gap-2">
                                 <button onClick={() => setShowInstallPrompt(false)} className="p-2 text-slate-400"><IconClose /></button>
@@ -433,23 +445,15 @@
                     {showAdModal && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm modal-backdrop">
                             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center modal-content border border-gray-200">
-                                <div className="bg-red-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    {isDownloadReady ? <IconCheck /> : <IconDownload />}
-                                </div>
+                                <div className="bg-red-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">{isDownloadReady ? <IconCheck /> : <IconDownload />}</div>
                                 <h3 className="text-xl font-bold text-gray-900 mb-2">{isDownloadReady ? 'Ready to Save!' : 'Free Download'}</h3>
-                                <p className="text-gray-500 text-sm mb-6">{isDownloadReady ? "Click below to save." : "Watch 3 short ads to download your poster."}</p>
-                                {!isDownloadReady && (
-                                    <>
-                                        <div className="mb-6 bg-gray-200 rounded-full h-4 overflow-hidden">
-                                            <div className="bg-red-600 h-full transition-all duration-500 ease-out" style={{ width: `${(adsWatched / 3) * 100}%` }}></div>
-                                        </div>
-                                        <p className="text-sm font-bold text-gray-700 mb-6">Ads Watched: <span className="text-red-600">{adsWatched} / 3</span></p>
-                                    </>
-                                )}
+                                <p className="text-gray-500 text-sm mb-6">{isDownloadReady ? "Click below to save." : "Watch 3 short ads to download."}</p>
+                                {!isDownloadReady && (<div className="mb-6 bg-gray-200 rounded-full h-4 overflow-hidden"><div className="bg-red-600 h-full transition-all duration-500 ease-out" style={{ width: `${(adsWatched / 3) * 100}%` }}></div></div>)}
+                                {!isDownloadReady && <p className="text-sm font-bold text-gray-700 mb-6">Ads: <span className="text-red-600">{adsWatched} / 3</span></p>}
                                 {isDownloadReady ? (
                                     <button onClick={handleFinalDownload} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2"><IconDownload /> Download Now</button>
                                 ) : (
-                                    <button onClick={watchAd} disabled={isLoadingAd} className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70">{isLoadingAd ? 'Loading Ad...' : 'Watch Ad'} {!isLoadingAd && <IconPlay />}</button>
+                                    <button onClick={watchAd} disabled={isLoadingAd} className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70">{isLoadingAd ? 'Loading...' : 'Watch Ad'} {!isLoadingAd && <IconPlay />}</button>
                                 )}
                                 <button onClick={() => setShowAdModal(false)} className="mt-4 text-xs text-gray-400 hover:text-gray-600 underline">Cancel</button>
                             </div>
@@ -470,11 +474,13 @@
 
                         <div className="bg-slate-800 rounded-xl overflow-hidden shadow-2xl border border-slate-700 aspect-[1080/1200] relative group canvas-container touch-none">
                             <canvas ref={canvasRef} className="w-full h-full object-contain cursor-move touch-none" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleEnd} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleEnd} onMouseLeave={handleEnd}></canvas>
-                            <div className="absolute top-4 right-4"><button onClick={resetImage} className="bg-black/50 text-white p-2 rounded-full backdrop-blur-sm hover:bg-black/70"><IconRefresh /></button></div>
-                            {!bgImage && <div className="absolute inset-0 pointer-events-none flex items-center justify-center"><span className="bg-white/90 text-slate-800 px-4 py-2 rounded-full text-sm font-bold shadow-lg">Loading Default Image...</span></div>}
+                            <div className="absolute top-4 right-4 flex flex-col gap-2">
+                                <button onClick={resetImage} className="bg-black/50 text-white p-2 rounded-full backdrop-blur-sm hover:bg-black/70"><IconRefresh /></button>
+                            </div>
+                            {!bgImage && <div className="absolute inset-0 pointer-events-none flex items-center justify-center"><span className="bg-white/90 text-slate-800 px-4 py-2 rounded-full text-sm font-bold shadow-lg">Loading...</span></div>}
                         </div>
 
-                        {bgImage && (
+                        {bgImage && !bgImage2 && (
                             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
                                 <IconMove /> <span className="text-xs text-slate-500 font-medium w-24">Drag Image</span>
                                 <div className="h-6 w-px bg-slate-200"></div> <IconZoomIn />
@@ -492,13 +498,34 @@
                             <div className="p-5 space-y-4">
                                 {activeTab === 'match' && (
                                     <>
-                                        <div className="relative group">
-                                            <input type="file" accept="image/*" onChange={handleImageUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                                            <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 flex items-center justify-center gap-3 bg-slate-50 group-hover:bg-slate-100 transition-colors">
-                                                <div className="bg-white p-2 rounded-full shadow-sm text-slate-600"><IconUpload /></div>
-                                                <div className="text-left"><p className="text-sm font-semibold text-slate-700">Change Photo</p></div>
+                                        {/* DUAL IMAGE UPLOADERS */}
+                                        <div className="flex gap-3">
+                                            <div className="relative group flex-1">
+                                                <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, false)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                                                <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 flex flex-col items-center justify-center gap-2 bg-slate-50 group-hover:bg-slate-100 transition-colors">
+                                                    <div className="bg-white p-2 rounded-full shadow-sm text-slate-600"><IconUpload /></div>
+                                                    <span className="text-xs font-bold text-slate-600">Photo 1</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="relative group flex-1">
+                                                {bgImage2 ? (
+                                                    <div className="h-full border-2 border-green-200 bg-green-50 rounded-lg flex flex-col items-center justify-center relative">
+                                                        <span className="text-xs font-bold text-green-700 mb-1">Added</span>
+                                                        <button onClick={() => setBgImage2(null)} className="flex items-center gap-1 bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-bold"><IconTrash /> Remove</button>
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, true)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                                                        <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 flex flex-col items-center justify-center gap-2 bg-slate-50 group-hover:bg-slate-100 transition-colors">
+                                                            <div className="bg-white p-2 rounded-full shadow-sm text-slate-400"><IconUpload /></div>
+                                                            <span className="text-xs font-bold text-slate-400">Photo 2 (Opt)</span>
+                                                        </div>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
+
                                         <div className="grid grid-cols-2 gap-3">
                                             <input type="text" name="badgeText" value={formData.badgeText} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Badge" />
                                             {appMode !== 'news' && <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Tournament" />}
@@ -554,7 +581,7 @@
                                     <div className="space-y-5">
                                         <div><label className="block text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2"><IconEye /> Opacity</label><input type="range" min="0" max="1" step="0.05" value={formData.bgOpacity} onChange={(e) => setFormData({...formData, bgOpacity: parseFloat(e.target.value)})} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" /></div>
                                         <div><label className="block text-xs font-bold text-slate-400 uppercase mb-2">Gradient</label><div className="flex gap-2"><input type="color" name="primaryColor" value={formData.primaryColor} onChange={handleChange} className="h-10 w-full rounded-lg" /><input type="color" name="secondaryColor" value={formData.secondaryColor} onChange={handleChange} className="h-10 w-full rounded-lg" /></div></div>
-                                        {/* Input for footerHandle removed */}
+                                        {/* Footer text input removed */}
                                     </div>
                                 )}
                             </div>
