@@ -3,9 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sports Poster Bot</title>
+    <title>Poster Bot Pro</title>
     
-    <!-- Error Suppression (Must be first) -->
+    <!-- PWA & Meta -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1165/1165249.png">
+
+    <!-- Libraries -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Error Suppression -->
     <script>
         const originalError = console.error;
         console.error = function(...args) {
@@ -14,54 +28,15 @@
         };
     </script>
 
-    <!-- PWA Manifest & Meta -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f172a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1165/1165249.png">
-
-    <!-- Telegram Web App Script -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- Ad Script -->
-    <script src='https://libtl.com/sdk.js' data-zone='9743120' data-sdk='show_9743120'></script>
-
-    <!-- React & ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- Babel -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-    <!-- Service Worker & Polyfill -->
+    <!-- Service Worker -->
     <script>
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./service-worker.js').catch(err => console.log('SW failed', err));
-            });
+            window.addEventListener('load', () => { navigator.serviceWorker.register('./service-worker.js').catch(e => console.log(e)); });
         }
-        
-        // CloudStorage Polyfill
-        window.addEventListener('DOMContentLoaded', () => {
-            if (window.Telegram && window.Telegram.WebApp && !window.Telegram.WebApp.CloudStorage) {
-                window.Telegram.WebApp.CloudStorage = {
-                    getItem: (k, cb) => cb && cb(null, localStorage.getItem(k)),
-                    setItem: (k, v, cb) => { localStorage.setItem(k, v); cb && cb(null, true); },
-                    removeItem: (k, cb) => { localStorage.removeItem(k); cb && cb(null, true); }
-                };
-            }
-        });
     </script>
 
     <style>
-        body { font-family: 'Hind Siliguri', sans-serif; touch-action: pan-y; background-color: var(--tg-theme-bg-color, #f8fafc); color: var(--tg-theme-text-color, #0f172a); }
+        body { font-family: 'Hind Siliguri', sans-serif; touch-action: pan-y; background-color: #f8fafc; color: #0f172a; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .canvas-container { touch-action: none; }
@@ -69,6 +44,8 @@
         .modal-content { animation: scaleIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #e11d48; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .install-prompt { position: fixed; bottom: 20px; left: 20px; right: 20px; z-index: 100; animation: slideUp 0.4s ease-out; }
         @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
@@ -79,7 +56,12 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // Icons
+        // --- CONFIGURATION ---
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyDorekc-EaWSFUynwzUrZF3DB9sxxXcut3QlaFH2wexfB7ccwX3B6T-PFNT5NqFH2x/exec"; 
+        const DOWNLOAD_COST = 2; // Cost per download
+
+        // Helper: Icons
+        const IconCoin = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="gold" stroke="#b45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 18V6"></path></svg>;
         const IconDownload = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>;
         const IconUpload = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path></svg>;
         const IconRefresh = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>;
@@ -95,20 +77,50 @@
         const IconClose = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
         const IconInstall = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>;
         const IconTrash = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>;
+        const IconCopy = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>;
         const IconHeight = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 15 12 20 17 15"></polyline><polyline points="7 9 12 4 17 9"></polyline><line x1="12" y1="4" x2="12" y2="20"></line></svg>;
+        const IconTg = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.543 2.457L2.613 9.77c-1.32.533-1.316 1.272-.24 1.6l4.86 1.516 11.36-7.16c.536-.325 1.027.15.777.373l-9.206 8.307-.36 5.43c.528 0 .762-.24.905-.373l2.17-2.106 4.513 3.333c.832.458 1.432.22 1.64-.773l2.968-13.987c.304-1.216-.464-1.767-1.4-.93z"/></svg>;
 
         function App() {
             const canvasRef = useRef(null);
+            
+            // --- STATE MANAGEMENT ---
             const [appMode, setAppMode] = useState('scorecard');
             const [activeTab, setActiveTab] = useState('match');
             const [bgImage, setBgImage] = useState(null);
             const [bgImage2, setBgImage2] = useState(null);
-            const [showAdModal, setShowAdModal] = useState(false);
-            const [adsWatched, setAdsWatched] = useState(0);
+            const [showAdModal, setShowAdModal] = useState(false); // Used for "Ads" but now generic
+            const [showBuyModal, setShowBuyModal] = useState(false); // Specifically for buying points
+            
+            // Ads logic removed, keeping some state to avoid breaking if refs exist
+            const [adsWatched, setAdsWatched] = useState(0); 
             const [isLoadingAd, setIsLoadingAd] = useState(false);
             const [isDownloadReady, setIsDownloadReady] = useState(false);
+            
             const [imgPos, setImgPos] = useState({ x: 0, y: 0, scale: 1 });
             const gestureStart = useRef({ x: 0, y: 0, dist: 0, scale: 1, imgX: 0, imgY: 0, mode: null });
+            
+            // Point System State
+            const [userId, setUserId] = useState('');
+            const [points, setPoints] = useState(0);
+            const [isCheckingPoints, setIsCheckingPoints] = useState(true);
+            const [isProcessing, setIsProcessing] = useState(false); 
+
+            // Default Form Data
+            const [formData, setFormData] = useState({
+                badgeText: 'proscorecard_bot',
+                title: 'আইসিসি টি-টোয়েন্টি বিশ্বকাপ',
+                footerHandle: 'এই রকম পোস্টার তৈরি করুন এই টেলিগ্রাম বট দিয়েঃ  @proscorecard_bot',
+                primaryColor: '#990000', secondaryColor: '#4a0000', bgOpacity: 0.9, newsGradientHeight: 0.55,
+                team1: 'ইংল্যান্ড', team1Color: '#ffd700', team2: 'নেপাল', team2Color: '#ffd700',
+                team1Score: '১৮৪/৭', team1Overs: '(২০ ওভার)', team2Score: '১৮০/৬', team2Overs: '(২০ ওভার)',
+                result: 'নেপালকে ৪ রানে হারিয়েছে ইংল্যান্ড', resultColor: '#ffd700',
+                matchDate: '২০ অক্টোবর, ২০২৫', matchTime: 'দুপুর ২:০০টা', matchVenue: 'শেরে বাংলা স্টেডিয়াম',
+                playerName: 'সাকিব আল হাসান', playerStatMain: '৮২', playerStatSub: 'রান (৪৫ বল)',
+                stat1Label: '৪', stat1Value: '৮', stat2Label: '৬', stat2Value: '৫', stat3Label: 'S/R', stat3Value: '১৮২.২',
+                quoteText: 'আমাদের লক্ষ্য এখন বিশ্বকাপ জয় করা।', quoteAuthor: 'নাজমুল হোসেন শান্ত, অধিনায়ক'
+            });
+
             const [deferredPrompt, setDeferredPrompt] = useState(null);
             const [showInstallPrompt, setShowInstallPrompt] = useState(false);
 
@@ -126,332 +138,64 @@
                 }
             };
 
-            const [formData, setFormData] = useState({
-                badgeText: 'proscorecard_bot',
-                title: 'আইসিসি টি-টোয়েন্টি বিশ্বকাপ',
-                footerHandle: 'এই রকম পোস্টার তৈরি করুন এই টেলিগ্রাম বট দিয়েঃ  @proscorecard_bot',
-                primaryColor: '#990000', secondaryColor: '#4a0000', bgOpacity: 0.9,
-                newsGradientHeight: 0.55, // New state for gradient height
-                team1: 'ইংল্যান্ড', team1Color: '#ffd700',
-                team2: 'নেপাল', team2Color: '#ffd700',
-                team1Score: '১৮৪/৭', team1Overs: '(২০ ওভার)',
-                team2Score: '১৮০/৬', team2Overs: '(২০ ওভার)',
-                result: 'নেপালকে ৪ রানে হারিয়েছে ইংল্যান্ড', resultColor: '#ffd700',
-                matchDate: '২০ অক্টোবর, ২০২৫', matchTime: 'দুপুর ২:০০টা', matchVenue: 'শেরে বাংলা স্টেডিয়াম',
-                playerName: 'সাকিব আল হাসান', playerStatMain: '৮২', playerStatSub: 'রান (৪৫ বল)',
-                quoteText: 'আমাদের লক্ষ্য এখন বিশ্বকাপ জয় করা। আমরা সেরাটা দিয়েই চেষ্টা করবো।', quoteAuthor: 'নাজমুল হোসেন শান্ত, অধিনায়ক'
-            });
-
-            // Initial Default Image
+            // --- USER & POINT SYSTEM LOGIC ---
             useEffect(() => {
-                if (window.Telegram && window.Telegram.WebApp) {
-                    window.Telegram.WebApp.ready();
-                    if (window.Telegram.WebApp.expand) window.Telegram.WebApp.expand();
+                let storedId = localStorage.getItem('poster_user_id');
+                if (!storedId) {
+                    storedId = 'u_' + Math.random().toString(36).substr(2, 9);
+                    localStorage.setItem('poster_user_id', storedId);
                 }
-                const img = new Image();
-                img.crossOrigin = "Anonymous";
-                img.src = "https://images.unsplash.com/photo-1531415074968-036ba1b575da?q=80&w=1080&auto=format&fit=crop";
-                img.onload = () => {
-                    setBgImage(img);
-                    setImgPos({ x: 0, y: 0, scale: 1 });
-                };
+                setUserId(storedId);
+                fetchPoints(storedId);
             }, []);
 
-            const handleImageUpload = (e, isSecond = false) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        const img = new Image();
-                        img.onload = () => {
-                            if (isSecond) setBgImage2(img);
-                            else {
-                                setBgImage(img);
-                                const W = 1080, H = 1200;
-                                const scale = Math.max(W / img.width, H / img.height);
-                                setImgPos({ x: (W - img.width * scale) / 2, y: (H - img.height * scale) / 2, scale });
-                            }
-                        };
-                        img.src = event.target.result;
-                    };
-                    reader.readAsDataURL(file);
+            const fetchPoints = async (uid) => {
+                if(GOOGLE_SCRIPT_URL.includes("xxxxxxxx")) { setPoints(10); setIsCheckingPoints(false); return; }
+                setIsCheckingPoints(true);
+                try {
+                    const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=check&userId=${uid}`);
+                    const data = await response.json();
+                    if (data.status === 'success') setPoints(data.points);
+                } catch (error) { console.error("API Error", error); }
+                setIsCheckingPoints(false);
+            };
+
+            const handleDownloadClick = async () => {
+                if (isProcessing) return;
+                
+                // CHECK IF POINTS SUFFICIENT (Require 2 points)
+                if (points < DOWNLOAD_COST) {
+                    setShowBuyModal(true);
+                    return;
                 }
-            };
 
-            const resetImage = () => {
-                if(bgImage) {
-                    const W = 1080, H = 1200;
-                    const scale = Math.max(W / bgImage.width, H / bgImage.height);
-                    setImgPos({ x: (W - bgImage.width * scale) / 2, y: (H - bgImage.height * scale) / 2, scale });
+                setIsProcessing(true);
+
+                if(GOOGLE_SCRIPT_URL.includes("xxxxxxxx")) {
+                    performDownload(); setPoints(prev => prev - DOWNLOAD_COST); setIsProcessing(false); return;
                 }
-            };
-
-            const drawCover = (ctx, img, x, y, w, h) => {
-                const imgRatio = img.width / img.height;
-                const targetRatio = w / h;
-                let sx, sy, sw, sh;
-                if (imgRatio > targetRatio) { sh = img.height; sw = img.height * targetRatio; sy = 0; sx = (img.width - sw) / 2; } 
-                else { sw = img.width; sh = img.width / targetRatio; sx = 0; sy = (img.height - sh) / 2; }
-                ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
-            };
-
-            // Touch Logic
-            const handleTouchStart = (e) => {
-                if (bgImage2) return;
-                const t = e.touches;
-                if (t.length === 1) gestureStart.current = { mode: 'pan', x: t[0].clientX, y: t[0].clientY, imgX: imgPos.x, imgY: imgPos.y };
-                else if (t.length === 2) gestureStart.current = { mode: 'zoom', dist: Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY), scale: imgPos.scale };
-            };
-            const handleTouchMove = (e) => {
-                if (!gestureStart.current.mode || bgImage2) return;
-                e.preventDefault();
-                const rect = e.target.getBoundingClientRect();
-                const canvasScaleFactor = 1080 / rect.width;
-                const t = e.touches;
-                if (t.length === 1 && gestureStart.current.mode === 'pan') {
-                    setImgPos(prev => ({ ...prev, x: gestureStart.current.imgX + (t[0].clientX - gestureStart.current.x) * canvasScaleFactor, y: gestureStart.current.imgY + (t[0].clientY - gestureStart.current.y) * canvasScaleFactor }));
-                } else if (t.length === 2 && gestureStart.current.mode === 'zoom') {
-                    const dist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
-                    setImgPos(prev => ({ ...prev, scale: gestureStart.current.scale * (dist / gestureStart.current.dist) }));
-                }
-            };
-            const handleEnd = () => { gestureStart.current.mode = null; };
-            const handleMouseDown = (e) => { if(!bgImage2) gestureStart.current = { mode: 'pan', x: e.clientX, y: e.clientY, imgX: imgPos.x, imgY: imgPos.y }; };
-            const handleMouseMove = (e) => {
-                if (gestureStart.current.mode === 'pan' && !bgImage2) {
-                    const rect = e.target.getBoundingClientRect();
-                    const canvasScaleFactor = 1080 / rect.width;
-                    setImgPos(prev => ({ ...prev, x: gestureStart.current.imgX + (e.clientX - gestureStart.current.x) * canvasScaleFactor, y: gestureStart.current.imgY + (e.clientY - gestureStart.current.y) * canvasScaleFactor }));
-                }
-            };
-
-            const measureText = (ctx, text, fontSize, fontWeight = 'bold') => {
-                ctx.font = `${fontWeight} ${fontSize}px "Hind Siliguri", sans-serif`;
-                return ctx.measureText(text).width;
-            };
-
-            const drawText = (ctx, text, x, y, fontSize, color, align = 'center', fontWeight = 'bold') => {
-                ctx.font = `${fontWeight} ${fontSize}px "Hind Siliguri", sans-serif`;
-                ctx.fillStyle = color;
-                ctx.textAlign = align;
-                ctx.fillText(text, x, y);
-            };
-
-            const drawJustifiedText = (ctx, text, x, y, maxWidth, lineHeight) => {
-                if (!text) return { lines: [], height: 0 };
-                const words = text.split(' ');
-                let line = '';
-                let lines = [];
-                for (let n = 0; n < words.length; n++) {
-                    const testLine = line + words[n] + ' ';
-                    if (ctx.measureText(testLine).width > maxWidth && n > 0) { lines.push(line.trim()); line = words[n] + ' '; }
-                    else { line = testLine; }
-                }
-                lines.push(line.trim());
-                return { lines, height: lines.length * lineHeight };
-            };
-
-            useEffect(() => {
-                const canvas = canvasRef.current;
-                if (!canvas) return;
-                const ctx = canvas.getContext('2d');
-                const W = 1080, H = 1200, splitY = 700;
-                canvas.width = W; canvas.height = H;
-
-                // 1. Clear & Background
-                ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, W, H);
 
                 try {
-                    // 2. Images
-                    if (bgImage && bgImage2) {
-                        drawCover(ctx, bgImage, 0, 0, W/2, H);
-                        drawCover(ctx, bgImage2, W/2, 0, W/2, H);
-                        ctx.beginPath(); ctx.moveTo(W/2, 0); ctx.lineTo(W/2, H); 
-                        ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 2; ctx.stroke();
-                    } else if (bgImage) {
-                        ctx.save();
-                        ctx.translate(imgPos.x, imgPos.y);
-                        ctx.scale(imgPos.scale, imgPos.scale);
-                        ctx.drawImage(bgImage, 0, 0);
-                        ctx.restore();
+                    const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=deduct&userId=${userId}&amount=${DOWNLOAD_COST}`, { method: 'POST' });
+                    const data = await response.json();
+                    
+                    if (data.status === 'success') {
+                        setPoints(data.points);
+                        performDownload();
                     } else {
-                        const grd = ctx.createLinearGradient(0, 0, 0, splitY);
-                        grd.addColorStop(0, '#1b5e20'); grd.addColorStop(1, '#2e7d32');
-                        ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H);
-                        drawText(ctx, "Loading Image...", W/2, H/2, 50, "#fff", "center");
+                        alert("Not enough points or server error.");
                     }
-
-                    // 3. Layout Constants (Defined at top level of try block)
-                    const titleBoxY = splitY + 40; 
-                    const titleBoxW = 800;
-                    const titleBoxH = 90;
-                    const titleBoxX = (W - titleBoxW) / 2;
-                    const scoresY = titleBoxY + 160; 
-                    const leftCenter = W * 0.25; 
-                    const rightCenter = W * 0.75;
-                    const footerH = 60;
-                    const footerY = H - footerH;
-
-                    // 4. Overlays
-                    ctx.save();
-                    ctx.globalAlpha = formData.bgOpacity; 
-                    const gradient = ctx.createLinearGradient(0, splitY, 0, H);
-                    gradient.addColorStop(0, formData.primaryColor); 
-                    gradient.addColorStop(1, formData.secondaryColor);
-                    ctx.fillStyle = gradient;
-                    
-                    if (appMode === 'news') {
-                        // Use the slider value to determine height
-                        const overlayHeight = H * formData.newsGradientHeight; 
-                        const overlayStart = H - overlayHeight;
-                        ctx.fillRect(0, overlayStart, W, overlayHeight);
-                    } else {
-                        ctx.fillRect(0, splitY, W, H - splitY);
-                    }
-                    
-                    // Header Box BG (Not for News)
-                    if (appMode !== 'news') {
-                        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; 
-                        ctx.fillRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH);
-                    }
-                    
-                    // Footer BG
-                    ctx.fillStyle = '#0f172a';
-                    ctx.fillRect(0, footerY, W, footerH);
-                    ctx.restore(); 
-
-                    // 5. Badge & Icon
-                    const badgeW = 320, badgeH = 70, badgeX = W - badgeW - 40, badgeY = 40;
-                    ctx.beginPath(); ctx.arc(badgeX + 45, badgeY + 35, 22, 0, Math.PI * 2); ctx.fillStyle = '#1877F2'; ctx.fill();
-                    drawText(ctx, "f", badgeX + 45, badgeY + 48, 35, "#fff", "center", "bold");
-                    ctx.save(); ctx.shadowColor = "rgba(0, 0, 0, 0.8)"; ctx.shadowBlur = 6;
-                    drawText(ctx, formData.badgeText, badgeX + 80, badgeY + 48, 32, '#fff', 'left', 'bold');
-                    ctx.restore();
-
-                    // 6. Header Border (Not for News)
-                    if (appMode !== 'news') {
-                        ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 2;
-                        ctx.strokeRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH);
-                        drawText(ctx, formData.title, W / 2, titleBoxY + 60, 50, '#fff', 'center', 'bold');
-                    }
-
-                    // 7. Content Logic
-                    if (appMode === 'scorecard') {
-                        drawText(ctx, formData.team1, leftCenter, scoresY, 65, formData.team1Color, 'center', 'bold');
-                        const t1w = measureText(ctx, formData.team1Score, 60, 'bold');
-                        const t1o = measureText(ctx, formData.team1Overs, 35, 'normal');
-                        const t1x = leftCenter - ((t1w + 15 + t1o) / 2);
-                        ctx.textAlign = 'left';
-                        ctx.font = `bold 60px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#fff'; ctx.fillText(formData.team1Score, t1x, scoresY + 80);
-                        ctx.font = `normal 35px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#ddd'; ctx.fillText(formData.team1Overs, t1x + t1w + 15, scoresY + 80);
-
-                        ctx.beginPath(); ctx.moveTo(W/2, scoresY-20); ctx.lineTo(W/2, scoresY+100); ctx.lineWidth=4; ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.stroke();
-
-                        drawText(ctx, formData.team2, rightCenter, scoresY, 65, formData.team2Color, 'center', 'bold');
-                        const t2w = measureText(ctx, formData.team2Score, 60, 'bold');
-                        const t2o = measureText(ctx, formData.team2Overs, 35, 'normal');
-                        const t2x = rightCenter - ((t2w + 15 + t2o) / 2);
-                        ctx.textAlign = 'left';
-                        ctx.font = `bold 60px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#fff'; ctx.fillText(formData.team2Score, t2x, scoresY + 80);
-                        ctx.font = `normal 35px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#ddd'; ctx.fillText(formData.team2Overs, t2x + t2w + 15, scoresY + 80);
-
-                        drawText(ctx, formData.result, W / 2, scoresY + 180, 48, formData.resultColor, 'center', 'bold');
-
-                    } else if (appMode === 'schedule') {
-                        drawText(ctx, formData.team1, leftCenter - 20, scoresY + 40, 80, formData.team1Color, 'center', 'bold');
-                        ctx.beginPath(); ctx.arc(W / 2, scoresY + 30, 50, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fill();
-                        ctx.lineWidth = 3; ctx.strokeStyle = '#fff'; ctx.stroke();
-                        drawText(ctx, "VS", W / 2, scoresY + 45, 40, '#fff', 'center', 'bold');
-                        drawText(ctx, formData.team2, rightCenter + 20, scoresY + 40, 80, formData.team2Color, 'center', 'bold');
-
-                        const detailsY = scoresY + 130;
-                        ctx.fillStyle = 'rgba(0,0,0,0.3)';
-                        if(ctx.roundRect) ctx.roundRect((W-700)/2, detailsY, 700, 100, 20); else ctx.fillRect((W-700)/2, detailsY, 700, 100);
-                        ctx.fill();
-
-                        drawText(ctx, formData.matchDate, W / 2, detailsY + 45, 40, '#fff', 'center', 'bold');
-                        drawText(ctx, `${formData.matchTime}  |  ${formData.matchVenue}`, W / 2, detailsY + 85, 30, '#ddd', 'center', 'normal');
-
-                    } else if (appMode === 'player') {
-                        const pStatY = scoresY - 20; 
-                        drawText(ctx, formData.playerStatMain, W/2, pStatY + 40, 130, formData.team1Color, 'center', 'bold'); 
-                        drawText(ctx, formData.playerStatSub, W/2, pStatY + 90, 40, '#fff', 'center', 'normal');
-                        ctx.beginPath(); ctx.moveTo(W/2 - 150, pStatY + 120); ctx.lineTo(W/2 + 150, pStatY + 120); 
-                        ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 2; ctx.stroke();
-                        drawText(ctx, formData.playerName, W/2, pStatY + 180, 60, '#fff', 'center', 'bold'); 
-
-                    } else if (appMode === 'news') {
-                        // Use calculated Y based on slider
-                        const overlayHeight = H * formData.newsGradientHeight;
-                        const newsStartY = H - overlayHeight; // Top of the color box
-                        const contentStartY = newsStartY + 50; // Padding from top of color box
-
-                        const newsWidth = 880; 
-                        const newsX = 100; 
-                        const lineHeight = 80;
-
-                        ctx.font = "100px serif"; ctx.fillStyle = "rgba(255,215,0,0.2)"; ctx.textAlign = "left"; 
-                        ctx.fillText("❝", 80, contentStartY);
-
-                        ctx.font = "bold 55px 'Hind Siliguri', sans-serif"; ctx.fillStyle = "#fff";
-                        const textData = drawJustifiedText(ctx, formData.quoteText || "", newsX, contentStartY + 60, newsWidth, lineHeight);
-                        const lines = textData.lines;
-                        lines.forEach((line, i) => {
-                            if (i === lines.length - 1) {
-                                ctx.textAlign = 'left'; ctx.fillText(line, newsX, contentStartY + 60 + (i * lineHeight));
-                            } else {
-                                const words = line.split(' ');
-                                if (words.length > 1) {
-                                    const available = newsWidth - ctx.measureText(line.replace(/\s/g, '')).width; // approximate
-                                    // simplified justify
-                                    ctx.textAlign = 'left'; ctx.fillText(line, newsX, contentStartY + 60 + (i * lineHeight));
-                                } else {
-                                    ctx.textAlign = 'left'; ctx.fillText(line, newsX, contentStartY + 60 + (i * lineHeight));
-                                }
-                            }
-                        });
-                        
-                        // Author position relative to text end
-                        const authY = contentStartY + 60 + (lines.length * lineHeight) + 40;
-                        ctx.beginPath(); ctx.moveTo(newsX, authY); ctx.lineTo(newsX + 200, authY); ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 5; ctx.stroke();
-                        drawText(ctx, formData.quoteAuthor, newsX, authY + 50, 40, '#ddd', 'left', 'bold');
-                        
-                        // Tag relative to start
-                        ctx.fillStyle = '#d32f2f'; ctx.fillRect(80, contentStartY - 100, 300, 60);
-                        drawText(ctx, "ব্রেকিং নিউজ", 230, contentStartY - 60, 35, '#fff', 'center', 'bold');
-                    }
-
-                    // 8. Footer
-                    drawText(ctx, formData.footerHandle, W / 2, footerY + 40, 24, '#94a3b8', 'center', 'normal');
-
-                } catch (err) {
-                    console.error("Canvas Drawing Error:", err);
+                } catch (error) {
+                    console.error("Download Error", error);
+                    alert("Network error.");
                 }
-
-            }, [bgImage, bgImage2, formData, imgPos, appMode]);
-
-            const handleChange = (e) => { setFormData({ ...formData, [e.target.name]: e.target.value }); };
-            
-            const swapTeams = () => {
-                setFormData(prev => ({
-                    ...prev, team1: prev.team2, team1Score: prev.team2Score, team1Overs: prev.team2Overs, team1Color: prev.team2Color,
-                    team2: prev.team1, team2Score: prev.team1Score, team2Overs: prev.team1Overs, team2Color: prev.team1Color,
-                }));
+                setIsProcessing(false);
             };
 
-            const handleDownloadClick = () => setShowAdModal(true);
-            const incrementAdCount = () => { setIsLoadingAd(false); setAdsWatched(p => { const n = p + 1; if (n >= 3) setIsDownloadReady(true); return n; }); };
-            const watchAd = () => {
-                setIsLoadingAd(true);
-                const adTimeout = setTimeout(() => incrementAdCount(), 5000);
-                if (typeof window.show_9743120 !== 'function') { clearTimeout(adTimeout); setTimeout(() => incrementAdCount(), 1500); return; }
-                window.show_9743120().then(() => { clearTimeout(adTimeout); incrementAdCount(); }).catch(() => { clearTimeout(adTimeout); incrementAdCount(); });
-            };
             const performDownload = () => {
                 const canvas = canvasRef.current;
                 if (!canvas) return;
                 canvas.toBlob((blob) => {
-                    if (!blob) { alert("Error"); return; }
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.download = `poster-${Date.now()}.png`;
@@ -460,44 +204,197 @@
                     setTimeout(() => { document.body.removeChild(link); URL.revokeObjectURL(url); }, 100);
                 }, 'image/png');
             };
-            const handleFinalDownload = () => { performDownload(); setTimeout(() => { setShowAdModal(false); setAdsWatched(0); setIsDownloadReady(false); }, 1500); };
 
+            const copyId = () => { navigator.clipboard.writeText(userId); alert("ID Copied: " + userId); };
+
+            // --- IMAGE & CANVAS LOGIC ---
+            useEffect(() => {
+                if (window.Telegram && window.Telegram.WebApp) {
+                    window.Telegram.WebApp.ready();
+                    if (window.Telegram.WebApp.expand) window.Telegram.WebApp.expand();
+                }
+                const img = new Image();
+                img.crossOrigin = "Anonymous";
+                img.src = "https://images.unsplash.com/photo-1531415074968-036ba1b575da?q=80&w=1080&auto=format&fit=crop";
+                img.onload = () => { setBgImage(img); setImgPos({ x: 0, y: 0, scale: 1 }); };
+            }, []);
+
+            const handleImageUpload = (e, isSecond = false) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            if (isSecond) setBgImage2(img);
+                            else { setBgImage(img); const W = 1080, H = 1200; const scale = Math.max(W / img.width, H / img.height); setImgPos({ x: (W - img.width * scale) / 2, y: (H - img.height * scale) / 2, scale }); }
+                        };
+                        img.src = ev.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            const resetImage = () => { if(bgImage) { const W = 1080, H = 1200; const scale = Math.max(W / bgImage.width, H / bgImage.height); setImgPos({ x: (W - bgImage.width * scale) / 2, y: (H - bgImage.height * scale) / 2, scale }); } };
+            const drawCover = (ctx, img, x, y, w, h) => { const r = img.width/img.height, tr = w/h; let sx, sy, sw, sh; if (r > tr) { sh = img.height; sw = img.height * tr; sy = 0; sx = (img.width - sw) / 2; } else { sw = img.width; sh = img.width / tr; sx = 0; sy = (img.height - sh) / 2; } ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h); };
+
+            const handleTouchStart = (e) => { if (bgImage2) return; const t = e.touches; if (t.length === 1) gestureStart.current = { mode: 'pan', x: t[0].clientX, y: t[0].clientY, imgX: imgPos.x, imgY: imgPos.y }; else if (t.length === 2) gestureStart.current = { mode: 'zoom', dist: Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY), scale: imgPos.scale }; };
+            const handleTouchMove = (e) => { if (!gestureStart.current.mode || bgImage2) return; e.preventDefault(); const rect = e.target.getBoundingClientRect(); const s = 1080 / rect.width; const t = e.touches; if (t.length === 1 && gestureStart.current.mode === 'pan') { setImgPos(prev => ({ ...prev, x: gestureStart.current.imgX + (t[0].clientX - gestureStart.current.x) * s, y: gestureStart.current.imgY + (t[0].clientY - gestureStart.current.y) * s })); } else if (t.length === 2 && gestureStart.current.mode === 'zoom') { const d = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); setImgPos(prev => ({ ...prev, scale: gestureStart.current.scale * (d / gestureStart.current.dist) })); } };
+            const handleEnd = () => { gestureStart.current.mode = null; };
+            const handleMouseDown = (e) => { if(!bgImage2) gestureStart.current = { mode: 'pan', x: e.clientX, y: e.clientY, imgX: imgPos.x, imgY: imgPos.y }; };
+            const handleMouseMove = (e) => { if (gestureStart.current.mode === 'pan' && !bgImage2) { const rect = e.target.getBoundingClientRect(); const s = 1080 / rect.width; setImgPos(prev => ({ ...prev, x: gestureStart.current.imgX + (e.clientX - gestureStart.current.x) * s, y: gestureStart.current.imgY + (e.clientY - gestureStart.current.y) * s })); } };
+
+            const measureText = (ctx, text, fs, fw) => { ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`; return ctx.measureText(text).width; };
+            const drawText = (ctx, text, x, y, fs, color, align, fw) => { ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`; ctx.fillStyle = color; ctx.textAlign = align; ctx.fillText(text, x, y); };
+            const drawJustifiedText = (ctx, text, x, y, maxW, lh) => {
+                if (!text) return { lines: [], height: 0 };
+                const words = text.split(' '); let line = '', lines = [];
+                for (let n = 0; n < words.length; n++) { const tl = line + words[n] + ' '; if (ctx.measureText(tl).width > maxW && n > 0) { lines.push(line.trim()); line = words[n] + ' '; } else { line = tl; } }
+                lines.push(line.trim()); return { lines, height: lines.length * lh };
+            };
+
+            // Main Draw Loop
+            useEffect(() => {
+                const canvas = canvasRef.current; if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                const W = 1080, H = 1200, splitY = 700;
+                canvas.width = W; canvas.height = H;
+                ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, W, H);
+
+                try {
+                    if (bgImage && bgImage2) { drawCover(ctx, bgImage, 0, 0, W/2, H); drawCover(ctx, bgImage2, W/2, 0, W/2, H); ctx.beginPath(); ctx.moveTo(W/2, 0); ctx.lineTo(W/2, H); ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 2; ctx.stroke(); }
+                    else if (bgImage) { ctx.save(); ctx.translate(imgPos.x, imgPos.y); ctx.scale(imgPos.scale, imgPos.scale); ctx.drawImage(bgImage, 0, 0); ctx.restore(); }
+                    else { const grd = ctx.createLinearGradient(0, 0, 0, splitY); grd.addColorStop(0, '#1b5e20'); grd.addColorStop(1, '#2e7d32'); ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H); drawText(ctx, "Loading Image...", W/2, H/2, 50, "#fff", "center", "bold"); }
+
+                    const titleBoxY = splitY + 40, titleBoxW = 800, titleBoxH = 90, titleBoxX = (W - titleBoxW) / 2;
+                    const scoresY = titleBoxY + 160, leftCenter = W * 0.25, rightCenter = W * 0.75, footerH = 60, footerY = H - footerH;
+
+                    ctx.save(); ctx.globalAlpha = formData.bgOpacity; 
+                    const gradient = ctx.createLinearGradient(0, splitY, 0, H); gradient.addColorStop(0, formData.primaryColor); gradient.addColorStop(1, formData.secondaryColor); ctx.fillStyle = gradient;
+                    if (appMode === 'news') { const h = H * formData.newsGradientHeight; ctx.fillRect(0, H - h, W, h); } else ctx.fillRect(0, splitY, W, H - splitY);
+                    
+                    if (appMode !== 'news') { ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; ctx.fillRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH); }
+                    ctx.fillStyle = '#0f172a'; ctx.fillRect(0, footerY, W, footerH); ctx.restore(); 
+
+                    const badgeX = W - 320 - 40, badgeY = 40;
+                    ctx.beginPath(); ctx.arc(badgeX + 45, badgeY + 35, 22, 0, Math.PI * 2); ctx.fillStyle = '#1877F2'; ctx.fill(); drawText(ctx, "f", badgeX + 45, badgeY + 48, 35, "#fff", "center", "bold");
+                    ctx.save(); ctx.shadowColor = "rgba(0, 0, 0, 0.8)"; ctx.shadowBlur = 6; drawText(ctx, formData.badgeText, badgeX + 80, badgeY + 48, 32, '#fff', 'left', 'bold'); ctx.restore();
+
+                    if (appMode !== 'news') { ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 2; ctx.strokeRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH); drawText(ctx, formData.title, W / 2, titleBoxY + 60, 50, '#fff', 'center', 'bold'); }
+
+                    if (appMode === 'scorecard') {
+                        drawText(ctx, formData.team1, leftCenter, scoresY, 65, formData.team1Color, 'center', 'bold');
+                        const t1w = measureText(ctx, formData.team1Score, 60, 'bold'), t1o = measureText(ctx, formData.team1Overs, 35, 'normal');
+                        const t1x = leftCenter - ((t1w + 15 + t1o) / 2);
+                        ctx.textAlign = 'left'; ctx.font = `bold 60px "Hind Siliguri"`; ctx.fillStyle = '#fff'; ctx.fillText(formData.team1Score, t1x, scoresY + 80);
+                        ctx.font = `normal 35px "Hind Siliguri"`; ctx.fillStyle = '#ddd'; ctx.fillText(formData.team1Overs, t1x + t1w + 15, scoresY + 80);
+                        ctx.beginPath(); ctx.moveTo(W/2, scoresY-20); ctx.lineTo(W/2, scoresY+100); ctx.lineWidth=4; ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.stroke();
+                        drawText(ctx, formData.team2, rightCenter, scoresY, 65, formData.team2Color, 'center', 'bold');
+                        const t2w = measureText(ctx, formData.team2Score, 60, 'bold'), t2o = measureText(ctx, formData.team2Overs, 35, 'normal');
+                        const t2x = rightCenter - ((t2w + 15 + t2o) / 2);
+                        ctx.textAlign = 'left'; ctx.font = `bold 60px "Hind Siliguri"`; ctx.fillStyle = '#fff'; ctx.fillText(formData.team2Score, t2x, scoresY + 80);
+                        ctx.font = `normal 35px "Hind Siliguri"`; ctx.fillStyle = '#ddd'; ctx.fillText(formData.team2Overs, t2x + t2w + 15, scoresY + 80);
+                        drawText(ctx, formData.result, W / 2, scoresY + 180, 48, formData.resultColor, 'center', 'bold');
+                    } else if (appMode === 'schedule') {
+                        drawText(ctx, formData.team1, leftCenter - 20, scoresY + 40, 80, formData.team1Color, 'center', 'bold');
+                        ctx.beginPath(); ctx.arc(W/2, scoresY+30, 50, 0, Math.PI*2); ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#fff'; ctx.stroke();
+                        drawText(ctx, "VS", W/2, scoresY+45, 40, '#fff', 'center', 'bold');
+                        drawText(ctx, formData.team2, rightCenter + 20, scoresY + 40, 80, formData.team2Color, 'center', 'bold');
+                        const dy = scoresY + 130; ctx.fillStyle = 'rgba(0,0,0,0.3)'; if(ctx.roundRect) ctx.roundRect((W-700)/2, dy, 700, 100, 20); else ctx.fillRect((W-700)/2, dy, 700, 100); ctx.fill();
+                        drawText(ctx, formData.matchDate, W/2, dy+45, 40, '#fff', 'center', 'bold'); drawText(ctx, `${formData.matchTime} | ${formData.matchVenue}`, W/2, dy+85, 30, '#ddd', 'center', 'normal');
+                    } else if (appMode === 'player') {
+                        const py = scoresY - 20; drawText(ctx, formData.playerStatMain, W/2, py + 40, 130, formData.team1Color, 'center', 'bold'); drawText(ctx, formData.playerStatSub, W/2, py + 90, 40, '#fff', 'center', 'normal');
+                        ctx.beginPath(); ctx.moveTo(W/2-150, py+120); ctx.lineTo(W/2+150, py+120); ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=2; ctx.stroke();
+                        drawText(ctx, formData.playerName, W/2, py + 180, 60, '#fff', 'center', 'bold');
+                    } else if (appMode === 'news') {
+                        const ny = 600, nw = 880, nx = 100, lh = 80; const h = H * formData.newsGradientHeight; const nsy = H - h; const csy = nsy + 50;
+                        ctx.font = "100px serif"; ctx.fillStyle = "rgba(255,215,0,0.2)"; ctx.textAlign = "left"; ctx.fillText("❝", 80, csy);
+                        ctx.font = "bold 55px 'Hind Siliguri'"; ctx.fillStyle = "#fff";
+                        const td = drawJustifiedText(ctx, formData.quoteText || "", nx, csy + 60, nw, lh);
+                        td.lines.forEach((l, i) => { ctx.textAlign = 'left'; ctx.fillText(l, nx, csy + 60 + (i * lh)); });
+                        const ay = csy + 60 + (td.lines.length * lh) + 40;
+                        ctx.beginPath(); ctx.moveTo(nx, ay); ctx.lineTo(nx + 200, ay); ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 5; ctx.stroke();
+                        drawText(ctx, formData.quoteAuthor, nx, ay + 50, 40, '#ddd', 'left', 'bold');
+                        ctx.fillStyle = '#d32f2f'; ctx.fillRect(80, csy - 100, 300, 60); drawText(ctx, "ব্রেকিং নিউজ", 230, csy - 60, 35, '#fff', 'center', 'bold');
+                    }
+                    drawText(ctx, formData.footerHandle, W / 2, footerY + 40, 24, '#94a3b8', 'center', 'normal');
+                } catch (e) { console.error(e); }
+            }, [bgImage, bgImage2, formData, imgPos, appMode]);
+
+            const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+            const swapTeams = () => setFormData(p => ({ ...p, team1: p.team2, team1Score: p.team2Score, team1Overs: p.team2Overs, team1Color: p.team2Color, team2: p.team1, team2Score: p.team1Score, team2Overs: p.team1Overs, team2Color: p.team1Color }));
+            
             return (
                 <div className="min-h-screen pb-20 md:pb-8">
-                    {/* INSTALL PROMPT */}
-                    {showInstallPrompt && (
-                        <div className="install-prompt bg-slate-900 text-white p-4 rounded-xl shadow-2xl flex items-center justify-between border border-slate-700">
-                            <div className="flex items-center gap-3"><div className="bg-red-600 p-2 rounded-lg"><IconInstall /></div><div><h4 className="font-bold text-sm">Install App</h4><p className="text-xs text-slate-400">Add to Home Screen</p></div></div>
-                            <div className="flex gap-2"><button onClick={() => setShowInstallPrompt(false)} className="p-2 text-slate-400"><IconClose /></button><button onClick={handleInstallApp} className="bg-white text-slate-900 px-4 py-2 rounded-lg text-xs font-bold">Install</button></div>
-                        </div>
-                    )}
-                    {/* AD MODAL */}
-                    {showAdModal && (
+                    {showBuyModal && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm modal-backdrop">
                             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center modal-content border border-gray-200">
-                                <div className="bg-red-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">{isDownloadReady ? <IconCheck /> : <IconDownload />}</div>
-                                <h3 className="text-xl font-bold text-gray-900 mb-2">{isDownloadReady ? 'Ready to Save!' : 'Free Download'}</h3>
-                                <p className="text-gray-500 text-sm mb-6">{isDownloadReady ? "Click below to save." : "Watch 3 short ads to download your poster."}</p>
-                                {!isDownloadReady && (<><div className="mb-6 bg-gray-200 rounded-full h-4 overflow-hidden"><div className="bg-red-600 h-full transition-all duration-500 ease-out" style={{ width: `${(adsWatched / 3) * 100}%` }}></div></div><p className="text-sm font-bold text-gray-700 mb-6">Ads Watched: <span className="text-red-600">{adsWatched} / 3</span></p></>)}
-                                {isDownloadReady ? (<button onClick={handleFinalDownload} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2"><IconDownload /> Download Now</button>) : (<button onClick={watchAd} disabled={isLoadingAd} className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70">{isLoadingAd ? 'Loading...' : 'Watch Ad'} {!isLoadingAd && <IconPlay />}</button>)}
-                                <button onClick={() => setShowAdModal(false)} className="mt-4 text-xs text-gray-400 hover:text-gray-600 underline">Cancel</button>
+                                <div className="bg-red-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">💎</div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">Buy Points</h3>
+                                <p className="text-gray-500 text-sm mb-4">You need {DOWNLOAD_COST} points to download. You have {points}.</p>
+                                
+                                <div className="bg-blue-50 p-4 rounded-lg mb-4 text-sm text-blue-800 text-left">
+                                   <p className="font-bold mb-2">Pricing:</p>
+                                   <ul className="list-disc pl-4 space-y-1">
+                                      <li>100 Points = 100 Tk</li>
+                                      <li>200 Points = 150 Tk</li>
+                                   </ul>
+                                </div>
+
+                                <div className="bg-gray-100 p-3 rounded-lg mb-4 text-left">
+                                    <p className="text-xs text-gray-500 uppercase font-bold mb-1">Your User ID:</p>
+                                    <div className="flex justify-between items-center bg-white p-2 rounded border">
+                                        <code className="text-sm font-mono text-red-600">{userId}</code>
+                                        <button onClick={copyId} className="text-gray-400 hover:text-gray-600"><IconCopy /></button>
+                                    </div>
+                                </div>
+                                <p className="text-xs text-gray-400 mb-6">Send this ID to Admin after payment.</p>
+                                
+                                <a href="https://t.me/Mizan0072" target="_blank" rel="noreferrer" className="block w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg mb-3 flex items-center justify-center gap-2">
+                                   <IconTg /> Contact Admin (@Mizan0072)
+                                </a>
+
+                                <button onClick={() => { setShowBuyModal(false); fetchPoints(userId); }} className="w-full bg-slate-900 text-white font-bold py-3 rounded-xl">Refresh Balance</button>
+                                <button className="mt-3 text-xs text-gray-400 underline" onClick={() => setShowBuyModal(false)}>Cancel</button>
                             </div>
                         </div>
                     )}
+
                     <div className="bg-white border-b sticky top-0 z-20 px-4 py-3 flex items-center justify-between shadow-sm">
-                        <h1 className="text-lg font-bold text-slate-800 flex items-center gap-2"><span className="text-red-600 bg-red-100 p-1.5 rounded-lg"><IconRefresh /></span> Poster Bot</h1>
-                        <button onClick={handleDownloadClick} className="bg-slate-900 text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 active:scale-95 transition-transform"><IconDownload /> Save</button>
+                        <h1 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <span className="text-red-600 bg-red-100 p-1.5 rounded-lg"><IconRefresh /></span> Poster Bot
+                        </h1>
+                        <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-1 bg-yellow-50 px-3 py-1.5 rounded-full border border-yellow-200 cursor-pointer" onClick={() => setShowBuyModal(true)}>
+                                <IconCoin />
+                                {isCheckingPoints ? <div className="loader"></div> : <span className="text-sm font-bold text-yellow-700">{points}</span>}
+                            </div>
+                            <button onClick={handleDownloadClick} disabled={isProcessing} className="bg-slate-900 text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 active:scale-95 transition-transform disabled:opacity-50">
+                                {isProcessing ? '...' : <><IconDownload /> Save</>}
+                            </button>
+                        </div>
                     </div>
+
                     <div className="max-w-2xl mx-auto p-4 space-y-6">
+                        {showInstallPrompt && (
+                            <div className="install-prompt bg-slate-900 text-white p-4 rounded-xl shadow-2xl flex items-center justify-between border border-slate-700">
+                                <div className="flex items-center gap-3"><div className="bg-red-600 p-2 rounded-lg"><IconInstall /></div><div><h4 className="font-bold text-sm">Install App</h4><p className="text-xs text-slate-400">Add to Home Screen</p></div></div>
+                                <div className="flex gap-2"><button onClick={() => setShowInstallPrompt(false)} className="p-2 text-slate-400"><IconClose /></button><button onClick={handleInstallApp} className="bg-white text-slate-900 px-4 py-2 rounded-lg text-xs font-bold">Install</button></div>
+                            </div>
+                        )}
+
                         <div className="bg-white p-1.5 rounded-xl shadow-sm border border-slate-200 flex gap-1 overflow-x-auto no-scrollbar">
                             {['scorecard', 'schedule', 'player', 'news'].map(mode => (<button key={mode} onClick={() => setAppMode(mode)} className={`flex-1 min-w-[80px] py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${appMode === mode ? 'bg-red-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-100'}`}>{mode}</button>))}
                         </div>
+
                         <div className="bg-slate-800 rounded-xl overflow-hidden shadow-2xl border border-slate-700 aspect-[1080/1200] relative group canvas-container touch-none">
                             <canvas ref={canvasRef} className="w-full h-full object-contain cursor-move touch-none" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleEnd} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleEnd} onMouseLeave={handleEnd}></canvas>
                             <div className="absolute top-4 right-4 flex flex-col gap-2"><button onClick={resetImage} className="bg-black/50 text-white p-2 rounded-full backdrop-blur-sm hover:bg-black/70"><IconRefresh /></button></div>
                             {!bgImage && <div className="absolute inset-0 pointer-events-none flex items-center justify-center"><span className="bg-white/90 text-slate-800 px-4 py-2 rounded-full text-sm font-bold shadow-lg">Loading...</span></div>}
                         </div>
+
                         {bgImage && !bgImage2 && (<div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4"><IconMove /> <span className="text-xs text-slate-500 font-medium w-24">Drag Image</span><div className="h-6 w-px bg-slate-200"></div> <IconZoomIn /><input type="range" min="0.1" max="5" step="0.05" value={imgPos.scale} onChange={(e) => setImgPos(prev => ({ ...prev, scale: parseFloat(e.target.value) }))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" /></div>)}
+
                         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                             <div className="flex border-b bg-slate-50">
                                 <button onClick={() => setActiveTab('match')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'match' ? 'bg-white text-red-600 border-t-2 border-red-600' : 'text-slate-500'}`}>Edit Info</button>
@@ -543,24 +440,7 @@
                                     <div className="space-y-5">
                                         <div><label className="block text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2"><IconEye /> Opacity</label><input type="range" min="0" max="1" step="0.05" value={formData.bgOpacity} onChange={(e) => setFormData({...formData, bgOpacity: parseFloat(e.target.value)})} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" /></div>
                                         <div><label className="block text-xs font-bold text-slate-400 uppercase mb-2">Gradient</label><div className="flex gap-2"><input type="color" name="primaryColor" value={formData.primaryColor} onChange={handleChange} className="h-10 w-full rounded-lg" /><input type="color" name="secondaryColor" value={formData.secondaryColor} onChange={handleChange} className="h-10 w-full rounded-lg" /></div></div>
-                                        {/* NEW: Gradient Height Slider for News Mode */}
-                                        {appMode === 'news' && (
-                                            <div>
-                                                <label className="block text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2">
-                                                    <IconHeight /> News Color Height
-                                                </label>
-                                                <input 
-                                                    type="range" 
-                                                    min="0.2" 
-                                                    max="0.9" 
-                                                    step="0.05" 
-                                                    value={formData.newsGradientHeight} 
-                                                    onChange={(e) => setFormData({...formData, newsGradientHeight: parseFloat(e.target.value)})} 
-                                                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" 
-                                                />
-                                                <div className="flex justify-between text-xs text-slate-400 mt-1"><span>Low</span><span>High</span></div>
-                                            </div>
-                                        )}
+                                        {appMode === 'news' && (<div><label className="block text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2"><IconHeight /> News Color Height</label><input type="range" min="0.2" max="0.9" step="0.05" value={formData.newsGradientHeight} onChange={(e) => setFormData({...formData, newsGradientHeight: parseFloat(e.target.value)})} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" /><div className="flex justify-between text-xs text-slate-400 mt-1"><span>Low</span><span>High</span></div></div>)}
                                     </div>
                                 )}
                             </div>
