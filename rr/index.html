@@ -43,7 +43,6 @@
             e.preventDefault();
             deferredPrompt = e;
             console.log('Install prompt captured');
-            // We already show the button by default, but this confirms we can use the native prompt
         });
 
         // 3. Helper to detect iOS
@@ -123,7 +122,7 @@
 
     <!-- Header -->
     <header class="w-full bg-islamic-base text-islamic-cream pt-10 pb-16 px-4 rounded-b-[2.5rem] shadow-xl relative overflow-hidden shrink-0">
-        <!-- Install Button: Visible by default if NOT standalone -->
+        <!-- Install Button -->
         <button id="install-btn" onclick="attemptInstall()" class="absolute top-4 right-4 bg-islamic-gold text-islamic-base px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 shadow-lg hover:bg-white transition z-50 animate-bounce">
             <i class="fas fa-download"></i> ইনস্টল
         </button>
@@ -261,6 +260,11 @@
                     </ul>
                 </div>
             </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="text-center py-6 mt-4 text-islamic-base font-semibold text-base">
+            ডেভেলপড বাই মিজানুর রহমান
         </div>
     </main>
 
