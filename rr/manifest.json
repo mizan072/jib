@@ -1,0 +1,21 @@
+{
+  "name": "Ramadan 2026 Meherpur",
+  "short_name": "Ramadan 26",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f3d3e",
+  "theme_color": "#0f3d3e",
+  "description": "Ramadan Calendar 2026 for Meherpur District",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192/0f3d3e/ffffff?text=Ramadan",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512/0f3d3e/ffffff?text=Ramadan",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
