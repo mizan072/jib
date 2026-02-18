@@ -10,7 +10,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Ramadan 26">
-    <link rel="manifest" href="manifest.json">
+    
+    <!-- Embedded Manifest (Data URI) to guarantee detection -->
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlJhbWFkYW4gMjAyNiBNZWhlcnB1ciIsCiAgInNob3J0X25hbWUiOiAiUmFtYWRhbiAyNiIsCiAgInN0YXJ0X3VybCI6ICIuL2luZGV4Lmh0bWwiLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwZjNkM2UiLAogICJ0aGVtZV9jb2xvciI6ICIjMGYzZDNlIiwKICAiZGVzY3JpcHRpb24iOiAiUmFtYWRhbiBDYWxlbmRhciAyMDI2IGZvciBNZWhlcnB1ciBEaXN0cmljdCIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImh0dHBzOi8vdmlhLnBsYWNlaG9sZGVyLmNvbS8xOTIvMGYzZDNlL2ZmZmZmZj90ZXh0PVJhbWFkYW4iLAogICAgICAic2l6ZXMiOiAiMTkyeDE5MiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIKICAgIH0sCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly92aWEucGxhY2Vob2xkZXIuY29tLzUxMi8wZjNkM2UvZmZmZmZmP3RleHQ9UmFtYWRhbiIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIgogICAgfQogIF0KfQ==">
+
     <link rel="apple-touch-icon" href="https://via.placeholder.com/192/0f3d3e/ffffff?text=Ramadan">
     
     <!-- Tailwind CSS -->
@@ -25,17 +28,38 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script>
+        // --- PWA LOGIC START ---
+        let deferredPrompt;
+
+        // 1. Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').then(r=>console.log('SW Registered')).catch(e=>console.log('SW Fail',e));
+            });
+        }
+
+        // 2. Listen for Install Event
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            console.log('Install prompt captured');
+            // We already show the button by default, but this confirms we can use the native prompt
+        });
+
+        // 3. Helper to detect iOS
+        const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        
+        // 4. Check if already installed
+        const isStandalone = () => (window.matchMedia('(display-mode: standalone)').matches) || (window.navigator.standalone) || document.referrer.includes('android-app://');
+    </script>
+
+    <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
                         islamic: {
-                            base: '#0f3d3e',
-                            light: '#185a5b',
-                            gold: '#d4af37',
-                            cream: '#f8f5e6',
-                            accent: '#cfa86e',
-                            red: '#e74c3c'
+                            base: '#0f3d3e', light: '#185a5b', gold: '#d4af37', cream: '#f8f5e6', accent: '#cfa86e', red: '#e74c3c'
                         }
                     },
                     fontFamily: {
@@ -57,20 +81,12 @@
             background-size: 20px 20px;
             background-position: 0 0, 10px 10px;
             background-attachment: fixed;
-            overflow-x: hidden; /* Prevent horizontal scroll */
+            overflow-x: hidden;
         }
         
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(0,0,0,0.05); 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #185a5b; 
-            border-radius: 10px;
-        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
+        ::-webkit-scrollbar-thumb { background: #185a5b; border-radius: 10px; }
 
         .glass-card {
             background: rgba(255, 255, 255, 0.96);
@@ -79,134 +95,23 @@
             box-shadow: 0 10px 15px -3px rgba(15, 61, 62, 0.1), 0 4px 6px -2px rgba(15, 61, 62, 0.05);
         }
 
-        .active-row {
-            background-color: #e0f2f1;
-            border-left: 4px solid #0f3d3e;
-        }
-
-        .click-effect {
-            animation: pulse-gold 0.2s ease-in-out;
-        }
-        @keyframes pulse-gold {
-            0% { transform: scale(1); }
-            50% { transform: scale(0.95); }
-            100% { transform: scale(1); }
-        }
-
-        .tab-content {
-            display: none;
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
-        }
-        .tab-content.active {
-            display: block;
-            opacity: 1;
-            animation: fadeIn 0.4s ease-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .active-row { background-color: #e0f2f1; border-left: 4px solid #0f3d3e; }
+        .click-effect { animation: pulse-gold 0.2s ease-in-out; }
+        @keyframes pulse-gold { 0% { transform: scale(1); } 50% { transform: scale(0.95); } 100% { transform: scale(1); } }
+        .tab-content { display: none; opacity: 0; transition: opacity 0.3s ease-in-out; }
+        .tab-content.active { display: block; opacity: 1; animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .nav-item.active { color: #0f3d3e; }
+        .nav-item.active i { transform: translateY(-4px); color: #d4af37; filter: drop-shadow(0 4px 6px rgba(212, 175, 55, 0.4)); }
+        .bengali-num { font-feature-settings: "tnum"; font-variant-numeric: tabular-nums; }
         
-        .nav-item.active {
-            color: #0f3d3e;
-        }
-        .nav-item.active i {
-            transform: translateY(-4px);
-            color: #d4af37;
-            filter: drop-shadow(0 4px 6px rgba(212, 175, 55, 0.4));
-        }
-        
-        .bengali-num {
-            font-feature-settings: "tnum";
-            font-variant-numeric: tabular-nums;
-        }
-
-        /* Compass Styles */
-        .compass-container {
-            position: relative;
-            width: 280px;
-            height: 280px;
-            margin: 0 auto;
-            border-radius: 50%;
-            background: white;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            border: 8px solid #f0f0f0;
-            transition: transform 0.1s ease-out;
-        }
-        
-        .compass-dial {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='none' stroke='%23ddd' stroke-width='1'/%3E%3Ctext x='50' y='12' font-family='Arial' font-size='8' text-anchor='middle' fill='%23999'%3EN%3C/text%3E%3Ctext x='50' y='92' font-family='Arial' font-size='8' text-anchor='middle' fill='%23999'%3ES%3C/text%3E%3Ctext x='92' y='53' font-family='Arial' font-size='8' text-anchor='middle' fill='%23999'%3EE%3C/text%3E%3Ctext x='8' y='53' font-family='Arial' font-size='8' text-anchor='middle' fill='%23999'%3EW%3C/text%3E%3Cpath d='M50 20 L50 25 M50 75 L50 80 M20 50 L25 50 M75 50 L80 50' stroke='%23ccc' stroke-width='2'/%3E%3C/svg%3E");
-            background-size: cover;
-            border-radius: 50%;
-        }
-
-        .qibla-pointer {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 6px;
-            height: 110px;
-            background: transparent;
-            transform-origin: bottom center;
-            z-index: 10;
-            transition: transform 0.3s cubic-bezier(0.4, 2.08, 0.55, 0.44); 
-        }
-
-        .qibla-arrow-head {
-            position: absolute;
-            top: 0;
-            left: -12px;
-            width: 0; 
-            height: 0; 
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-bottom: 40px solid #d4af37;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-        }
-
-        .kaaba-icon-dial {
-            position: absolute;
-            top: -35px;
-            left: -10px;
-            font-size: 24px;
-            color: black;
-            animation: pulse-slow 2s infinite;
-        }
-
-        /* PWA Install Banner */
-        #pwa-install-banner {
-            display: none;
-            position: fixed;
-            bottom: 80px; /* Above nav bar */
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 400px;
-            background: #0f3d3e;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            z-index: 100;
-            animation: slideUp 0.5s ease-out;
-        }
-
-        @keyframes slideUp {
-            from { transform: translate(-50%, 100px); opacity: 0; }
-            to { transform: translate(-50%, 0); opacity: 1; }
-        }
-        
-        @keyframes pulse-slow {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
+        /* Compass */
+        .compass-container { position: relative; width: 280px; height: 280px; margin: 0 auto; border-radius: 50%; background: white; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 8px solid #f0f0f0; transition: transform 0.1s ease-out; }
+        .compass-dial { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='none' stroke='%23ddd' stroke-width='1'/%3E%3Ctext x='50' y='12' font-family='Arial' font-size='8' text-anchor='middle' fill='%23999'%3EN%3C/text%3E%3Ctext x='50' y='92' font-family='Arial' font-size='8' text-anchor='middle' fill='%23999'%3ES%3C/text%3E%3Ctext x='92' y='53' font-family='Arial' font-size='8' text-anchor='middle' fill='%23999'%3EE%3C/text%3E%3Ctext x='8' y='53' font-family='Arial' font-size='8' text-anchor='middle' fill='%23999'%3EW%3C/text%3E%3Cpath d='M50 20 L50 25 M50 75 L50 80 M20 50 L25 50 M75 50 L80 50' stroke='%23ccc' stroke-width='2'/%3E%3C/svg%3E"); background-size: cover; border-radius: 50%; }
+        .qibla-pointer { position: absolute; top: 50%; left: 50%; width: 6px; height: 110px; background: transparent; transform-origin: bottom center; z-index: 10; transition: transform 0.3s cubic-bezier(0.4, 2.08, 0.55, 0.44); }
+        .qibla-arrow-head { position: absolute; top: 0; left: -12px; width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-bottom: 40px solid #d4af37; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+        .kaaba-icon-dial { position: absolute; top: -35px; left: -10px; font-size: 24px; color: black; animation: pulse-slow 2s infinite; }
+        @keyframes pulse-slow { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body class="min-h-screen text-slate-800 flex flex-col items-center pb-24">
@@ -218,6 +123,11 @@
 
     <!-- Header -->
     <header class="w-full bg-islamic-base text-islamic-cream pt-10 pb-16 px-4 rounded-b-[2.5rem] shadow-xl relative overflow-hidden shrink-0">
+        <!-- Install Button: Visible by default if NOT standalone -->
+        <button id="install-btn" onclick="attemptInstall()" class="absolute top-4 right-4 bg-islamic-gold text-islamic-base px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 shadow-lg hover:bg-white transition z-50 animate-bounce">
+            <i class="fas fa-download"></i> ইনস্টল
+        </button>
+
         <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
             <svg width="100%" height="100%">
                 <pattern id="pattern-circles" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
@@ -239,23 +149,6 @@
 
     <!-- Main Content -->
     <main class="w-full max-w-md px-4 -mt-10 z-20 flex-grow relative">
-        
-        <!-- PWA Install Banner UI -->
-        <div id="pwa-install-banner" class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <i class="fas fa-download text-islamic-gold text-xl"></i>
-                <div>
-                    <h4 class="font-bold text-sm">অ্যাপটি ইনস্টল করুন</h4>
-                    <p class="text-xs opacity-75">সহজে সময়সূচি দেখতে</p>
-                </div>
-            </div>
-            <button onclick="installPWA()" class="bg-islamic-gold text-islamic-base px-4 py-2 rounded-lg text-xs font-bold hover:bg-white transition">
-                ইনস্টল
-            </button>
-            <button onclick="dismissInstall()" class="ml-2 text-white opacity-50 hover:opacity-100">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
 
         <!-- VIEW 1: HOME -->
         <div id="view-home" class="tab-content active space-y-4">
@@ -405,6 +298,34 @@
         </div>
     </div>
 
+    <!-- Installation Instructions Modal -->
+    <div id="install-instructions-modal" class="fixed inset-0 z-[70] flex items-center justify-center px-4 hidden">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeInstallModal()"></div>
+        <div class="bg-white w-full max-w-xs p-6 rounded-3xl text-center relative z-10 animate-slide-up">
+            <button onclick="closeInstallModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+            
+            <div id="ios-instructions" class="hidden">
+                <i class="fab fa-apple text-4xl text-gray-800 mb-4"></i>
+                <h3 class="text-lg font-bold mb-2">আইফোনে ইনস্টল করুন</h3>
+                <div class="text-sm text-gray-600 space-y-4 text-left px-2">
+                    <p>১. নিচে থাকা <span class="font-bold text-blue-500"><i class="fas fa-share-square"></i> Share</span> বাটনে ক্লিক করুন।</p>
+                    <p>২. অপশন থেকে <span class="font-bold text-gray-800"><i class="fas fa-plus-square"></i> Add to Home Screen</span> বেছে নিন।</p>
+                    <p>৩. উপরে থাকা <span class="font-bold">Add</span> বাটনে চাপ দিন।</p>
+                </div>
+            </div>
+
+            <div id="android-instructions" class="hidden">
+                <i class="fab fa-android text-4xl text-green-600 mb-4"></i>
+                <h3 class="text-lg font-bold mb-2">ইনস্টল করার নিয়ম</h3>
+                <div class="text-sm text-gray-600 space-y-4 text-left px-2">
+                    <p>১. ব্রাউজারের মেনুতে (<i class="fas fa-ellipsis-v"></i>) ক্লিক করুন।</p>
+                    <p>২. <span class="font-bold"><i class="fas fa-mobile-alt"></i> Install App</span> অথবা <span class="font-bold">Add to Home screen</span> এ ক্লিক করুন।</p>
+                    <p>৩. নিশ্চিত করতে Install এ চাপ দিন।</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- Data ---
         const scheduleData = [
@@ -445,43 +366,41 @@
         let alarmPlayedToday = false;
         const QIBLA_OFFSET = 270; 
 
-        // --- PWA Logic ---
-        let deferredPrompt;
-        
-        // Register Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('SW Registered', reg))
-                    .catch(err => console.log('SW Failed', err));
-            });
-        }
-
-        // Install Prompt Listener
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            // Show the install banner
-            document.getElementById('pwa-install-banner').style.display = 'flex';
-        });
-
-        async function installPWA() {
+        // --- Install UI Logic ---
+        function attemptInstall() {
             if (deferredPrompt) {
+                // If the browser successfully captured the install event (Android/Desktop Chrome)
                 deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    console.log('User accepted the PWA prompt');
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        document.getElementById('install-btn').style.display = 'none';
+                    }
+                    deferredPrompt = null;
+                });
+            } else {
+                // Fallback: Show instructions
+                const modal = document.getElementById('install-instructions-modal');
+                const iosInstr = document.getElementById('ios-instructions');
+                const androidInstr = document.getElementById('android-instructions');
+                
+                modal.classList.remove('hidden');
+                
+                if (isIOS()) {
+                    iosInstr.classList.remove('hidden');
+                    androidInstr.classList.add('hidden');
+                } else {
+                    // Default to Android/Desktop instructions
+                    androidInstr.classList.remove('hidden');
+                    iosInstr.classList.add('hidden');
                 }
-                deferredPrompt = null;
-                dismissInstall();
             }
         }
 
-        function dismissInstall() {
-            document.getElementById('pwa-install-banner').style.display = 'none';
+        function closeInstallModal() {
+            document.getElementById('install-instructions-modal').classList.add('hidden');
         }
 
-        // --- Utils ---
+        // --- App Logic ---
         const toBengaliNum = (n) => String(n).replace(/[0-9]/g, m => ({'0':'০','1':'১','2':'২','3':'৩','4':'৪','5':'৫','6':'৬','7':'৭','8':'৮','9':'৯'})[m]);
         const formatTime = (timeStr) => {
             if(!timeStr) return '--:--';
@@ -490,12 +409,16 @@
             return toBengaliNum(hour) + ':' + toBengaliNum(m);
         };
 
-        // --- Core Logic ---
         function initApp() {
             renderSchedule();
             loadSettings();
             setInterval(tick, 1000);
             tick();
+            
+            // Hide install button if already installed
+            if (isStandalone()) {
+                document.getElementById('install-btn').style.display = 'none';
+            }
         }
 
         function loadSettings() {
@@ -614,5 +537,3 @@
     </script>
 </body>
 </html>
-
-
