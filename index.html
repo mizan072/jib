@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Poster Bot Pro</title>
     
-    <!-- PWA & Meta -->
+    <!-- PWA Manifest & Meta -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -36,7 +36,7 @@
     </script>
 
     <style>
-        body { font-family: 'Hind Siliguri', sans-serif; touch-action: pan-y; background-color: #f8fafc; color: #0f172a; }
+        body { font-family: 'Hind Siliguri', sans-serif; touch-action: pan-y; background-color: #f8fafc; color: #0f172a; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .canvas-container { touch-action: none; }
@@ -50,7 +50,7 @@
         @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900">
+<body class="bg-slate-50 text-slate-900" oncontextmenu="return false;">
     <div id="root"></div>
 
     <script type="text/babel">
@@ -58,9 +58,9 @@
 
         // --- CONFIGURATION ---
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyDorekc-EaWSFUynwzUrZF3DB9sxxXcut3QlaFH2wexfB7ccwX3B6T-PFNT5NqFH2x/exec"; 
-        const DOWNLOAD_COST = 2; // Cost per download
+        const DOWNLOAD_COST = 2; 
 
-        // Helper: Icons
+        // --- ICONS ---
         const IconCoin = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="gold" stroke="#b45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 18V6"></path></svg>;
         const IconDownload = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>;
         const IconUpload = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path></svg>;
@@ -81,32 +81,64 @@
         const IconHeight = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 15 12 20 17 15"></polyline><polyline points="7 9 12 4 17 9"></polyline><line x1="12" y1="4" x2="12" y2="20"></line></svg>;
         const IconTg = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.543 2.457L2.613 9.77c-1.32.533-1.316 1.272-.24 1.6l4.86 1.516 11.36-7.16c.536-.325 1.027.15.777.373l-9.206 8.307-.36 5.43c.528 0 .762-.24.905-.373l2.17-2.106 4.513 3.333c.832.458 1.432.22 1.64-.773l2.968-13.987c.304-1.216-.464-1.767-1.4-.93z"/></svg>;
 
+        // --- GLOBAL HELPERS (Moved outside component) ---
+        const measureText = (ctx, text, fs, fw) => { 
+            ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`; 
+            return ctx.measureText(text).width; 
+        };
+
+        const drawText = (ctx, text, x, y, fs, color, align, fw) => { 
+            ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`; 
+            ctx.fillStyle = color; 
+            ctx.textAlign = align; 
+            ctx.fillText(text, x, y); 
+        };
+
+        const drawJustifiedText = (ctx, text, x, y, maxW, lh) => {
+            if (!text) return { lines: [], height: 0 };
+            const words = text.split(' '); 
+            let line = '', lines = [];
+            for (let n = 0; n < words.length; n++) { 
+                const tl = line + words[n] + ' '; 
+                if (ctx.measureText(tl).width > maxW && n > 0) { 
+                    lines.push(line.trim()); 
+                    line = words[n] + ' '; 
+                } else { 
+                    line = tl; 
+                } 
+            }
+            lines.push(line.trim()); 
+            return { lines, height: lines.length * lh };
+        };
+
+        const drawCover = (ctx, img, x, y, w, h) => {
+            const r = img.width/img.height, tr = w/h;
+            let sx, sy, sw, sh;
+            if (r > tr) { sh = img.height; sw = img.height * tr; sy = 0; sx = (img.width - sw) / 2; }
+            else { sw = img.width; sh = img.width / tr; sx = 0; sy = (img.height - sh) / 2; }
+            ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+        };
+
         function App() {
             const canvasRef = useRef(null);
             
-            // --- STATE MANAGEMENT ---
+            // --- STATE ---
             const [appMode, setAppMode] = useState('scorecard');
             const [activeTab, setActiveTab] = useState('match');
             const [bgImage, setBgImage] = useState(null);
             const [bgImage2, setBgImage2] = useState(null);
-            const [showAdModal, setShowAdModal] = useState(false); // Used for "Ads" but now generic
-            const [showBuyModal, setShowBuyModal] = useState(false); // Specifically for buying points
-            
-            // Ads logic removed, keeping some state to avoid breaking if refs exist
-            const [adsWatched, setAdsWatched] = useState(0); 
-            const [isLoadingAd, setIsLoadingAd] = useState(false);
-            const [isDownloadReady, setIsDownloadReady] = useState(false);
-            
+            const [showBuyModal, setShowBuyModal] = useState(false);
+            const [isProcessing, setIsProcessing] = useState(false); 
             const [imgPos, setImgPos] = useState({ x: 0, y: 0, scale: 1 });
             const gestureStart = useRef({ x: 0, y: 0, dist: 0, scale: 1, imgX: 0, imgY: 0, mode: null });
             
-            // Point System State
             const [userId, setUserId] = useState('');
             const [points, setPoints] = useState(0);
             const [isCheckingPoints, setIsCheckingPoints] = useState(true);
-            const [isProcessing, setIsProcessing] = useState(false); 
 
-            // Default Form Data
+            const [deferredPrompt, setDeferredPrompt] = useState(null);
+            const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+
             const [formData, setFormData] = useState({
                 badgeText: 'proscorecard_bot',
                 title: 'আইসিসি টি-টোয়েন্টি বিশ্বকাপ',
@@ -121,12 +153,20 @@
                 quoteText: 'আমাদের লক্ষ্য এখন বিশ্বকাপ জয় করা।', quoteAuthor: 'নাজমুল হোসেন শান্ত, অধিনায়ক'
             });
 
-            const [deferredPrompt, setDeferredPrompt] = useState(null);
-            const [showInstallPrompt, setShowInstallPrompt] = useState(false);
-
+            // --- USER & POINT SYSTEM LOGIC ---
             useEffect(() => {
                 const handler = (e) => { e.preventDefault(); setDeferredPrompt(e); setShowInstallPrompt(true); };
                 window.addEventListener('beforeinstallprompt', handler);
+                
+                let storedId = localStorage.getItem('poster_user_id');
+                if (!storedId) { storedId = 'u_' + Math.random().toString(36).substr(2, 9); localStorage.setItem('poster_user_id', storedId); }
+                setUserId(storedId); fetchPoints(storedId);
+                
+                if (window.Telegram && window.Telegram.WebApp) { window.Telegram.WebApp.ready(); if(window.Telegram.WebApp.expand) window.Telegram.WebApp.expand(); }
+
+                const img = new Image(); img.crossOrigin = "Anonymous"; img.src = "https://images.unsplash.com/photo-1531415074968-036ba1b575da?q=80&w=1080&auto=format&fit=crop";
+                img.onload = () => { setBgImage(img); setImgPos({ x: 0, y: 0, scale: 1 }); };
+
                 return () => window.removeEventListener('beforeinstallprompt', handler);
             }, []);
 
@@ -137,17 +177,6 @@
                     if (outcome === 'accepted') { setDeferredPrompt(null); setShowInstallPrompt(false); }
                 }
             };
-
-            // --- USER & POINT SYSTEM LOGIC ---
-            useEffect(() => {
-                let storedId = localStorage.getItem('poster_user_id');
-                if (!storedId) {
-                    storedId = 'u_' + Math.random().toString(36).substr(2, 9);
-                    localStorage.setItem('poster_user_id', storedId);
-                }
-                setUserId(storedId);
-                fetchPoints(storedId);
-            }, []);
 
             const fetchPoints = async (uid) => {
                 if(GOOGLE_SCRIPT_URL.includes("xxxxxxxx")) { setPoints(10); setIsCheckingPoints(false); return; }
@@ -160,140 +189,81 @@
                 setIsCheckingPoints(false);
             };
 
-            const handleDownloadClick = async () => {
-                if (isProcessing) return;
-                
-                // CHECK IF POINTS SUFFICIENT (Require 2 points)
-                if (points < DOWNLOAD_COST) {
-                    setShowBuyModal(true);
-                    return;
-                }
-
-                setIsProcessing(true);
-
-                if(GOOGLE_SCRIPT_URL.includes("xxxxxxxx")) {
-                    performDownload(); setPoints(prev => prev - DOWNLOAD_COST); setIsProcessing(false); return;
-                }
-
-                try {
-                    const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=deduct&userId=${userId}&amount=${DOWNLOAD_COST}`, { method: 'POST' });
-                    const data = await response.json();
-                    
-                    if (data.status === 'success') {
-                        setPoints(data.points);
-                        performDownload();
-                    } else {
-                        alert("Not enough points or server error.");
-                    }
-                } catch (error) {
-                    console.error("Download Error", error);
-                    alert("Network error.");
-                }
-                setIsProcessing(false);
-            };
-
-            const performDownload = () => {
-                const canvas = canvasRef.current;
-                if (!canvas) return;
-                canvas.toBlob((blob) => {
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.download = `poster-${Date.now()}.png`;
-                    link.href = url;
-                    document.body.appendChild(link); link.click();
-                    setTimeout(() => { document.body.removeChild(link); URL.revokeObjectURL(url); }, 100);
-                }, 'image/png');
-            };
-
-            const copyId = () => { navigator.clipboard.writeText(userId); alert("ID Copied: " + userId); };
-
-            // --- IMAGE & CANVAS LOGIC ---
-            useEffect(() => {
-                if (window.Telegram && window.Telegram.WebApp) {
-                    window.Telegram.WebApp.ready();
-                    if (window.Telegram.WebApp.expand) window.Telegram.WebApp.expand();
-                }
-                const img = new Image();
-                img.crossOrigin = "Anonymous";
-                img.src = "https://images.unsplash.com/photo-1531415074968-036ba1b575da?q=80&w=1080&auto=format&fit=crop";
-                img.onload = () => { setBgImage(img); setImgPos({ x: 0, y: 0, scale: 1 }); };
-            }, []);
-
-            const handleImageUpload = (e, isSecond = false) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                        const img = new Image();
-                        img.onload = () => {
-                            if (isSecond) setBgImage2(img);
-                            else { setBgImage(img); const W = 1080, H = 1200; const scale = Math.max(W / img.width, H / img.height); setImgPos({ x: (W - img.width * scale) / 2, y: (H - img.height * scale) / 2, scale }); }
-                        };
-                        img.src = ev.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                }
-            };
-
-            const resetImage = () => { if(bgImage) { const W = 1080, H = 1200; const scale = Math.max(W / bgImage.width, H / bgImage.height); setImgPos({ x: (W - bgImage.width * scale) / 2, y: (H - bgImage.height * scale) / 2, scale }); } };
-            const drawCover = (ctx, img, x, y, w, h) => { const r = img.width/img.height, tr = w/h; let sx, sy, sw, sh; if (r > tr) { sh = img.height; sw = img.height * tr; sy = 0; sx = (img.width - sw) / 2; } else { sw = img.width; sh = img.width / tr; sx = 0; sy = (img.height - sh) / 2; } ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h); };
-
-            const handleTouchStart = (e) => { if (bgImage2) return; const t = e.touches; if (t.length === 1) gestureStart.current = { mode: 'pan', x: t[0].clientX, y: t[0].clientY, imgX: imgPos.x, imgY: imgPos.y }; else if (t.length === 2) gestureStart.current = { mode: 'zoom', dist: Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY), scale: imgPos.scale }; };
-            const handleTouchMove = (e) => { if (!gestureStart.current.mode || bgImage2) return; e.preventDefault(); const rect = e.target.getBoundingClientRect(); const s = 1080 / rect.width; const t = e.touches; if (t.length === 1 && gestureStart.current.mode === 'pan') { setImgPos(prev => ({ ...prev, x: gestureStart.current.imgX + (t[0].clientX - gestureStart.current.x) * s, y: gestureStart.current.imgY + (t[0].clientY - gestureStart.current.y) * s })); } else if (t.length === 2 && gestureStart.current.mode === 'zoom') { const d = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); setImgPos(prev => ({ ...prev, scale: gestureStart.current.scale * (d / gestureStart.current.dist) })); } };
-            const handleEnd = () => { gestureStart.current.mode = null; };
-            const handleMouseDown = (e) => { if(!bgImage2) gestureStart.current = { mode: 'pan', x: e.clientX, y: e.clientY, imgX: imgPos.x, imgY: imgPos.y }; };
-            const handleMouseMove = (e) => { if (gestureStart.current.mode === 'pan' && !bgImage2) { const rect = e.target.getBoundingClientRect(); const s = 1080 / rect.width; setImgPos(prev => ({ ...prev, x: gestureStart.current.imgX + (e.clientX - gestureStart.current.x) * s, y: gestureStart.current.imgY + (e.clientY - gestureStart.current.y) * s })); } };
-
-            const measureText = (ctx, text, fs, fw) => { ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`; return ctx.measureText(text).width; };
-            const drawText = (ctx, text, x, y, fs, color, align, fw) => { ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`; ctx.fillStyle = color; ctx.textAlign = align; ctx.fillText(text, x, y); };
-            const drawJustifiedText = (ctx, text, x, y, maxW, lh) => {
-                if (!text) return { lines: [], height: 0 };
-                const words = text.split(' '); let line = '', lines = [];
-                for (let n = 0; n < words.length; n++) { const tl = line + words[n] + ' '; if (ctx.measureText(tl).width > maxW && n > 0) { lines.push(line.trim()); line = words[n] + ' '; } else { line = tl; } }
-                lines.push(line.trim()); return { lines, height: lines.length * lh };
-            };
-
-            // Main Draw Loop
-            useEffect(() => {
+            // --- CANVAS RENDER ---
+            const drawCanvas = (isExport) => {
                 const canvas = canvasRef.current; if (!canvas) return;
                 const ctx = canvas.getContext('2d');
                 const W = 1080, H = 1200, splitY = 700;
                 canvas.width = W; canvas.height = H;
+
+                // 1. Background
                 ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, W, H);
 
                 try {
-                    if (bgImage && bgImage2) { drawCover(ctx, bgImage, 0, 0, W/2, H); drawCover(ctx, bgImage2, W/2, 0, W/2, H); ctx.beginPath(); ctx.moveTo(W/2, 0); ctx.lineTo(W/2, H); ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 2; ctx.stroke(); }
-                    else if (bgImage) { ctx.save(); ctx.translate(imgPos.x, imgPos.y); ctx.scale(imgPos.scale, imgPos.scale); ctx.drawImage(bgImage, 0, 0); ctx.restore(); }
-                    else { const grd = ctx.createLinearGradient(0, 0, 0, splitY); grd.addColorStop(0, '#1b5e20'); grd.addColorStop(1, '#2e7d32'); ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H); drawText(ctx, "Loading Image...", W/2, H/2, 50, "#fff", "center", "bold"); }
+                    // 2. Images
+                    if (bgImage && bgImage2) {
+                        drawCover(ctx, bgImage, 0, 0, W/2, H);
+                        drawCover(ctx, bgImage2, W/2, 0, W/2, H);
+                        ctx.beginPath(); ctx.moveTo(W/2, 0); ctx.lineTo(W/2, H); 
+                        ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 2; ctx.stroke();
+                    } else if (bgImage) {
+                        ctx.save();
+                        ctx.translate(imgPos.x, imgPos.y);
+                        ctx.scale(imgPos.scale, imgPos.scale);
+                        ctx.drawImage(bgImage, 0, 0);
+                        ctx.restore();
+                    } else {
+                        const grd = ctx.createLinearGradient(0, 0, 0, splitY);
+                        grd.addColorStop(0, '#1b5e20'); grd.addColorStop(1, '#2e7d32');
+                        ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H);
+                        drawText(ctx, "Loading Image...", W/2, H/2, 50, "#fff", "center", "bold");
+                    }
 
-                    const titleBoxY = splitY + 40, titleBoxW = 800, titleBoxH = 90, titleBoxX = (W - titleBoxW) / 2;
-                    const scoresY = titleBoxY + 160, leftCenter = W * 0.25, rightCenter = W * 0.75, footerH = 60, footerY = H - footerH;
+                    // 3. Layout Constants
+                    const titleBoxY = splitY + 40; const titleBoxW = 800; const titleBoxH = 90; const titleBoxX = (W - titleBoxW) / 2;
+                    const scoresY = titleBoxY + 160; const leftCenter = W * 0.25; const rightCenter = W * 0.75;
+                    const footerH = 60; const footerY = H - footerH;
 
-                    ctx.save(); ctx.globalAlpha = formData.bgOpacity; 
-                    const gradient = ctx.createLinearGradient(0, splitY, 0, H); gradient.addColorStop(0, formData.primaryColor); gradient.addColorStop(1, formData.secondaryColor); ctx.fillStyle = gradient;
-                    if (appMode === 'news') { const h = H * formData.newsGradientHeight; ctx.fillRect(0, H - h, W, h); } else ctx.fillRect(0, splitY, W, H - splitY);
+                    // 4. Overlays
+                    ctx.save();
+                    ctx.globalAlpha = formData.bgOpacity; 
+                    const gradient = ctx.createLinearGradient(0, splitY, 0, H);
+                    gradient.addColorStop(0, formData.primaryColor); gradient.addColorStop(1, formData.secondaryColor);
+                    ctx.fillStyle = gradient;
+                    
+                    if (appMode === 'news') { const h = H * formData.newsGradientHeight; ctx.fillRect(0, H - h, W, h); } 
+                    else ctx.fillRect(0, splitY, W, H - splitY);
                     
                     if (appMode !== 'news') { ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; ctx.fillRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH); }
                     ctx.fillStyle = '#0f172a'; ctx.fillRect(0, footerY, W, footerH); ctx.restore(); 
 
-                    const badgeX = W - 320 - 40, badgeY = 40;
-                    ctx.beginPath(); ctx.arc(badgeX + 45, badgeY + 35, 22, 0, Math.PI * 2); ctx.fillStyle = '#1877F2'; ctx.fill(); drawText(ctx, "f", badgeX + 45, badgeY + 48, 35, "#fff", "center", "bold");
-                    ctx.save(); ctx.shadowColor = "rgba(0, 0, 0, 0.8)"; ctx.shadowBlur = 6; drawText(ctx, formData.badgeText, badgeX + 80, badgeY + 48, 32, '#fff', 'left', 'bold'); ctx.restore();
+                    // 5. Badge & Icon
+                    const badgeX = W - 320 - 40;
+                    ctx.beginPath(); ctx.arc(badgeX + 45, 40 + 35, 22, 0, Math.PI * 2); ctx.fillStyle = '#1877F2'; ctx.fill();
+                    drawText(ctx, "f", badgeX + 45, 40 + 48, 35, "#fff", "center", "bold");
+                    ctx.save(); ctx.shadowColor = "rgba(0, 0, 0, 0.8)"; ctx.shadowBlur = 6;
+                    drawText(ctx, formData.badgeText, badgeX + 80, 40 + 48, 32, '#fff', 'left', 'bold'); ctx.restore();
 
-                    if (appMode !== 'news') { ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 2; ctx.strokeRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH); drawText(ctx, formData.title, W / 2, titleBoxY + 60, 50, '#fff', 'center', 'bold'); }
+                    // 6. Header
+                    if (appMode !== 'news') {
+                        ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 2;
+                        ctx.strokeRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH);
+                        drawText(ctx, formData.title, W / 2, titleBoxY + 60, 50, '#fff', 'center', 'bold');
+                    }
 
+                    // 7. Content
                     if (appMode === 'scorecard') {
                         drawText(ctx, formData.team1, leftCenter, scoresY, 65, formData.team1Color, 'center', 'bold');
                         const t1w = measureText(ctx, formData.team1Score, 60, 'bold'), t1o = measureText(ctx, formData.team1Overs, 35, 'normal');
                         const t1x = leftCenter - ((t1w + 15 + t1o) / 2);
-                        ctx.textAlign = 'left'; ctx.font = `bold 60px "Hind Siliguri"`; ctx.fillStyle = '#fff'; ctx.fillText(formData.team1Score, t1x, scoresY + 80);
-                        ctx.font = `normal 35px "Hind Siliguri"`; ctx.fillStyle = '#ddd'; ctx.fillText(formData.team1Overs, t1x + t1w + 15, scoresY + 80);
+                        ctx.textAlign = 'left'; ctx.font = `bold 60px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#fff'; ctx.fillText(formData.team1Score, t1x, scoresY + 80);
+                        ctx.font = `normal 35px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#ddd'; ctx.fillText(formData.team1Overs, t1x + t1w + 15, scoresY + 80);
                         ctx.beginPath(); ctx.moveTo(W/2, scoresY-20); ctx.lineTo(W/2, scoresY+100); ctx.lineWidth=4; ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.stroke();
                         drawText(ctx, formData.team2, rightCenter, scoresY, 65, formData.team2Color, 'center', 'bold');
                         const t2w = measureText(ctx, formData.team2Score, 60, 'bold'), t2o = measureText(ctx, formData.team2Overs, 35, 'normal');
                         const t2x = rightCenter - ((t2w + 15 + t2o) / 2);
-                        ctx.textAlign = 'left'; ctx.font = `bold 60px "Hind Siliguri"`; ctx.fillStyle = '#fff'; ctx.fillText(formData.team2Score, t2x, scoresY + 80);
-                        ctx.font = `normal 35px "Hind Siliguri"`; ctx.fillStyle = '#ddd'; ctx.fillText(formData.team2Overs, t2x + t2w + 15, scoresY + 80);
+                        ctx.textAlign = 'left'; ctx.font = `bold 60px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#fff'; ctx.fillText(formData.team2Score, t2x, scoresY + 80);
+                        ctx.font = `normal 35px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#ddd'; ctx.fillText(formData.team2Overs, t2x + t2w + 15, scoresY + 80);
                         drawText(ctx, formData.result, W / 2, scoresY + 180, 48, formData.resultColor, 'center', 'bold');
                     } else if (appMode === 'schedule') {
                         drawText(ctx, formData.team1, leftCenter - 20, scoresY + 40, 80, formData.team1Color, 'center', 'bold');
@@ -307,142 +277,132 @@
                         ctx.beginPath(); ctx.moveTo(W/2-150, py+120); ctx.lineTo(W/2+150, py+120); ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=2; ctx.stroke();
                         drawText(ctx, formData.playerName, W/2, py + 180, 60, '#fff', 'center', 'bold');
                     } else if (appMode === 'news') {
-                        const ny = 600, nw = 880, nx = 100, lh = 80; const h = H * formData.newsGradientHeight; const nsy = H - h; const csy = nsy + 50;
+                        const h = H * formData.newsGradientHeight; const nsy = H - h; const csy = nsy + 50; 
+                        const ny = csy, nw = 880, nx = 100, lh = 80;
                         ctx.font = "100px serif"; ctx.fillStyle = "rgba(255,215,0,0.2)"; ctx.textAlign = "left"; ctx.fillText("❝", 80, csy);
-                        ctx.font = "bold 55px 'Hind Siliguri'"; ctx.fillStyle = "#fff";
+                        ctx.font = "bold 55px 'Hind Siliguri', sans-serif"; ctx.fillStyle = "#fff";
                         const td = drawJustifiedText(ctx, formData.quoteText || "", nx, csy + 60, nw, lh);
-                        td.lines.forEach((l, i) => { ctx.textAlign = 'left'; ctx.fillText(l, nx, csy + 60 + (i * lh)); });
+                        td.lines.forEach((l, i) => { 
+                            if (i === td.lines.length - 1) { ctx.textAlign = 'left'; ctx.fillText(l, nx, csy + 60 + (i * lh)); }
+                            else { 
+                                const words = l.split(' '); 
+                                if(words.length > 1) {
+                                     // Justify logic
+                                     const lineW = ctx.measureText(l.replace(/\s/g, '')).width;
+                                     const spaceAvail = nw - lineW;
+                                     const gap = spaceAvail / (words.length - 1);
+                                     let cx = nx;
+                                     words.forEach(w => { ctx.textAlign='left'; ctx.fillText(w, cx, csy + 60 + (i * lh)); cx += ctx.measureText(w).width + gap; });
+                                } else { ctx.textAlign = 'left'; ctx.fillText(l, nx, csy + 60 + (i * lh)); }
+                            }
+                        });
                         const ay = csy + 60 + (td.lines.length * lh) + 40;
                         ctx.beginPath(); ctx.moveTo(nx, ay); ctx.lineTo(nx + 200, ay); ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 5; ctx.stroke();
                         drawText(ctx, formData.quoteAuthor, nx, ay + 50, 40, '#ddd', 'left', 'bold');
                         ctx.fillStyle = '#d32f2f'; ctx.fillRect(80, csy - 100, 300, 60); drawText(ctx, "ব্রেকিং নিউজ", 230, csy - 60, 35, '#fff', 'center', 'bold');
                     }
                     drawText(ctx, formData.footerHandle, W / 2, footerY + 40, 24, '#94a3b8', 'center', 'normal');
-                } catch (e) { console.error(e); }
-            }, [bgImage, bgImage2, formData, imgPos, appMode]);
 
+                    // WATERMARK
+                    if (!isExport) {
+                        ctx.save();
+                        ctx.translate(W/2, H/2); ctx.rotate(-Math.PI / 6);
+                        ctx.font = "bold 150px sans-serif"; ctx.fillStyle = "rgba(255, 255, 255, 0.15)"; ctx.textAlign = "center"; ctx.fillText("PREVIEW", 0, 0);
+                        ctx.restore();
+                    }
+                } catch(e) { console.error(e); }
+            };
+
+            // Main Render Trigger
+            useEffect(() => { drawCanvas(false); }, [bgImage, bgImage2, formData, imgPos, appMode]);
+
+            // Handlers
+            const handleImageUpload = (e, isSecond = false) => {
+                const file = e.target.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        if (isSecond) setBgImage2(img);
+                        else { setBgImage(img); const scale = Math.max(1080 / img.width, 1200 / img.height); setImgPos({ x: (1080 - img.width * scale) / 2, y: (1200 - img.height * scale) / 2, scale }); }
+                    };
+                    img.src = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            };
+            const resetImage = () => { if(bgImage) { const scale = Math.max(1080 / bgImage.width, 1200 / bgImage.height); setImgPos({ x: (1080 - bgImage.width * scale) / 2, y: (1200 - bgImage.height * scale) / 2, scale }); } };
             const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
             const swapTeams = () => setFormData(p => ({ ...p, team1: p.team2, team1Score: p.team2Score, team1Overs: p.team2Overs, team1Color: p.team2Color, team2: p.team1, team2Score: p.team1Score, team2Overs: p.team1Overs, team2Color: p.team1Color }));
-            
+            const copyId = () => { navigator.clipboard.writeText(userId); alert("ID Copied: " + userId); };
+
+            const handleDownloadClick = async () => {
+                if (isProcessing) return;
+                if (points < DOWNLOAD_COST) { setShowBuyModal(true); return; }
+                setIsProcessing(true);
+                if(GOOGLE_SCRIPT_URL.includes("xxxxxxxx")) { performDownload(); setPoints(prev => prev - DOWNLOAD_COST); setIsProcessing(false); return; }
+                try {
+                    const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=deduct&userId=${userId}&amount=${DOWNLOAD_COST}`, { method: 'POST' });
+                    const data = await response.json();
+                    if (data.status === 'success') { setPoints(data.points); performDownload(); } else { alert("Insufficient points or error."); }
+                } catch (error) { alert("Network Error"); }
+                setIsProcessing(false);
+            };
+
+            const performDownload = () => {
+                const canvas = canvasRef.current; if (!canvas) return;
+                // Render without watermark
+                drawCanvas(true);
+                canvas.toBlob((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a'); link.download = `poster-${Date.now()}.png`; link.href = url;
+                    document.body.appendChild(link); link.click();
+                    setTimeout(() => { document.body.removeChild(link); URL.revokeObjectURL(url); drawCanvas(false); }, 100);
+                }, 'image/png');
+            };
+
+            // Touch
+            const handleTouchStart = (e) => { if (bgImage2) return; const t = e.touches; if (t.length === 1) gestureStart.current = { mode: 'pan', x: t[0].clientX, y: t[0].clientY, imgX: imgPos.x, imgY: imgPos.y }; else if (t.length === 2) gestureStart.current = { mode: 'zoom', dist: Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY), scale: imgPos.scale }; };
+            const handleTouchMove = (e) => { if (!gestureStart.current.mode || bgImage2) return; e.preventDefault(); const s = 1080 / e.target.getBoundingClientRect().width; const t = e.touches; if (t.length === 1 && gestureStart.current.mode === 'pan') { setImgPos(prev => ({ ...prev, x: gestureStart.current.imgX + (t[0].clientX - gestureStart.current.x) * s, y: gestureStart.current.imgY + (t[0].clientY - gestureStart.current.y) * s })); } else if (t.length === 2 && gestureStart.current.mode === 'zoom') { const d = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); setImgPos(prev => ({ ...prev, scale: gestureStart.current.scale * (d / gestureStart.current.dist) })); } };
+            const handleEnd = () => { gestureStart.current.mode = null; };
+
             return (
-                <div className="min-h-screen pb-20 md:pb-8">
+                <div className="min-h-screen pb-20 md:pb-8" onContextMenu={(e) => e.preventDefault()}>
                     {showBuyModal && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm modal-backdrop">
                             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center modal-content border border-gray-200">
                                 <div className="bg-red-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">💎</div>
                                 <h3 className="text-xl font-bold text-gray-900 mb-2">Buy Points</h3>
-                                <p className="text-gray-500 text-sm mb-4">You need {DOWNLOAD_COST} points to download. You have {points}.</p>
-                                
-                                <div className="bg-blue-50 p-4 rounded-lg mb-4 text-sm text-blue-800 text-left">
-                                   <p className="font-bold mb-2">Pricing:</p>
-                                   <ul className="list-disc pl-4 space-y-1">
-                                      <li>100 Points = 100 Tk</li>
-                                      <li>200 Points = 150 Tk</li>
-                                   </ul>
-                                </div>
-
-                                <div className="bg-gray-100 p-3 rounded-lg mb-4 text-left">
-                                    <p className="text-xs text-gray-500 uppercase font-bold mb-1">Your User ID:</p>
-                                    <div className="flex justify-between items-center bg-white p-2 rounded border">
-                                        <code className="text-sm font-mono text-red-600">{userId}</code>
-                                        <button onClick={copyId} className="text-gray-400 hover:text-gray-600"><IconCopy /></button>
-                                    </div>
-                                </div>
-                                <p className="text-xs text-gray-400 mb-6">Send this ID to Admin after payment.</p>
-                                
-                                <a href="https://t.me/Mizan0072" target="_blank" rel="noreferrer" className="block w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg mb-3 flex items-center justify-center gap-2">
-                                   <IconTg /> Contact Admin (@Mizan0072)
-                                </a>
-
+                                <p className="text-gray-500 text-sm mb-4">You need {DOWNLOAD_COST} points. Balance: {points}</p>
+                                <div className="bg-blue-50 p-4 rounded-lg mb-4 text-sm text-blue-800 text-left"><p className="font-bold mb-2">Pricing:</p><ul className="list-disc pl-4 space-y-1"><li>100 Points = 100 Tk</li><li>200 Points = 150 Tk</li></ul></div>
+                                <div className="bg-gray-100 p-3 rounded-lg mb-4 text-left"><p className="text-xs text-gray-500 uppercase font-bold mb-1">Your User ID:</p><div className="flex justify-between items-center bg-white p-2 rounded border"><code className="text-sm font-mono text-red-600">{userId}</code><button onClick={copyId} className="text-gray-400 hover:text-gray-600"><IconCopy /></button></div></div>
+                                <a href="https://t.me/Mizan0072" target="_blank" rel="noreferrer" className="block w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg mb-3 flex items-center justify-center gap-2"><IconTg /> Contact Admin</a>
                                 <button onClick={() => { setShowBuyModal(false); fetchPoints(userId); }} className="w-full bg-slate-900 text-white font-bold py-3 rounded-xl">Refresh Balance</button>
                                 <button className="mt-3 text-xs text-gray-400 underline" onClick={() => setShowBuyModal(false)}>Cancel</button>
                             </div>
                         </div>
                     )}
-
                     <div className="bg-white border-b sticky top-0 z-20 px-4 py-3 flex items-center justify-between shadow-sm">
-                        <h1 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                            <span className="text-red-600 bg-red-100 p-1.5 rounded-lg"><IconRefresh /></span> Poster Bot
-                        </h1>
+                        <h1 className="text-lg font-bold text-slate-800 flex items-center gap-2"><span className="text-red-600 bg-red-100 p-1.5 rounded-lg"><IconRefresh /></span> Poster Bot</h1>
                         <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-1 bg-yellow-50 px-3 py-1.5 rounded-full border border-yellow-200 cursor-pointer" onClick={() => setShowBuyModal(true)}>
-                                <IconCoin />
-                                {isCheckingPoints ? <div className="loader"></div> : <span className="text-sm font-bold text-yellow-700">{points}</span>}
-                            </div>
-                            <button onClick={handleDownloadClick} disabled={isProcessing} className="bg-slate-900 text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 active:scale-95 transition-transform disabled:opacity-50">
-                                {isProcessing ? '...' : <><IconDownload /> Save</>}
-                            </button>
+                            <div className="flex items-center gap-1 bg-yellow-50 px-3 py-1.5 rounded-full border border-yellow-200 cursor-pointer" onClick={() => setShowBuyModal(true)}><IconCoin />{isCheckingPoints ? <div className="loader"></div> : <span className="text-sm font-bold text-yellow-700">{points}</span>}</div>
+                            <button onClick={handleDownloadClick} disabled={isProcessing} className="bg-slate-900 text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 active:scale-95 transition-transform disabled:opacity-50">{isProcessing ? '...' : <><IconDownload /> Save</>}</button>
                         </div>
                     </div>
-
                     <div className="max-w-2xl mx-auto p-4 space-y-6">
-                        {showInstallPrompt && (
-                            <div className="install-prompt bg-slate-900 text-white p-4 rounded-xl shadow-2xl flex items-center justify-between border border-slate-700">
-                                <div className="flex items-center gap-3"><div className="bg-red-600 p-2 rounded-lg"><IconInstall /></div><div><h4 className="font-bold text-sm">Install App</h4><p className="text-xs text-slate-400">Add to Home Screen</p></div></div>
-                                <div className="flex gap-2"><button onClick={() => setShowInstallPrompt(false)} className="p-2 text-slate-400"><IconClose /></button><button onClick={handleInstallApp} className="bg-white text-slate-900 px-4 py-2 rounded-lg text-xs font-bold">Install</button></div>
-                            </div>
-                        )}
-
-                        <div className="bg-white p-1.5 rounded-xl shadow-sm border border-slate-200 flex gap-1 overflow-x-auto no-scrollbar">
-                            {['scorecard', 'schedule', 'player', 'news'].map(mode => (<button key={mode} onClick={() => setAppMode(mode)} className={`flex-1 min-w-[80px] py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${appMode === mode ? 'bg-red-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-100'}`}>{mode}</button>))}
-                        </div>
-
+                        {showInstallPrompt && (<div className="install-prompt bg-slate-900 text-white p-4 rounded-xl shadow-2xl flex items-center justify-between border border-slate-700"><div className="flex items-center gap-3"><div className="bg-red-600 p-2 rounded-lg"><IconInstall /></div><div><h4 className="font-bold text-sm">Install App</h4><p className="text-xs text-slate-400">Add to Home Screen</p></div></div><div className="flex gap-2"><button onClick={() => setShowInstallPrompt(false)} className="p-2 text-slate-400"><IconClose /></button><button onClick={handleInstallApp} className="bg-white text-slate-900 px-4 py-2 rounded-lg text-xs font-bold">Install</button></div></div>)}
+                        <div className="bg-white p-1.5 rounded-xl shadow-sm border border-slate-200 flex gap-1 overflow-x-auto no-scrollbar">{['scorecard', 'schedule', 'player', 'news'].map(mode => (<button key={mode} onClick={() => setAppMode(mode)} className={`flex-1 min-w-[80px] py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${appMode === mode ? 'bg-red-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-100'}`}>{mode}</button>))}</div>
                         <div className="bg-slate-800 rounded-xl overflow-hidden shadow-2xl border border-slate-700 aspect-[1080/1200] relative group canvas-container touch-none">
-                            <canvas ref={canvasRef} className="w-full h-full object-contain cursor-move touch-none" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleEnd} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleEnd} onMouseLeave={handleEnd}></canvas>
+                            <canvas ref={canvasRef} className="w-full h-full object-contain cursor-move touch-none" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleEnd} onMouseDown={(e) => {if(!bgImage2) gestureStart.current={mode:'pan',x:e.clientX,y:e.clientY,imgX:imgPos.x,imgY:imgPos.y}}} onMouseMove={(e) => {if(gestureStart.current.mode==='pan'&&!bgImage2){const s=1080/e.target.getBoundingClientRect().width;setImgPos(p=>({...p,x:gestureStart.current.imgX+(e.clientX-gestureStart.current.x)*s,y:gestureStart.current.imgY+(e.clientY-gestureStart.current.y)*s}))}}} onMouseUp={handleEnd} onMouseLeave={handleEnd}></canvas>
                             <div className="absolute top-4 right-4 flex flex-col gap-2"><button onClick={resetImage} className="bg-black/50 text-white p-2 rounded-full backdrop-blur-sm hover:bg-black/70"><IconRefresh /></button></div>
                             {!bgImage && <div className="absolute inset-0 pointer-events-none flex items-center justify-center"><span className="bg-white/90 text-slate-800 px-4 py-2 rounded-full text-sm font-bold shadow-lg">Loading...</span></div>}
                         </div>
-
                         {bgImage && !bgImage2 && (<div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4"><IconMove /> <span className="text-xs text-slate-500 font-medium w-24">Drag Image</span><div className="h-6 w-px bg-slate-200"></div> <IconZoomIn /><input type="range" min="0.1" max="5" step="0.05" value={imgPos.scale} onChange={(e) => setImgPos(prev => ({ ...prev, scale: parseFloat(e.target.value) }))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" /></div>)}
-
                         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                            <div className="flex border-b bg-slate-50">
-                                <button onClick={() => setActiveTab('match')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'match' ? 'bg-white text-red-600 border-t-2 border-red-600' : 'text-slate-500'}`}>Edit Info</button>
-                                {appMode !== 'player' && appMode !== 'news' && <button onClick={() => setActiveTab('teams')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'teams' ? 'bg-white text-red-600 border-t-2 border-red-600' : 'text-slate-500'}`}>Teams</button>}
-                                <button onClick={() => setActiveTab('style')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'style' ? 'bg-white text-red-600 border-t-2 border-red-600' : 'text-slate-500'}`}>Style</button>
-                            </div>
+                            <div className="flex border-b bg-slate-50"><button onClick={() => setActiveTab('match')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'match' ? 'bg-white text-red-600 border-t-2 border-red-600' : 'text-slate-500'}`}>Edit Info</button>{appMode !== 'player' && appMode !== 'news' && <button onClick={() => setActiveTab('teams')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'teams' ? 'bg-white text-red-600 border-t-2 border-red-600' : 'text-slate-500'}`}>Teams</button>}<button onClick={() => setActiveTab('style')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'style' ? 'bg-white text-red-600 border-t-2 border-red-600' : 'text-slate-500'}`}>Style</button></div>
                             <div className="p-5 space-y-4">
-                                {activeTab === 'match' && (
-                                    <>
-                                        <div className="flex gap-3">
-                                            <div className="relative group flex-1">
-                                                <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, false)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                                                <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 flex flex-col items-center justify-center gap-2 bg-slate-50 group-hover:bg-slate-100 transition-colors"><div className="bg-white p-2 rounded-full shadow-sm text-slate-600"><IconUpload /></div><span className="text-xs font-bold text-slate-600">Photo 1</span></div>
-                                            </div>
-                                            <div className="relative group flex-1">
-                                                {bgImage2 ? (
-                                                    <div className="h-full border-2 border-green-200 bg-green-50 rounded-lg flex flex-col items-center justify-center relative">
-                                                        <span className="text-xs font-bold text-green-700 mb-1">Added</span><button onClick={() => setBgImage2(null)} className="flex items-center gap-1 bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-bold"><IconTrash /> Remove</button>
-                                                    </div>
-                                                ) : (
-                                                    <>
-                                                        <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, true)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                                                        <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 flex flex-col items-center justify-center gap-2 bg-slate-50 group-hover:bg-slate-100 transition-colors"><div className="bg-white p-2 rounded-full shadow-sm text-slate-400"><IconUpload /></div><span className="text-xs font-bold text-slate-400">Photo 2 (Opt)</span></div>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-3"><input type="text" name="badgeText" value={formData.badgeText} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Badge" />{appMode !== 'news' && <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Tournament" />}</div>
-                                        {appMode === 'scorecard' && <textarea name="result" value={formData.result} onChange={handleChange} rows="2" className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Result Text"></textarea>}
-                                        {appMode === 'schedule' && (<div className="p-3 bg-slate-50 rounded-lg border space-y-3"><h4 className="text-xs font-bold text-slate-500 uppercase flex items-center gap-2"><IconCalendar /> Match Details</h4><input type="text" name="matchDate" value={formData.matchDate} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Date" /><div className="grid grid-cols-2 gap-3"><input type="text" name="matchTime" value={formData.matchTime} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Time" /><input type="text" name="matchVenue" value={formData.matchVenue} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Venue" /></div></div>)}
-                                        {appMode === 'player' && (<div className="p-3 bg-amber-50 rounded-lg border border-amber-100 space-y-3"><h4 className="text-xs font-bold text-amber-700 uppercase flex items-center gap-2"><IconUser /> Player Stats</h4><input type="text" name="playerName" value={formData.playerName} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm font-bold" placeholder="Player Name" /><div className="grid grid-cols-2 gap-3"><input type="text" name="playerStatMain" value={formData.playerStatMain} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-xl font-bold text-center" placeholder="Run" /><input type="text" name="playerStatSub" value={formData.playerStatSub} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm" placeholder="Ball" /></div></div>)}
-                                        {appMode === 'news' && (<div className="p-3 bg-red-50 rounded-lg border border-red-100 space-y-3"><h4 className="text-xs font-bold text-red-700 uppercase flex items-center gap-2"><IconQuote /> Breaking News / Quote</h4><textarea name="quoteText" value={formData.quoteText} onChange={handleChange} rows="3" className="w-full px-3 py-2 bg-white border border-red-200 rounded-lg text-sm" placeholder="Quote or News Body"></textarea><input type="text" name="quoteAuthor" value={formData.quoteAuthor} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-red-200 rounded-lg text-sm font-bold" placeholder="Headline or Author" /></div>)}
-                                    </>
-                                )}
-                                {activeTab === 'teams' && appMode !== 'player' && appMode !== 'news' && (
-                                    <div className="space-y-5">
-                                        <button onClick={swapTeams} className="w-full py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2"><IconSwap /> Swap Sides</button>
-                                        <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 space-y-3"><div className="flex justify-between"><h3 className="text-xs font-bold text-amber-800">Left Team</h3><input type="color" name="team1Color" value={formData.team1Color} onChange={handleChange} className="w-6 h-6 rounded-full overflow-hidden border-none" /></div><input type="text" name="team1" value={formData.team1} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm font-bold" />{appMode === 'scorecard' && <div className="flex gap-2"><input type="text" name="team1Score" value={formData.team1Score} onChange={handleChange} className="flex-1 px-3 py-2 bg-white border rounded-lg text-sm" /><input type="text" name="team1Overs" value={formData.team1Overs} onChange={handleChange} className="w-24 px-3 py-2 bg-white border rounded-lg text-sm" /></div>}</div>
-                                        <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-3"><div className="flex justify-between"><h3 className="text-xs font-bold text-blue-800">Right Team</h3><input type="color" name="team2Color" value={formData.team2Color} onChange={handleChange} className="w-6 h-6 rounded-full overflow-hidden border-none" /></div><input type="text" name="team2" value={formData.team2} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm font-bold" />{appMode === 'scorecard' && <div className="flex gap-2"><input type="text" name="team2Score" value={formData.team2Score} onChange={handleChange} className="flex-1 px-3 py-2 bg-white border rounded-lg text-sm" /><input type="text" name="team2Overs" value={formData.team2Overs} onChange={handleChange} className="w-24 px-3 py-2 bg-white border rounded-lg text-sm" /></div>}</div>
-                                    </div>
-                                )}
-                                {activeTab === 'style' && (
-                                    <div className="space-y-5">
-                                        <div><label className="block text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2"><IconEye /> Opacity</label><input type="range" min="0" max="1" step="0.05" value={formData.bgOpacity} onChange={(e) => setFormData({...formData, bgOpacity: parseFloat(e.target.value)})} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" /></div>
-                                        <div><label className="block text-xs font-bold text-slate-400 uppercase mb-2">Gradient</label><div className="flex gap-2"><input type="color" name="primaryColor" value={formData.primaryColor} onChange={handleChange} className="h-10 w-full rounded-lg" /><input type="color" name="secondaryColor" value={formData.secondaryColor} onChange={handleChange} className="h-10 w-full rounded-lg" /></div></div>
-                                        {appMode === 'news' && (<div><label className="block text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2"><IconHeight /> News Color Height</label><input type="range" min="0.2" max="0.9" step="0.05" value={formData.newsGradientHeight} onChange={(e) => setFormData({...formData, newsGradientHeight: parseFloat(e.target.value)})} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" /><div className="flex justify-between text-xs text-slate-400 mt-1"><span>Low</span><span>High</span></div></div>)}
-                                    </div>
-                                )}
+                                {activeTab === 'match' && (<><div className="flex gap-3"><div className="relative group flex-1"><input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, false)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" /><div className="border-2 border-dashed border-slate-300 rounded-lg p-4 flex flex-col items-center justify-center gap-2 bg-slate-50 group-hover:bg-slate-100 transition-colors"><div className="bg-white p-2 rounded-full shadow-sm text-slate-600"><IconUpload /></div><span className="text-xs font-bold text-slate-600">Photo 1</span></div></div><div className="relative group flex-1">{bgImage2 ? (<div className="h-full border-2 border-green-200 bg-green-50 rounded-lg flex flex-col items-center justify-center relative"><span className="text-xs font-bold text-green-700 mb-1">Added</span><button onClick={() => setBgImage2(null)} className="flex items-center gap-1 bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-bold"><IconTrash /> Remove</button></div>) : (<><input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, true)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" /><div className="border-2 border-dashed border-slate-300 rounded-lg p-4 flex flex-col items-center justify-center gap-2 bg-slate-50 group-hover:bg-slate-100 transition-colors"><div className="bg-white p-2 rounded-full shadow-sm text-slate-400"><IconUpload /></div><span className="text-xs font-bold text-slate-400">Photo 2 (Opt)</span></div></>)}</div></div><div className="grid grid-cols-2 gap-3"><input type="text" name="badgeText" value={formData.badgeText} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Badge" />{appMode !== 'news' && <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Tournament" />}</div>{appMode === 'scorecard' && <textarea name="result" value={formData.result} onChange={handleChange} rows="2" className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Result Text"></textarea>}{appMode === 'schedule' && (<div className="p-3 bg-slate-50 rounded-lg border space-y-3"><h4 className="text-xs font-bold text-slate-500 uppercase flex items-center gap-2"><IconCalendar /> Match Details</h4><input type="text" name="matchDate" value={formData.matchDate} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Date" /><div className="grid grid-cols-2 gap-3"><input type="text" name="matchTime" value={formData.matchTime} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Time" /><input type="text" name="matchVenue" value={formData.matchVenue} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Venue" /></div></div>)}{appMode === 'player' && (<div className="p-3 bg-amber-50 rounded-lg border border-amber-100 space-y-3"><h4 className="text-xs font-bold text-amber-700 uppercase flex items-center gap-2"><IconUser /> Player Stats</h4><input type="text" name="playerName" value={formData.playerName} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm font-bold" placeholder="Player Name" /><div className="grid grid-cols-2 gap-3"><input type="text" name="playerStatMain" value={formData.playerStatMain} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-xl font-bold text-center" placeholder="Run" /><input type="text" name="playerStatSub" value={formData.playerStatSub} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm" placeholder="Ball" /></div></div>)}{appMode === 'news' && (<div className="p-3 bg-red-50 rounded-lg border border-red-100 space-y-3"><h4 className="text-xs font-bold text-red-700 uppercase flex items-center gap-2"><IconQuote /> Breaking News / Quote</h4><textarea name="quoteText" value={formData.quoteText} onChange={handleChange} rows="3" className="w-full px-3 py-2 bg-white border border-red-200 rounded-lg text-sm" placeholder="Quote or News Body"></textarea><input type="text" name="quoteAuthor" value={formData.quoteAuthor} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-red-200 rounded-lg text-sm font-bold" placeholder="Headline or Author" /></div>)}</>)}
+                                {activeTab === 'teams' && appMode !== 'player' && appMode !== 'news' && (<div className="space-y-5"><button onClick={swapTeams} className="w-full py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2"><IconSwap /> Swap Sides</button><div className="bg-amber-50 p-4 rounded-xl border border-amber-100 space-y-3"><div className="flex justify-between"><h3 className="text-xs font-bold text-amber-800">Left Team</h3><input type="color" name="team1Color" value={formData.team1Color} onChange={handleChange} className="w-6 h-6 rounded-full overflow-hidden border-none" /></div><input type="text" name="team1" value={formData.team1} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm font-bold" />{appMode === 'scorecard' && <div className="flex gap-2"><input type="text" name="team1Score" value={formData.team1Score} onChange={handleChange} className="flex-1 px-3 py-2 bg-white border rounded-lg text-sm" /><input type="text" name="team1Overs" value={formData.team1Overs} onChange={handleChange} className="w-24 px-3 py-2 bg-white border rounded-lg text-sm" /></div>}</div><div className="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-3"><div className="flex justify-between"><h3 className="text-xs font-bold text-blue-800">Right Team</h3><input type="color" name="team2Color" value={formData.team2Color} onChange={handleChange} className="w-6 h-6 rounded-full overflow-hidden border-none" /></div><input type="text" name="team2" value={formData.team2} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm font-bold" />{appMode === 'scorecard' && <div className="flex gap-2"><input type="text" name="team2Score" value={formData.team2Score} onChange={handleChange} className="flex-1 px-3 py-2 bg-white border rounded-lg text-sm" /><input type="text" name="team2Overs" value={formData.team2Overs} onChange={handleChange} className="w-24 px-3 py-2 bg-white border rounded-lg text-sm" /></div>}</div></div>)}
+                                {activeTab === 'style' && (<div className="space-y-5"><div><label className="block text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2"><IconEye /> Opacity</label><input type="range" min="0" max="1" step="0.05" value={formData.bgOpacity} onChange={(e) => setFormData({...formData, bgOpacity: parseFloat(e.target.value)})} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" /></div><div><label className="block text-xs font-bold text-slate-400 uppercase mb-2">Gradient</label><div className="flex gap-2"><input type="color" name="primaryColor" value={formData.primaryColor} onChange={handleChange} className="h-10 w-full rounded-lg" /><input type="color" name="secondaryColor" value={formData.secondaryColor} onChange={handleChange} className="h-10 w-full rounded-lg" /></div></div>{appMode === 'news' && (<div><label className="block text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2"><IconHeight /> News Color Height</label><input type="range" min="0.2" max="0.9" step="0.05" value={formData.newsGradientHeight} onChange={(e) => setFormData({...formData, newsGradientHeight: parseFloat(e.target.value)})} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" /><div className="flex justify-between text-xs text-slate-400 mt-1"><span>Low</span><span>High</span></div></div>)}</div>)}
                             </div>
                         </div>
                     </div>
