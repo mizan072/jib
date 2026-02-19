@@ -53,8 +53,8 @@
         const { useState, useEffect, useRef } = React;
 
         // --- CONFIGURATION ---
-        // ⚠️ REPLACE THIS URL WITH YOUR NEW GOOGLE APPS SCRIPT WEB APP URL! ⚠️
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyDorekc-EaWSFUynwzUrZF3DB9sxxXcut3QlaFH2wexfB7ccwX3B6T-PFNT5NqFH2x/exec"; 
+        // 🚨🚨🚨 IMPORTANT: PASTE YOUR GOOGLE SCRIPT URL BELOW OR POINTS WILL SHOW 0 🚨🚨🚨
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztp3j5Kh1tmcMcQpXfgNp9mhYQRchm2iSB-fPAk-V5ikDcXHcJlmVJ-yb93iIiycJ7/exec"; 
         const DOWNLOAD_COST = 2; 
 
         // --- ICONS ---
@@ -176,10 +176,9 @@
                 }
             };
 
-            // MODIFIED FETCH LOGIC TO FIX POINTS NOT SHOWING
             const fetchPoints = async (uid) => {
                 if(GOOGLE_SCRIPT_URL.includes("xxxxxxxx")) { 
-                    setPoints(10); 
+                    setPoints(0); 
                     setIsCheckingPoints(false); 
                     return; 
                 }
@@ -191,11 +190,10 @@
                     
                     const data = await response.json();
                     if (data.status === 'success') {
-                        setPoints(parseInt(data.points) || 0);
+                        setPoints(Number(data.points) || 0);
                     }
                 } catch (error) { 
                     console.error("Fetch Points Error:", error); 
-                    // If it fails, default to 0 so the loader doesn't spin forever
                     setPoints(0); 
                 }
                 setIsCheckingPoints(false);
@@ -246,7 +244,7 @@
                     if (appMode === 'news') { const h = H * formData.newsGradientHeight; ctx.fillRect(0, H - h, W, h); } 
                     else ctx.fillRect(0, splitY, W, H - splitY);
                     
-                    if (appMode !== 'news') { ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; ctx.fillRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH); }
+                    if (appMode !== 'news' && appMode !== 'career') { ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; ctx.fillRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH); }
                     ctx.fillStyle = '#0f172a'; ctx.fillRect(0, footerY, W, footerH); ctx.restore(); 
 
                     // 5. Badge & Icon
@@ -256,8 +254,8 @@
                     ctx.save(); ctx.shadowColor = "rgba(0, 0, 0, 0.8)"; ctx.shadowBlur = 6;
                     drawText(ctx, formData.badgeText, badgeX + 80, 40 + 48, 32, '#fff', 'left', 'bold'); ctx.restore();
 
-                    // 6. Header
-                    if (appMode !== 'news') {
+                    // 6. Header (REMOVED FROM CAREER MODE)
+                    if (appMode !== 'news' && appMode !== 'career') {
                         ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 2;
                         ctx.strokeRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH);
                         drawText(ctx, formData.title, W / 2, titleBoxY + 60, 50, '#fff', 'center', 'bold');
@@ -290,16 +288,16 @@
                         drawText(ctx, formData.playerName, W/2, py + 180, 60, '#fff', 'center', 'bold');
                         
                     } else if (appMode === 'career') {
-                        // FIXED: Adjusted layout so boxes are smaller and sit perfectly above the footer
-                        const py = titleBoxY + 100; // Moved higher up
-                        drawText(ctx, formData.playerName, W/2, py, 60, '#fff', 'center', 'bold');
-                        ctx.beginPath(); ctx.moveTo(W/2-250, py+20); ctx.lineTo(W/2+250, py+20); ctx.strokeStyle='rgba(255,255,255,0.2)'; ctx.lineWidth=2; ctx.stroke();
+                        // FIXED OVERLAP: Shifted player name and stat grid much higher up because the Tournament Title is gone
+                        const py = splitY + 90; 
+                        drawText(ctx, formData.playerName, W/2, py, 70, '#fff', 'center', 'bold');
+                        ctx.beginPath(); ctx.moveTo(W/2-250, py+25); ctx.lineTo(W/2+250, py+25); ctx.strokeStyle='rgba(255,255,255,0.2)'; ctx.lineWidth=2; ctx.stroke();
                         
                         // Resized 2x2 Grid Math
-                        const boxW = 380; const boxH = 100; const gap = 30;
+                        const boxW = 400; const boxH = 120; const gap = 40;
                         const leftX = W/2 - boxW - gap/2;
                         const rightX = W/2 + gap/2;
-                        const topY = py + 45; 
+                        const topY = py + 70; 
                         const botY = topY + boxH + gap;
 
                         const drawStatBox = (label, val, x, y) => {
@@ -308,8 +306,8 @@
                             if(ctx.roundRect) ctx.roundRect(x, y, boxW, boxH, 15); else ctx.fillRect(x, y, boxW, boxH);
                             ctx.fill();
                             ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.stroke();
-                            drawText(ctx, label, x + boxW/2, y + 35, 22, formData.team1Color, 'center', 'bold'); 
-                            drawText(ctx, val, x + boxW/2, y + 80, 45, '#fff', 'center', 'bold');
+                            drawText(ctx, label, x + boxW/2, y + 40, 24, formData.team1Color, 'center', 'bold'); 
+                            drawText(ctx, val, x + boxW/2, y + 95, 50, '#fff', 'center', 'bold');
                         };
 
                         drawStatBox("ম্যাচ (MATCHES)", formData.careerMatches, leftX, topY);
@@ -454,10 +452,11 @@
                             <div className="flex items-center gap-3">
                                 <div className="flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700 cursor-pointer hover:bg-slate-800 transition-colors" onClick={() => setShowBuyModal(true)}>
                                     <IconCoin />
-                                    {isCheckingPoints ? <div className="loader"></div> : <span className="text-sm font-bold text-yellow-500">{points} pts</span>}
+                                    {/* FIXED: Removed 'pts' from here */}
+                                    {isCheckingPoints ? <div className="loader"></div> : <span className="text-sm font-bold text-yellow-500">{points}</span>}
                                 </div>
                                 <button onClick={handleDownloadClick} disabled={isProcessing} className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 active:scale-95 transition-all shadow-lg shadow-red-600/20 disabled:opacity-50">
-                                    {isProcessing ? 'Saving...' : <><IconDownload /> Save</>}
+                                    {isProcessing ? 'Saving...' : <><IconDownload /> Save Poster</>}
                                 </button>
                             </div>
                         </div>
@@ -505,7 +504,8 @@
                                         </div>
                                         <div className="grid grid-cols-2 gap-3">
                                             <input type="text" name="badgeText" value={formData.badgeText} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Badge" />
-                                            {appMode !== 'news' && <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Tournament" />}
+                                            {/* FIXED: Removed Title input from Career Mode */}
+                                            {appMode !== 'news' && appMode !== 'career' && <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Tournament" />}
                                         </div>
                                         
                                         <div className="mt-3">
