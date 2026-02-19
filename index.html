@@ -5,13 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Poster Bot Pro</title>
     
-    <!-- PWA Manifest & Meta -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1165/1165249.png">
 
-    <!-- Libraries -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -19,7 +17,6 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Error Suppression -->
     <script>
         const originalError = console.error;
         console.error = function(...args) {
@@ -28,7 +25,6 @@
         };
     </script>
 
-    <!-- Service Worker -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => { navigator.serviceWorker.register('./service-worker.js').catch(e => console.log(e)); });
@@ -141,16 +137,16 @@
 
             const [formData, setFormData] = useState({
                 badgeText: 'proscorecard_bot',
-                title: 'আইসিসি টি-টোয়েন্টি বিশ্বকাপ',
+                title: 'আইসিসি টি-টোয়েন্টি বিশ্বকাপ',
                 footerHandle: 'এই রকম পোস্টার তৈরি করুন এই টেলিগ্রাম বট দিয়েঃ  @proscorecard_bot',
                 primaryColor: '#990000', secondaryColor: '#4a0000', bgOpacity: 0.9, newsGradientHeight: 0.55,
                 team1: 'ইংল্যান্ড', team1Color: '#ffd700', team2: 'নেপাল', team2Color: '#ffd700',
                 team1Score: '১৮৪/৭', team1Overs: '(২০ ওভার)', team2Score: '১৮০/৬', team2Overs: '(২০ ওভার)',
-                result: 'নেপালকে ৪ রানে হারিয়েছে ইংল্যান্ড', resultColor: '#ffd700',
-                matchDate: '২০ অক্টোবর, ২০২৫', matchTime: 'দুপুর ২:০০টা', matchVenue: 'শেরে বাংলা স্টেডিয়াম',
+                result: 'নেপালকে ৪ রানে হারিয়েছে ইংল্যান্ড', resultColor: '#ffd700',
+                matchDate: '২০ অক্টোবর, ২০২৫', matchTime: 'দুপুর ২:০০টা', matchVenue: 'শেরে বাংলা স্টেডিয়াম',
                 playerName: 'সাকিব আল হাসান', playerStatMain: '৮২', playerStatSub: 'রান (৪৫ বল)',
                 stat1Label: '৪', stat1Value: '৮', stat2Label: '৬', stat2Value: '৫', stat3Label: 'S/R', stat3Value: '১৮২.২',
-                quoteText: 'আমাদের লক্ষ্য এখন বিশ্বকাপ জয় করা।', quoteAuthor: 'নাজমুল হোসেন শান্ত, অধিনায়ক'
+                quoteText: 'আমাদের লক্ষ্য এখন বিশ্বকাপ জয় করা।', quoteAuthor: 'নাজমুল হোসেন শান্ত, অধিনায়ক'
             });
 
             // --- USER & POINT SYSTEM LOGIC ---
@@ -339,12 +335,29 @@
                 if (isProcessing) return;
                 if (points < DOWNLOAD_COST) { setShowBuyModal(true); return; }
                 setIsProcessing(true);
-                if(GOOGLE_SCRIPT_URL.includes("xxxxxxxx")) { performDownload(); setPoints(prev => prev - DOWNLOAD_COST); setIsProcessing(false); return; }
+                
+                if(GOOGLE_SCRIPT_URL.includes("xxxxxxxx")) { 
+                    performDownload(); 
+                    setPoints(prev => prev - DOWNLOAD_COST); 
+                    setIsProcessing(false); 
+                    return; 
+                }
+                
                 try {
-                    const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=deduct&userId=${userId}&amount=${DOWNLOAD_COST}`, { method: 'POST' });
+                    const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=deduct&userId=${userId}&amount=${DOWNLOAD_COST}`);
+                    if (!response.ok) throw new Error("Server responded with an error");
+                    
                     const data = await response.json();
-                    if (data.status === 'success') { setPoints(data.points); performDownload(); } else { alert("Insufficient points or error."); }
-                } catch (error) { alert("Network Error"); }
+                    if (data.status === 'success') { 
+                        setPoints(data.points); 
+                        performDownload(); 
+                    } else { 
+                        alert("Insufficient points or error."); 
+                    }
+                } catch (error) { 
+                    console.error("Deduction Error:", error);
+                    alert("Network Error. Please check your connection or the Script URL."); 
+                }
                 setIsProcessing(false);
             };
 
