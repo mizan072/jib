@@ -40,7 +40,7 @@
         .modal-content { animation: scaleIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #e11d48; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #eab308; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .install-prompt { position: fixed; bottom: 20px; left: 20px; right: 20px; z-index: 100; animation: slideUp 0.4s ease-out; }
         @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -53,6 +53,7 @@
         const { useState, useEffect, useRef } = React;
 
         // --- CONFIGURATION ---
+        // ⚠️ REPLACE THIS URL WITH YOUR NEW GOOGLE APPS SCRIPT WEB APP URL! ⚠️
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyDorekc-EaWSFUynwzUrZF3DB9sxxXcut3QlaFH2wexfB7ccwX3B6T-PFNT5NqFH2x/exec"; 
         const DOWNLOAD_COST = 2; 
 
@@ -147,7 +148,7 @@
                 playerName: 'সাকিব আল হাসান', playerStatMain: '৮২', playerStatSub: 'রান (৪৫ বল)',
                 stat1Label: '৪', stat1Value: '৮', stat2Label: '৬', stat2Value: '৫', stat3Label: 'S/R', stat3Value: '১৮২.২',
                 quoteText: 'আমাদের লক্ষ্য এখন বিশ্বকাপ জয় করা।', quoteAuthor: 'নাজমুল হোসেন শান্ত, অধিনায়ক',
-                careerMatches: '২৫৪', careerRuns: '৭৫৬২', careerBest: '১১৪*', careerWickets: '৩১২' // New Fields
+                careerMatches: '২৫৪', careerRuns: '৭৫৬২', careerBest: '১১৪*', careerWickets: '৩১২'
             });
 
             // --- USER & POINT SYSTEM LOGIC ---
@@ -175,14 +176,28 @@
                 }
             };
 
+            // MODIFIED FETCH LOGIC TO FIX POINTS NOT SHOWING
             const fetchPoints = async (uid) => {
-                if(GOOGLE_SCRIPT_URL.includes("xxxxxxxx")) { setPoints(10); setIsCheckingPoints(false); return; }
+                if(GOOGLE_SCRIPT_URL.includes("xxxxxxxx")) { 
+                    setPoints(10); 
+                    setIsCheckingPoints(false); 
+                    return; 
+                }
+                
                 setIsCheckingPoints(true);
                 try {
                     const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=check&userId=${uid}`);
+                    if (!response.ok) throw new Error("Server error");
+                    
                     const data = await response.json();
-                    if (data.status === 'success') setPoints(data.points);
-                } catch (error) { console.error("API Error", error); }
+                    if (data.status === 'success') {
+                        setPoints(parseInt(data.points) || 0);
+                    }
+                } catch (error) { 
+                    console.error("Fetch Points Error:", error); 
+                    // If it fails, default to 0 so the loader doesn't spin forever
+                    setPoints(0); 
+                }
                 setIsCheckingPoints(false);
             };
 
@@ -273,16 +288,18 @@
                         const py = scoresY - 20; drawText(ctx, formData.playerStatMain, W/2, py + 40, 130, formData.team1Color, 'center', 'bold'); drawText(ctx, formData.playerStatSub, W/2, py + 90, 40, '#fff', 'center', 'normal');
                         ctx.beginPath(); ctx.moveTo(W/2-150, py+120); ctx.lineTo(W/2+150, py+120); ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=2; ctx.stroke();
                         drawText(ctx, formData.playerName, W/2, py + 180, 60, '#fff', 'center', 'bold');
-                    } else if (appMode === 'career') {
-                        const py = scoresY - 30;
-                        drawText(ctx, formData.playerName, W/2, py + 20, 70, '#fff', 'center', 'bold');
-                        ctx.beginPath(); ctx.moveTo(W/2-250, py+45); ctx.lineTo(W/2+250, py+45); ctx.strokeStyle='rgba(255,255,255,0.2)'; ctx.lineWidth=2; ctx.stroke();
                         
-                        // 2x2 Grid Math
-                        const boxW = 380; const boxH = 130; const gap = 40;
+                    } else if (appMode === 'career') {
+                        // FIXED: Adjusted layout so boxes are smaller and sit perfectly above the footer
+                        const py = titleBoxY + 100; // Moved higher up
+                        drawText(ctx, formData.playerName, W/2, py, 60, '#fff', 'center', 'bold');
+                        ctx.beginPath(); ctx.moveTo(W/2-250, py+20); ctx.lineTo(W/2+250, py+20); ctx.strokeStyle='rgba(255,255,255,0.2)'; ctx.lineWidth=2; ctx.stroke();
+                        
+                        // Resized 2x2 Grid Math
+                        const boxW = 380; const boxH = 100; const gap = 30;
                         const leftX = W/2 - boxW - gap/2;
                         const rightX = W/2 + gap/2;
-                        const topY = py + 80;
+                        const topY = py + 45; 
                         const botY = topY + boxH + gap;
 
                         const drawStatBox = (label, val, x, y) => {
@@ -291,8 +308,8 @@
                             if(ctx.roundRect) ctx.roundRect(x, y, boxW, boxH, 15); else ctx.fillRect(x, y, boxW, boxH);
                             ctx.fill();
                             ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.stroke();
-                            drawText(ctx, label, x + boxW/2, y + 45, 28, formData.team1Color, 'center', 'bold'); 
-                            drawText(ctx, val, x + boxW/2, y + 105, 55, '#fff', 'center', 'bold');
+                            drawText(ctx, label, x + boxW/2, y + 35, 22, formData.team1Color, 'center', 'bold'); 
+                            drawText(ctx, val, x + boxW/2, y + 80, 45, '#fff', 'center', 'bold');
                         };
 
                         drawStatBox("ম্যাচ (MATCHES)", formData.careerMatches, leftX, topY);
@@ -435,12 +452,12 @@
                                 </div>
                             </div>
                             <div className="flex items-center gap-3">
-                                <div className="flex items-center gap-1 bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700 cursor-pointer hover:bg-slate-800 transition-colors" onClick={() => setShowBuyModal(true)}>
+                                <div className="flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700 cursor-pointer hover:bg-slate-800 transition-colors" onClick={() => setShowBuyModal(true)}>
                                     <IconCoin />
-                                    {isCheckingPoints ? <div className="loader border-t-yellow-500 w-4 h-4"></div> : <span className="text-sm font-bold text-yellow-500">{points} pts</span>}
+                                    {isCheckingPoints ? <div className="loader"></div> : <span className="text-sm font-bold text-yellow-500">{points} pts</span>}
                                 </div>
                                 <button onClick={handleDownloadClick} disabled={isProcessing} className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 active:scale-95 transition-all shadow-lg shadow-red-600/20 disabled:opacity-50">
-                                    {isProcessing ? 'Saving...' : <><IconDownload /> Save Poster</>}
+                                    {isProcessing ? 'Saving...' : <><IconDownload /> Save</>}
                                 </button>
                             </div>
                         </div>
@@ -502,7 +519,7 @@
                                         
                                         {appMode === 'player' && (<div className="p-3 bg-amber-50 rounded-lg border border-amber-100 space-y-3"><h4 className="text-xs font-bold text-amber-700 uppercase flex items-center gap-2"><IconUser /> Player Stats</h4><input type="text" name="playerName" value={formData.playerName} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm font-bold" placeholder="Player Name" /><div className="grid grid-cols-2 gap-3"><input type="text" name="playerStatMain" value={formData.playerStatMain} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-xl font-bold text-center" placeholder="Run" /><input type="text" name="playerStatSub" value={formData.playerStatSub} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm" placeholder="Ball" /></div></div>)}
 
-                                        {/* NEW: CAREER MODE INPUTS */}
+                                        {/* CAREER MODE INPUTS */}
                                         {appMode === 'career' && (
                                             <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-100 space-y-3">
                                                 <h4 className="text-xs font-bold text-indigo-700 uppercase flex items-center gap-2"><IconChart /> Career Statistics</h4>
