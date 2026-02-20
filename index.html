@@ -24,7 +24,6 @@
             originalError.apply(console, args);
         };
     </script>
-
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => { navigator.serviceWorker.register('./service-worker.js').catch(e => console.log(e)); });
@@ -52,9 +51,8 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // --- CONFIGURATION ---
         // 🚨🚨🚨 PASTE YOUR GOOGLE SCRIPT URL BELOW 🚨🚨🚨
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztp3j5Kh1tmcMcQpXfgNp9mhYQRchm2iSB-fPAk-V5ikDcXHcJlmVJ-yb93iIiycJ7/exec"; 
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/library/d/1DN82LRej40ju89ARSiYr_JpbuXaVkP4Gq1QM2XwzhZAItrhJTuPH1a3m/4"; 
         const DOWNLOAD_COST = 2; 
 
         // --- ICONS ---
@@ -80,94 +78,65 @@
         const IconStar = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>;
 
         // --- GLOBAL HELPERS ---
-        const measureText = (ctx, text, fs, fw) => { 
-            ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`; 
-            return ctx.measureText(text).width; 
-        };
-
-        const drawText = (ctx, text, x, y, fs, color, align, fw) => { 
-            ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`; 
-            ctx.fillStyle = color; 
-            ctx.textAlign = align; 
-            ctx.fillText(text, x, y); 
-        };
-
+        const measureText = (ctx, text, fs, fw) => { ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`; return ctx.measureText(text).width; };
+        const drawText = (ctx, text, x, y, fs, color, align, fw) => { ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`; ctx.fillStyle = color; ctx.textAlign = align; ctx.fillText(text, x, y); };
         const drawFBIcon = (ctx, type, cx, cy, size) => {
-            ctx.save();
-            ctx.translate(cx, cy);
-            
-            ctx.beginPath();
-            ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
-            ctx.fillStyle = type === 'like' ? '#1877F2' : '#F02849';
-            ctx.fill();
-
-            ctx.fillStyle = '#ffffff';
-            const scale = size / 40; 
-            ctx.scale(scale, scale);
-            ctx.translate(-12, -12);
-            
-            if (type === 'like') {
-                ctx.fill(new Path2D('M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z'));
-            } else {
-                ctx.fill(new Path2D('M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'));
-            }
+            ctx.save(); ctx.translate(cx, cy); ctx.beginPath(); ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
+            ctx.fillStyle = type === 'like' ? '#1877F2' : '#F02849'; ctx.fill(); ctx.fillStyle = '#ffffff';
+            const scale = size / 40; ctx.scale(scale, scale); ctx.translate(-12, -12);
+            if (type === 'like') { ctx.fill(new Path2D('M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z')); } 
+            else { ctx.fill(new Path2D('M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z')); }
             ctx.restore();
+        };
+        const drawCover = (ctx, img, x, y, w, h) => {
+            const r = img.width/img.height, tr = w/h; let sx, sy, sw, sh;
+            if (r > tr) { sh = img.height; sw = img.height * tr; sy = 0; sx = (img.width - sw) / 2; }
+            else { sw = img.width; sh = img.width / tr; sx = 0; sy = (img.height - sh) / 2; }
+            ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
         };
 
         function App() {
             const canvasRef = useRef(null);
             
-            // --- STATE ---
+            // STATE
             const [appMode, setAppMode] = useState('poll'); 
             const [activeTab, setActiveTab] = useState('match');
             const [bgImage, setBgImage] = useState(null);
             const [bgImage2, setBgImage2] = useState(null);
-            
-            // INDEPENDENT IMAGE POSITIONS
             const [img1Pos, setImg1Pos] = useState({ x: 0, y: 0, scale: 1 });
             const [img2Pos, setImg2Pos] = useState({ x: 0, y: 0, scale: 1 });
-
             const [showBuyModal, setShowBuyModal] = useState(false);
             const [isProcessing, setIsProcessing] = useState(false); 
             const gestureStart = useRef({ mode: null, target: null, x: 0, y: 0, dist: 0, scale: 1, imgX: 0, imgY: 0 });
             
+            // SYSTEM STATE
             const [userId, setUserId] = useState('');
             const [points, setPoints] = useState(0);
             const [isCheckingPoints, setIsCheckingPoints] = useState(true);
-
             const [deferredPrompt, setDeferredPrompt] = useState(null);
             const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+            
+            // NOTIFICATION STATE
+            const [appNotification, setAppNotification] = useState(null);
+            const [showAppNotification, setShowAppNotification] = useState(false);
 
             const [formData, setFormData] = useState({
-                badgeText: 'proscorecard_bot',
-                title: 'আইসিসি টি-টোয়েন্টি বিশ্বকাপ',
-                footerHandle: 'এই রকম পোস্টার তৈরি করুন এই টেলিগ্রাম বট দিয়েঃ  @proscorecard_bot',
+                badgeText: 'proscorecard_bot', title: 'আইসিসি টি-টোয়েন্টি বিশ্বকাপ', footerHandle: 'এই রকম পোস্টার তৈরি করুন এই টেলিগ্রাম বট দিয়েঃ  @proscorecard_bot',
                 primaryColor: '#990000', secondaryColor: '#4a0000', bgOpacity: 0.9, newsGradientHeight: 0.55,
-                team1: 'ইংল্যান্ড', team1Color: '#ffd700', team2: 'নেপাল', team2Color: '#ffd700',
-                team1Score: '১৮৪/৭', team1Overs: '(২০ ওভার)', team2Score: '১৮0/৬', team2Overs: '(২০ ওভার)',
-                result: 'নেপালকে ৪ রানে হারিয়েছে ইংল্যান্ড', resultColor: '#ffd700',
-                matchDate: '২০ অক্টোবর, ২০২৫', matchTime: 'দুপুর ২:০০টা', matchVenue: 'শেরে বাংলা স্টেডিয়াম',
-                playerName: 'সাকিব আল হাসান', playerStatMain: '৮২', playerStatSub: 'রান (৪৫ বল)',
-                stat1Label: '৪', stat1Value: '৮', stat2Label: '৬', stat2Value: '৫', stat3Label: 'S/R', stat3Value: '১৮২.২',
-                quoteText: 'আমাদের লক্ষ্য এখন বিশ্বকাপ জয় করা।', quoteAuthor: 'নাজমুল হোসেন শান্ত, অধিনায়ক',
-                
-                playerRole: 'ব্যাটসম্যান', careerMatches: '২৫৪', careerRuns: '৭৫৬২', 
-                careerHundreds: '১৪', careerFifties: '৪২', careerBest: '১১৪*', careerWickets: '৩১২',
-
-                pollQuestion: 'বর্তমান সময়ের সেরা ব্যাটার কে?', pollPlayer1: 'সাকিব আল হাসান', pollPlayer2: 'বিরাট কোহলি',
-
-                milestoneOccasion: 'শুভ জন্মদিন', milestoneName: 'সাকিব আল হাসান', milestoneNumber: '৩৭ তম',
-                milestoneMessage: 'বাংলাদেশ ক্রিকেটের জান, বাংলাদেশ ক্রিকেটের প্রাণ! শুভকামনা রইলো।'
+                team1: 'ইংল্যান্ড', team1Color: '#ffd700', team2: 'নেপাল', team2Color: '#ffd700', team1Score: '১৮৪/৭', team1Overs: '(২০ ওভার)', team2Score: '১৮0/৬', team2Overs: '(২০ ওভার)',
+                result: 'নেপালকে ৪ রানে হারিয়েছে ইংল্যান্ড', resultColor: '#ffd700', matchDate: '২০ অক্টোবর, ২০২৫', matchTime: 'দুপুর ২:০০টা', matchVenue: 'শেরে বাংলা স্টেডিয়াম',
+                playerName: 'সাকিব আল হাসান', playerStatMain: '৮২', playerStatSub: 'রান (৪৫ বল)', stat1Label: '৪', stat1Value: '৮', stat2Label: '৬', stat2Value: '৫', stat3Label: 'S/R', stat3Value: '১৮২.২',
+                quoteText: 'আমাদের লক্ষ্য এখন বিশ্বকাপ জয় করা।', quoteAuthor: 'নাজমুল হোসেন শান্ত, অধিনায়ক', playerRole: 'ব্যাটসম্যান', careerMatches: '২৫৪', careerRuns: '৭৫৬২', 
+                careerHundreds: '১৪', careerFifties: '৪২', careerBest: '১১৪*', careerWickets: '৩১২', pollQuestion: 'বর্তমান সময়ের সেরা ব্যাটার কে?', pollPlayer1: 'সাকিব আল হাসান', pollPlayer2: 'বিরাট কোহলি',
+                milestoneOccasion: 'শুভ জন্মদিন', milestoneName: 'সাকিব আল হাসান', milestoneNumber: '৩৭ তম', milestoneMessage: 'বাংলাদেশ ক্রিকেটের জান, বাংলাদেশ ক্রিকেটের প্রাণ! শুভকামনা রইলো।'
             });
 
             useEffect(() => {
                 const handler = (e) => { e.preventDefault(); setDeferredPrompt(e); setShowInstallPrompt(true); };
                 window.addEventListener('beforeinstallprompt', handler);
-                
                 let storedId = localStorage.getItem('poster_user_id');
                 if (!storedId) { storedId = 'u_' + Math.random().toString(36).substr(2, 9); localStorage.setItem('poster_user_id', storedId); }
                 setUserId(storedId); fetchPoints(storedId);
-                
                 if (window.Telegram && window.Telegram.WebApp) { window.Telegram.WebApp.ready(); if(window.Telegram.WebApp.expand) window.Telegram.WebApp.expand(); }
 
                 const img = new Image(); img.crossOrigin = "Anonymous"; img.src = "https://images.unsplash.com/photo-1531415074968-036ba1b575da?q=80&w=1080&auto=format&fit=crop";
@@ -176,18 +145,10 @@
                     const scale = Math.max(1080 / img.width, 1200 / img.height);
                     setImg1Pos({ x: (1080 - img.width * scale) / 2, y: (1200 - img.height * scale) / 2, scale }); 
                 };
-
                 return () => window.removeEventListener('beforeinstallprompt', handler);
             }, []);
 
-            const handleInstallApp = async () => {
-                if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    const { outcome } = await deferredPrompt.userChoice;
-                    if (outcome === 'accepted') { setDeferredPrompt(null); setShowInstallPrompt(false); }
-                }
-            };
-
+            // FETCH POINTS AND NOTIFICATIONS
             const fetchPoints = async (uid) => {
                 if(GOOGLE_SCRIPT_URL.includes("xxxxxxxx")) { setPoints(0); setIsCheckingPoints(false); return; }
                 setIsCheckingPoints(true);
@@ -195,9 +156,36 @@
                     const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=check&userId=${uid}`);
                     if (!response.ok) throw new Error("Server error");
                     const data = await response.json();
-                    if (data.status === 'success') setPoints(Number(data.points) || 0);
-                } catch (error) { setPoints(0); }
+                    if (data.status === 'success') {
+                        setPoints(Number(data.points) || 0);
+                        // SMART NOTIFICATION LOGIC
+                        if (data.notification && data.notification.status === 'ON') {
+                            const msgId = data.notification.title + data.notification.message;
+                            const dismissedId = localStorage.getItem('dismissed_notification');
+                            if (dismissedId !== msgId) {
+                                setAppNotification(data.notification);
+                                setShowAppNotification(true);
+                            }
+                        }
+                    }
+                } catch (error) { console.error("Fetch Error:", error); setPoints(0); }
                 setIsCheckingPoints(false);
+            };
+
+            const dismissNotification = () => {
+                if (appNotification) {
+                    const msgId = appNotification.title + appNotification.message;
+                    localStorage.setItem('dismissed_notification', msgId); // Remember this specific message is read
+                }
+                setShowAppNotification(false);
+            };
+
+            const handleInstallApp = async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') { setDeferredPrompt(null); setShowInstallPrompt(false); }
+                }
             };
 
             // --- CANVAS RENDER ---
@@ -210,95 +198,55 @@
                 ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, W, H);
 
                 try {
-                    // 2. INDEPENDENT IMAGES DRAWING
                     if (bgImage && bgImage2) {
-                        // Image 1 (Left Half)
-                        ctx.save();
-                        ctx.beginPath();
-                        ctx.rect(0, 0, W/2, H);
-                        ctx.clip();
-                        ctx.translate(img1Pos.x, img1Pos.y);
-                        ctx.scale(img1Pos.scale, img1Pos.scale);
-                        ctx.drawImage(bgImage, 0, 0);
-                        ctx.restore();
-
-                        // Image 2 (Right Half)
-                        ctx.save();
-                        ctx.beginPath();
-                        ctx.rect(W/2, 0, W/2, H);
-                        ctx.clip();
-                        ctx.translate(img2Pos.x, img2Pos.y);
-                        ctx.scale(img2Pos.scale, img2Pos.scale);
-                        ctx.drawImage(bgImage2, 0, 0);
-                        ctx.restore();
-
-                        // Divider Line
-                        ctx.beginPath(); ctx.moveTo(W/2, 0); ctx.lineTo(W/2, H); 
-                        ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 4; ctx.stroke();
+                        ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W/2, H); ctx.clip(); ctx.translate(img1Pos.x, img1Pos.y); ctx.scale(img1Pos.scale, img1Pos.scale); ctx.drawImage(bgImage, 0, 0); ctx.restore();
+                        ctx.save(); ctx.beginPath(); ctx.rect(W/2, 0, W/2, H); ctx.clip(); ctx.translate(img2Pos.x, img2Pos.y); ctx.scale(img2Pos.scale, img2Pos.scale); ctx.drawImage(bgImage2, 0, 0); ctx.restore();
+                        ctx.beginPath(); ctx.moveTo(W/2, 0); ctx.lineTo(W/2, H); ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 4; ctx.stroke();
                     } else if (bgImage) {
-                        ctx.save();
-                        ctx.translate(img1Pos.x, img1Pos.y);
-                        ctx.scale(img1Pos.scale, img1Pos.scale);
-                        ctx.drawImage(bgImage, 0, 0);
-                        ctx.restore();
+                        ctx.save(); ctx.translate(img1Pos.x, img1Pos.y); ctx.scale(img1Pos.scale, img1Pos.scale); ctx.drawImage(bgImage, 0, 0); ctx.restore();
                     } else {
-                        const grd = ctx.createLinearGradient(0, 0, 0, splitY);
-                        grd.addColorStop(0, '#1b5e20'); grd.addColorStop(1, '#2e7d32');
-                        ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H);
-                        drawText(ctx, "Loading Image...", W/2, H/2, 50, "#fff", "center", "bold");
+                        const grd = ctx.createLinearGradient(0, 0, 0, splitY); grd.addColorStop(0, '#1b5e20'); grd.addColorStop(1, '#2e7d32');
+                        ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H); drawText(ctx, "Loading Image...", W/2, H/2, 50, "#fff", "center", "bold");
                     }
 
-                    // 3. Layout Constants
                     const titleBoxY = splitY + 40; const titleBoxW = 800; const titleBoxH = 90; const titleBoxX = (W - titleBoxW) / 2;
-                    const scoresY = titleBoxY + 160; const leftCenter = W * 0.25; const rightCenter = W * 0.75;
-                    const footerH = 60; const footerY = H - footerH;
+                    const scoresY = titleBoxY + 160; const leftCenter = W * 0.25; const rightCenter = W * 0.75; const footerH = 60; const footerY = H - footerH;
 
-                    // 4. Overlays
                     ctx.save();
                     ctx.globalAlpha = formData.bgOpacity; 
                     const gradient = ctx.createLinearGradient(0, splitY, 0, H);
                     gradient.addColorStop(0, formData.primaryColor); gradient.addColorStop(1, formData.secondaryColor);
                     ctx.fillStyle = gradient;
                     
-                    if (appMode === 'news') { 
-                        const h = H * formData.newsGradientHeight; ctx.fillRect(0, H - h, W, h); 
-                    } else {
-                        ctx.fillRect(0, splitY, W, H - splitY);
-                    }
+                    if (appMode === 'news') { const h = H * formData.newsGradientHeight; ctx.fillRect(0, H - h, W, h); } 
+                    else { ctx.fillRect(0, splitY, W, H - splitY); }
                     
                     if (appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone') { 
-                        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; 
-                        ctx.fillRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH); 
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; ctx.fillRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH); 
                     }
                     ctx.fillStyle = '#0f172a'; ctx.fillRect(0, footerY, W, footerH); ctx.restore(); 
 
-                    // 5. Badge & Icon
                     const badgeX = W - 320 - 40;
                     ctx.beginPath(); ctx.arc(badgeX + 45, 40 + 35, 22, 0, Math.PI * 2); ctx.fillStyle = '#1877F2'; ctx.fill();
                     drawText(ctx, "f", badgeX + 45, 40 + 48, 35, "#fff", "center", "bold");
                     ctx.save(); ctx.shadowColor = "rgba(0, 0, 0, 0.8)"; ctx.shadowBlur = 6;
                     drawText(ctx, formData.badgeText, badgeX + 80, 40 + 48, 32, '#fff', 'left', 'bold'); ctx.restore();
 
-                    // 6. Header
                     if (appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone') {
-                        ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 2;
-                        ctx.strokeRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH);
+                        ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 2; ctx.strokeRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH);
                         drawText(ctx, formData.title, W / 2, titleBoxY + 60, 50, '#fff', 'center', 'bold');
                     } 
 
-                    // 7. Content Tools
                     if (appMode === 'poll') {
                         const py = splitY + 40;
                         drawText(ctx, formData.pollQuestion, W / 2, py + 20, 55, '#fff', 'center', 'bold');
                         ctx.beginPath(); ctx.moveTo(W/2-250, py+40); ctx.lineTo(W/2+250, py+40); ctx.strokeStyle='rgba(255,255,255,0.2)'; ctx.lineWidth=2; ctx.stroke();
 
-                        const boxW = 440; const boxH = 140; 
-                        const leftX = W/4 - boxW/2; const rightX = (3*W/4) - boxW/2; const topY = py + 80;
+                        const boxW = 440; const boxH = 140; const leftX = W/4 - boxW/2; const rightX = (3*W/4) - boxW/2; const topY = py + 80;
 
                         ctx.fillStyle = 'rgba(0,0,0,0.5)';
                         if(ctx.roundRect) ctx.roundRect(leftX, topY, boxW, boxH, 20); else ctx.fillRect(leftX, topY, boxW, boxH);
                         ctx.fill(); ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 3; ctx.stroke();
-                        
                         drawFBIcon(ctx, 'like', leftX + 80, topY + 70, 75);
                         drawText(ctx, "লাইক (LIKE)", leftX + boxW/2 + 20, topY + 60, 26, '#3b82f6', 'center', 'bold');
                         drawText(ctx, formData.pollPlayer1, leftX + boxW/2 + 20, topY + 105, 40, '#fff', 'center', 'bold');
@@ -306,7 +254,6 @@
                         ctx.beginPath(); ctx.fillStyle = 'rgba(0,0,0,0.5)';
                         if(ctx.roundRect) ctx.roundRect(rightX, topY, boxW, boxH, 20); else ctx.fillRect(rightX, topY, boxW, boxH);
                         ctx.fill(); ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3; ctx.stroke();
-
                         drawFBIcon(ctx, 'love', rightX + 80, topY + 70, 75);
                         drawText(ctx, "লাভ (LOVE)", rightX + boxW/2 + 20, topY + 60, 26, '#ef4444', 'center', 'bold');
                         drawText(ctx, formData.pollPlayer2, rightX + boxW/2 + 20, topY + 105, 40, '#fff', 'center', 'bold');
@@ -320,11 +267,10 @@
                         ctx.fillStyle = 'rgba(0,0,0,0.4)';
                         if(ctx.roundRect) ctx.roundRect(100, py, W - 200, 240, 20); else ctx.fillRect(100, py, W - 200, 240);
                         ctx.fill(); ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 3; ctx.stroke();
-
                         drawText(ctx, formData.milestoneOccasion, W/2, py + 55, 35, formData.team1Color, 'center', 'bold');
                         drawText(ctx, formData.milestoneNumber, W/2, py + 140, 90, '#fff', 'center', 'bold');
                         drawText(ctx, formData.milestoneName, W/2, py + 210, 50, '#fff', 'center', 'bold');
-                        drawText(ctx, formData.milestoneMessage, W/2, py + 300, 28, '#ddd', 'center', 'normal');
+                        ctx.fillStyle = '#ddd'; drawText(ctx, formData.milestoneMessage, W/2, py + 300, 28, '#ddd', 'center', 'normal');
 
                     } else if (appMode === 'scorecard') {
                         drawText(ctx, formData.team1, leftCenter, scoresY, 65, formData.team1Color, 'center', 'bold');
@@ -350,11 +296,8 @@
                         const py = scoresY - 20; drawText(ctx, formData.playerStatMain, W/2, py + 40, 130, formData.team1Color, 'center', 'bold'); drawText(ctx, formData.playerStatSub, W/2, py + 90, 40, '#fff', 'center', 'normal');
                         ctx.beginPath(); ctx.moveTo(W/2-150, py+120); ctx.lineTo(W/2+150, py+120); ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=2; ctx.stroke();
                         drawText(ctx, formData.playerName, W/2, py + 180, 60, '#fff', 'center', 'bold');
-                        
                     } else if (appMode === 'career') {
-                        const py = splitY + 40; 
-                        drawText(ctx, formData.playerName, W/2, py, 60, '#fff', 'center', 'bold');
-                        
+                        const py = splitY + 40; drawText(ctx, formData.playerName, W/2, py, 60, '#fff', 'center', 'bold');
                         drawText(ctx, formData.playerRole, W/2, py + 35, 25, formData.team1Color, 'center', 'bold');
                         ctx.beginPath(); ctx.moveTo(W/2-250, py+55); ctx.lineTo(W/2+250, py+55); ctx.strokeStyle='rgba(255,255,255,0.2)'; ctx.lineWidth=2; ctx.stroke();
                         
@@ -363,41 +306,28 @@
                         const topY = py + 75; const midY = topY + boxH + gap; const botY = midY + boxH + gap;
 
                         const drawStatBox = (label, val, x, y) => {
-                            ctx.fillStyle = 'rgba(0,0,0,0.3)';
-                            ctx.beginPath();
+                            ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath();
                             if(ctx.roundRect) ctx.roundRect(x, y, boxW, boxH, 15); else ctx.fillRect(x, y, boxW, boxH);
                             ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.stroke();
                             drawText(ctx, label, x + boxW/2, y + 35, 20, formData.team1Color, 'center', 'bold'); 
                             drawText(ctx, val, x + boxW/2, y + 75, 45, '#fff', 'center', 'bold');
                         };
-
                         drawStatBox("ম্যাচ (MATCHES)", formData.careerMatches, leftX, topY); drawStatBox("রান (RUNS)", formData.careerRuns, rightX, topY);
                         drawStatBox("সেঞ্চুরি (100s)", formData.careerHundreds, leftX, midY); drawStatBox("ফিফটি (50s)", formData.careerFifties, rightX, midY);
                         drawStatBox("সর্বোচ্চ (BEST SCORE)", formData.careerBest, leftX, botY); drawStatBox("উইকেট (WICKETS)", formData.careerWickets, rightX, botY);
-
                     } else if (appMode === 'news') {
-                        const h = H * formData.newsGradientHeight; const nsy = H - h; const csy = nsy + 60; 
-                        const nw = 880, lh = 75;
-                        
-                        ctx.fillStyle = '#d32f2f'; 
-                        if(ctx.roundRect) ctx.roundRect(W/2 - 150, csy - 90, 300, 55, 10); else ctx.fillRect(W/2 - 150, csy - 90, 300, 55);
-                        ctx.fill();
+                        const h = H * formData.newsGradientHeight; const nsy = H - h; const csy = nsy + 60; const nw = 880, lh = 75;
+                        ctx.fillStyle = '#d32f2f'; if(ctx.roundRect) ctx.roundRect(W/2 - 150, csy - 90, 300, 55, 10); else ctx.fillRect(W/2 - 150, csy - 90, 300, 55); ctx.fill();
                         drawText(ctx, "ব্রেকিং নিউজ", W/2, csy - 52, 32, '#fff', 'center', 'bold');
-                        
                         ctx.font = "140px serif"; ctx.fillStyle = "rgba(255,215,0,0.2)"; ctx.textAlign = "center"; ctx.fillText("❝", W/2, csy + 30);
-                        
                         ctx.font = "bold 55px 'Hind Siliguri', sans-serif"; ctx.fillStyle = "#fff";
-                        const textToDraw = formData.quoteText || ""; const lines = []; const words = textToDraw.split(' ');
-                        let currentLine = words[0] || "";
+                        const textToDraw = formData.quoteText || ""; const lines = []; const words = textToDraw.split(' '); let currentLine = words[0] || "";
                         for (let i = 1; i < words.length; i++) {
                             const width = ctx.measureText(currentLine + " " + words[i]).width;
                             if (width < nw) { currentLine += " " + words[i]; } else { lines.push(currentLine); currentLine = words[i]; }
                         }
                         if(currentLine) lines.push(currentLine);
-
-                        const startY = csy + 110;
-                        lines.forEach((line, i) => { ctx.textAlign = 'center'; ctx.fillText(line, W / 2, startY + (i * lh)); });
-
+                        const startY = csy + 110; lines.forEach((line, i) => { ctx.textAlign = 'center'; ctx.fillText(line, W / 2, startY + (i * lh)); });
                         const ay = startY + (lines.length * lh) + 10;
                         ctx.beginPath(); ctx.moveTo(W/2 - 120, ay); ctx.lineTo(W/2 + 120, ay); ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 5; ctx.stroke();
                         drawText(ctx, formData.quoteAuthor, W/2, ay + 60, 38, '#ddd', 'center', 'bold');
@@ -406,141 +336,89 @@
                     drawText(ctx, formData.footerHandle, W / 2, footerY + 40, 24, '#94a3b8', 'center', 'normal');
 
                     if (!isExport) {
-                        ctx.save();
-                        ctx.translate(W/2, H/2); ctx.rotate(-Math.PI / 6);
-                        ctx.font = "bold 150px sans-serif"; ctx.fillStyle = "rgba(255, 255, 255, 0.15)"; ctx.textAlign = "center"; ctx.fillText("PREVIEW", 0, 0);
-                        ctx.restore();
+                        ctx.save(); ctx.translate(W/2, H/2); ctx.rotate(-Math.PI / 6);
+                        ctx.font = "bold 150px sans-serif"; ctx.fillStyle = "rgba(255, 255, 255, 0.15)"; ctx.textAlign = "center"; ctx.fillText("PREVIEW", 0, 0); ctx.restore();
                     }
                 } catch(e) { console.error(e); }
             };
 
             useEffect(() => { drawCanvas(false); }, [bgImage, bgImage2, formData, img1Pos, img2Pos, appMode]);
 
-            // --- ADVANCED IMAGE UPLOAD & POSITIONING ---
             const handleImageUpload = (e, isSecond = false) => {
-                const file = e.target.files[0]; if (!file) return;
-                const reader = new FileReader();
+                const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
                 reader.onload = (ev) => {
                     const img = new Image();
                     img.onload = () => {
                         if (isSecond) {
-                            setBgImage2(img);
-                            const scale2 = Math.max(540 / img.width, 1200 / img.height);
-                            // Position relative to the right half (starts at x: 540)
+                            setBgImage2(img); const scale2 = Math.max(540 / img.width, 1200 / img.height);
                             setImg2Pos({ x: 540 + (540 - img.width * scale2) / 2, y: (1200 - img.height * scale2) / 2, scale: scale2 });
-                            
-                            // Re-center img1 for half screen if necessary
-                            if (bgImage) {
-                                const scale1 = Math.max(540 / bgImage.width, 1200 / bgImage.height);
-                                setImg1Pos({ x: (540 - bgImage.width * scale1) / 2, y: (1200 - bgImage.height * scale1) / 2, scale: scale1 });
-                            }
+                            if (bgImage) { const scale1 = Math.max(540 / bgImage.width, 1200 / bgImage.height); setImg1Pos({ x: (540 - bgImage.width * scale1) / 2, y: (1200 - bgImage.height * scale1) / 2, scale: scale1 }); }
                         } else {
-                            setBgImage(img);
-                            const targetW = bgImage2 ? 540 : 1080;
-                            const scale1 = Math.max(targetW / img.width, 1200 / img.height);
+                            setBgImage(img); const targetW = bgImage2 ? 540 : 1080; const scale1 = Math.max(targetW / img.width, 1200 / img.height);
                             setImg1Pos({ x: (targetW - img.width * scale1) / 2, y: (1200 - img.height * scale1) / 2, scale: scale1 });
                         }
-                    };
-                    img.src = ev.target.result;
-                };
-                reader.readAsDataURL(file);
+                    }; img.src = ev.target.result;
+                }; reader.readAsDataURL(file);
             };
 
             const resetImage = () => { 
-                if (bgImage) {
-                    const targetW = bgImage2 ? 540 : 1080;
-                    const scale1 = Math.max(targetW / bgImage.width, 1200 / bgImage.height);
-                    setImg1Pos({ x: (targetW - bgImage.width * scale1) / 2, y: (1200 - bgImage.height * scale1) / 2, scale: scale1 });
-                }
-                if (bgImage2) {
-                    const scale2 = Math.max(540 / bgImage2.width, 1200 / bgImage2.height);
-                    setImg2Pos({ x: 540 + (540 - bgImage2.width * scale2) / 2, y: (1200 - bgImage2.height * scale2) / 2, scale: scale2 });
-                }
+                if (bgImage) { const targetW = bgImage2 ? 540 : 1080; const scale1 = Math.max(targetW / bgImage.width, 1200 / bgImage.height); setImg1Pos({ x: (targetW - bgImage.width * scale1) / 2, y: (1200 - bgImage.height * scale1) / 2, scale: scale1 }); }
+                if (bgImage2) { const scale2 = Math.max(540 / bgImage2.width, 1200 / bgImage2.height); setImg2Pos({ x: 540 + (540 - bgImage2.width * scale2) / 2, y: (1200 - bgImage2.height * scale2) / 2, scale: scale2 }); }
             };
 
-            // --- TOUCH / MOUSE HANDLING ---
             const handleTouchStart = (e) => { 
-                const t = e.touches; 
-                const rect = e.target.getBoundingClientRect();
-                const touchX = t[0].clientX - rect.left;
-                
-                let targetImg = 'img1';
-                if (bgImage2 && touchX > rect.width / 2) targetImg = 'img2';
+                const t = e.touches; const rect = e.target.getBoundingClientRect(); const touchX = t[0].clientX - rect.left;
+                let targetImg = 'img1'; if (bgImage2 && touchX > rect.width / 2) targetImg = 'img2';
                 const currentPos = targetImg === 'img1' ? img1Pos : img2Pos;
-
-                if (t.length === 1) {
-                    gestureStart.current = { mode: 'pan', target: targetImg, x: t[0].clientX, y: t[0].clientY, imgX: currentPos.x, imgY: currentPos.y }; 
-                } else if (t.length === 2) { 
-                    gestureStart.current = { mode: 'zoom', target: targetImg, dist: Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY), scale: currentPos.scale }; 
-                } 
+                if (t.length === 1) { gestureStart.current = { mode: 'pan', target: targetImg, x: t[0].clientX, y: t[0].clientY, imgX: currentPos.x, imgY: currentPos.y }; 
+                } else if (t.length === 2) { gestureStart.current = { mode: 'zoom', target: targetImg, dist: Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY), scale: currentPos.scale }; } 
             };
 
             const handleTouchMove = (e) => { 
-                if (!gestureStart.current.mode) return; 
-                e.preventDefault(); 
-                const s = 1080 / e.target.getBoundingClientRect().width; 
-                const t = e.touches; 
+                if (!gestureStart.current.mode) return; e.preventDefault(); 
+                const s = 1080 / e.target.getBoundingClientRect().width; const t = e.touches; 
                 const { target, imgX, x, imgY, y, scale, dist } = gestureStart.current;
                 const setPos = target === 'img1' ? setImg1Pos : setImg2Pos;
-
-                if (t.length === 1 && gestureStart.current.mode === 'pan') { 
-                    setPos(prev => ({ ...prev, x: imgX + (t[0].clientX - x) * s, y: imgY + (t[0].clientY - y) * s })); 
-                } else if (t.length === 2 && gestureStart.current.mode === 'zoom') { 
-                    const d = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); 
-                    setPos(prev => ({ ...prev, scale: scale * (d / dist) })); 
-                } 
+                if (t.length === 1 && gestureStart.current.mode === 'pan') { setPos(prev => ({ ...prev, x: imgX + (t[0].clientX - x) * s, y: imgY + (t[0].clientY - y) * s })); 
+                } else if (t.length === 2 && gestureStart.current.mode === 'zoom') { const d = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); setPos(prev => ({ ...prev, scale: scale * (d / dist) })); } 
             };
 
-            // Mouse Fallbacks for PC
             const handleMouseDown = (e) => {
-                const rect = e.target.getBoundingClientRect();
-                const touchX = e.clientX - rect.left;
-                let targetImg = 'img1';
-                if (bgImage2 && touchX > rect.width / 2) targetImg = 'img2';
+                const rect = e.target.getBoundingClientRect(); const touchX = e.clientX - rect.left;
+                let targetImg = 'img1'; if (bgImage2 && touchX > rect.width / 2) targetImg = 'img2';
                 const currentPos = targetImg === 'img1' ? img1Pos : img2Pos;
                 gestureStart.current = { mode: 'pan', target: targetImg, x: e.clientX, y: e.clientY, imgX: currentPos.x, imgY: currentPos.y };
             };
             const handleMouseMove = (e) => {
                 if (gestureStart.current.mode === 'pan') {
-                    const s = 1080 / e.target.getBoundingClientRect().width;
-                    const { target, imgX, x, imgY, y } = gestureStart.current;
+                    const s = 1080 / e.target.getBoundingClientRect().width; const { target, imgX, x, imgY, y } = gestureStart.current;
                     const setPos = target === 'img1' ? setImg1Pos : setImg2Pos;
                     setPos(p => ({...p, x: imgX + (e.clientX - x) * s, y: imgY + (e.clientY - y) * s}));
                 }
             };
 
             const handleEnd = () => { gestureStart.current.mode = null; };
-
             const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
             const swapTeams = () => setFormData(p => ({ ...p, team1: p.team2, team1Score: p.team2Score, team1Overs: p.team2Overs, team1Color: p.team2Color, team2: p.team1, team2Score: p.team1Score, team2Overs: p.team1Overs, team2Color: p.team1Color, pollPlayer1: p.pollPlayer2, pollPlayer2: p.pollPlayer1 }));
             const copyId = () => { navigator.clipboard.writeText(userId); alert("ID Copied: " + userId); };
 
             const handleDownloadClick = async () => {
-                if (isProcessing) return;
-                if (points < DOWNLOAD_COST) { setShowBuyModal(true); return; }
+                if (isProcessing) return; if (points < DOWNLOAD_COST) { setShowBuyModal(true); return; }
                 setIsProcessing(true);
-                
-                if(GOOGLE_SCRIPT_URL.includes("xxxxxxxx")) { 
-                    performDownload(); setPoints(prev => prev - DOWNLOAD_COST); setIsProcessing(false); return; 
-                }
-                
+                if(GOOGLE_SCRIPT_URL.includes("xxxxxxxx")) { performDownload(); setPoints(prev => prev - DOWNLOAD_COST); setIsProcessing(false); return; }
                 try {
                     const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=deduct&userId=${userId}&amount=${DOWNLOAD_COST}`);
                     if (!response.ok) throw new Error("Server responded with an error");
                     const data = await response.json();
-                    if (data.status === 'success') { setPoints(data.points); performDownload(); } else { alert("Insufficient points."); }
-                } catch (error) { 
-                    console.error("Deduction Error:", error); alert("Network Error. Check your connection or Script URL."); 
-                }
+                    if (data.status === 'success') { setPoints(data.points); performDownload(); } else { alert("Insufficient points or error."); }
+                } catch (error) { console.error("Deduction Error:", error); alert("Network Error. Check your connection or Script URL."); }
                 setIsProcessing(false);
             };
 
             const performDownload = () => {
-                const canvas = canvasRef.current; if (!canvas) return;
-                drawCanvas(true);
+                const canvas = canvasRef.current; if (!canvas) return; drawCanvas(true);
                 canvas.toBlob((blob) => {
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a'); link.download = `poster-${Date.now()}.png`; link.href = url;
+                    const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.download = `poster-${Date.now()}.png`; link.href = url;
                     document.body.appendChild(link); link.click();
                     setTimeout(() => { document.body.removeChild(link); URL.revokeObjectURL(url); drawCanvas(false); }, 100);
                 }, 'image/png');
@@ -548,7 +426,22 @@
 
             return (
                 <div className="flex flex-col min-h-screen" onContextMenu={(e) => e.preventDefault()}>
-                    {/* MODAL */}
+                    
+                    {/* SMART NOTIFICATION MODAL */}
+                    {showAppNotification && appNotification && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm modal-backdrop">
+                            <div className="bg-gradient-to-b from-slate-800 to-slate-900 rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center modal-content border border-slate-700 relative overflow-hidden">
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-yellow-500"></div>
+                                <button onClick={dismissNotification} className="absolute top-3 right-3 text-slate-400 hover:text-white transition-colors bg-slate-800 p-1.5 rounded-full"><IconClose /></button>
+                                <div className="bg-slate-800 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-lg border border-slate-700">🔔</div>
+                                <h3 className="text-xl font-bold text-white mb-2">{appNotification.title}</h3>
+                                <p className="text-slate-300 text-sm mb-6 leading-relaxed">{appNotification.message}</p>
+                                <button onClick={dismissNotification} className="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl shadow-lg transition-colors">Got it!</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* BUY MODAL */}
                     {showBuyModal && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm modal-backdrop">
                             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center modal-content border border-gray-200">
@@ -592,7 +485,6 @@
                     <main className="flex-1 max-w-2xl mx-auto w-full p-4 space-y-6">
                         {showInstallPrompt && (<div className="install-prompt bg-slate-900 text-white p-4 rounded-xl shadow-2xl flex items-center justify-between border border-slate-700"><div className="flex items-center gap-3"><div className="bg-red-600 p-2 rounded-lg"><IconInstall /></div><div><h4 className="font-bold text-sm">Install App</h4><p className="text-xs text-slate-400">Add to Home Screen</p></div></div><div className="flex gap-2"><button onClick={() => setShowInstallPrompt(false)} className="p-2 text-slate-400"><IconClose /></button><button onClick={handleInstallApp} className="bg-white text-slate-900 px-4 py-2 rounded-lg text-xs font-bold">Install</button></div></div>)}
                         
-                        {/* TOOL SELECTOR */}
                         <div className="bg-white p-1.5 rounded-xl shadow-sm border border-slate-200 flex gap-1 overflow-x-auto no-scrollbar">
                             {['scorecard', 'schedule', 'player', 'career', 'poll', 'milestone', 'news'].map(mode => (
                                 <button key={mode} onClick={() => setAppMode(mode)} className={`flex-1 min-w-[85px] py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${appMode === mode ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-slate-100'}`}>
@@ -601,7 +493,6 @@
                             ))}
                         </div>
 
-                        {/* CANVAS AREA */}
                         <div className="bg-slate-800 rounded-xl overflow-hidden shadow-2xl border border-slate-700 aspect-[1080/1200] relative group canvas-container touch-none">
                             <canvas 
                                 ref={canvasRef} 
@@ -618,7 +509,6 @@
                             {!bgImage && <div className="absolute inset-0 pointer-events-none flex items-center justify-center"><span className="bg-white/90 text-slate-800 px-4 py-2 rounded-full text-sm font-bold shadow-lg">Loading...</span></div>}
                         </div>
                         
-                        {/* SLIDER CONTROLS (Shows two sliders if two images exist) */}
                         {bgImage && (
                             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-3">
                                 <div className="flex items-center gap-4">
@@ -636,7 +526,6 @@
                             </div>
                         )}
                         
-                        {/* EDITOR TABS */}
                         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                             <div className="flex border-b bg-slate-50">
                                 <button onClick={() => setActiveTab('match')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'match' ? 'bg-white text-slate-900 border-t-2 border-slate-900' : 'text-slate-500'}`}>Edit Info</button>
@@ -665,7 +554,6 @@
                                             <input type="text" name="footerHandle" value={formData.footerHandle} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Footer text (e.g., @proscorecard_bot)" />
                                         </div>
 
-                                        {/* POLL INPUTS */}
                                         {appMode === 'poll' && (
                                             <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-100 space-y-3">
                                                 <h4 className="text-xs font-bold text-indigo-700 uppercase flex items-center gap-2"><IconChart /> Reaction Poll Settings</h4>
@@ -687,7 +575,6 @@
                                             </div>
                                         )}
 
-                                        {/* MILESTONE INPUTS */}
                                         {appMode === 'milestone' && (
                                             <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200 space-y-3">
                                                 <h4 className="text-xs font-bold text-yellow-700 uppercase flex items-center gap-2"><IconStar /> Birthday & Milestone</h4>
@@ -713,51 +600,23 @@
                                         )}
 
                                         {appMode === 'scorecard' && <textarea name="result" value={formData.result} onChange={handleChange} rows="2" className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Result Text"></textarea>}
-                                        
                                         {appMode === 'schedule' && (<div className="p-3 bg-slate-50 rounded-lg border space-y-3"><h4 className="text-xs font-bold text-slate-500 uppercase flex items-center gap-2"><IconCalendar /> Match Details</h4><input type="text" name="matchDate" value={formData.matchDate} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Date" /><div className="grid grid-cols-2 gap-3"><input type="text" name="matchTime" value={formData.matchTime} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Time" /><input type="text" name="matchVenue" value={formData.matchVenue} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Venue" /></div></div>)}
-                                        
                                         {appMode === 'player' && (<div className="p-3 bg-amber-50 rounded-lg border border-amber-100 space-y-3"><h4 className="text-xs font-bold text-amber-700 uppercase flex items-center gap-2"><IconUser /> Player Stats</h4><input type="text" name="playerName" value={formData.playerName} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm font-bold" placeholder="Player Name" /><div className="grid grid-cols-2 gap-3"><input type="text" name="playerStatMain" value={formData.playerStatMain} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-xl font-bold text-center" placeholder="Run" /><input type="text" name="playerStatSub" value={formData.playerStatSub} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm" placeholder="Ball" /></div></div>)}
 
                                         {appMode === 'career' && (
                                             <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-100 space-y-3">
                                                 <h4 className="text-xs font-bold text-indigo-700 uppercase flex items-center gap-2"><IconChart /> Career Statistics</h4>
-                                                
                                                 <div className="grid grid-cols-2 gap-3">
-                                                    <div>
-                                                        <label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Player Name</label>
-                                                        <input type="text" name="playerName" value={formData.playerName} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Role (Batsman/Bowler)</label>
-                                                        <input type="text" name="playerRole" value={formData.playerRole} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold" />
-                                                    </div>
+                                                    <div><label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Player Name</label><input type="text" name="playerName" value={formData.playerName} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold" /></div>
+                                                    <div><label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Role</label><input type="text" name="playerRole" value={formData.playerRole} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold" /></div>
                                                 </div>
-
                                                 <div className="grid grid-cols-2 gap-3 mt-3">
-                                                    <div>
-                                                        <label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Matches Played</label>
-                                                        <input type="text" name="careerMatches" value={formData.careerMatches} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold text-center" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Total Runs</label>
-                                                        <input type="text" name="careerRuns" value={formData.careerRuns} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold text-center" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Centuries (100s)</label>
-                                                        <input type="text" name="careerHundreds" value={formData.careerHundreds} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold text-center" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Fifties (50s)</label>
-                                                        <input type="text" name="careerFifties" value={formData.careerFifties} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold text-center" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Best Score</label>
-                                                        <input type="text" name="careerBest" value={formData.careerBest} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold text-center" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Total Wickets</label>
-                                                        <input type="text" name="careerWickets" value={formData.careerWickets} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold text-center" />
-                                                    </div>
+                                                    <div><label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Matches Played</label><input type="text" name="careerMatches" value={formData.careerMatches} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold text-center" /></div>
+                                                    <div><label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Total Runs</label><input type="text" name="careerRuns" value={formData.careerRuns} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold text-center" /></div>
+                                                    <div><label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Centuries (100s)</label><input type="text" name="careerHundreds" value={formData.careerHundreds} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold text-center" /></div>
+                                                    <div><label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Fifties (50s)</label><input type="text" name="careerFifties" value={formData.careerFifties} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold text-center" /></div>
+                                                    <div><label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Best Score</label><input type="text" name="careerBest" value={formData.careerBest} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold text-center" /></div>
+                                                    <div><label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Total Wickets</label><input type="text" name="careerWickets" value={formData.careerWickets} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold text-center" /></div>
                                                 </div>
                                             </div>
                                         )}
@@ -771,7 +630,6 @@
                         </div>
                     </main>
 
-                    {/* PROFESSIONAL APP FOOTER */}
                     <footer className="bg-[#0b1120] text-slate-400 py-8 border-t border-slate-800 mt-8">
                         <div className="max-w-4xl mx-auto px-4 text-center space-y-3">
                             <div className="flex justify-center mb-2"><IconLogo className="text-slate-600 w-8 h-8" /></div>
