@@ -53,7 +53,7 @@
         const { useState, useEffect, useRef } = React;
 
         // --- CONFIGURATION ---
-        // 🚨🚨🚨 IMPORTANT: PASTE YOUR GOOGLE SCRIPT URL BELOW OR POINTS WILL SHOW 0 🚨🚨🚨
+        // 🚨🚨🚨 PASTE YOUR GOOGLE SCRIPT URL BELOW 🚨🚨🚨
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztp3j5Kh1tmcMcQpXfgNp9mhYQRchm2iSB-fPAk-V5ikDcXHcJlmVJ-yb93iIiycJ7/exec"; 
         const DOWNLOAD_COST = 2; 
 
@@ -120,7 +120,7 @@
             const canvasRef = useRef(null);
             
             // --- STATE ---
-            const [appMode, setAppMode] = useState('scorecard');
+            const [appMode, setAppMode] = useState('poll'); // default to poll to show it off
             const [activeTab, setActiveTab] = useState('match');
             const [bgImage, setBgImage] = useState(null);
             const [bgImage2, setBgImage2] = useState(null);
@@ -149,11 +149,16 @@
                 stat1Label: '৪', stat1Value: '৮', stat2Label: '৬', stat2Value: '৫', stat3Label: 'S/R', stat3Value: '১৮২.২',
                 quoteText: 'আমাদের লক্ষ্য এখন বিশ্বকাপ জয় করা।', quoteAuthor: 'নাজমুল হোসেন শান্ত, অধিনায়ক',
                 
-                // --- NEW CAREER FIELDS ---
+                // Career Fields
                 playerRole: 'ব্যাটসম্যান',
                 careerMatches: '২৫৪', careerRuns: '৭৫৬২', 
                 careerHundreds: '১৪', careerFifties: '৪২',
-                careerBest: '১১৪*', careerWickets: '৩১২'
+                careerBest: '১১৪*', careerWickets: '৩১২',
+
+                // Poll Fields
+                pollQuestion: 'বর্তমান সময়ের সেরা ব্যাটার কে?',
+                pollPlayer1: 'সাকিব আল হাসান',
+                pollPlayer2: 'বিরাট কোহলি'
             });
 
             // --- USER & POINT SYSTEM LOGIC ---
@@ -241,33 +246,77 @@
 
                     // 4. Overlays
                     ctx.save();
-                    ctx.globalAlpha = formData.bgOpacity; 
-                    const gradient = ctx.createLinearGradient(0, splitY, 0, H);
-                    gradient.addColorStop(0, formData.primaryColor); gradient.addColorStop(1, formData.secondaryColor);
-                    ctx.fillStyle = gradient;
                     
-                    if (appMode === 'news') { const h = H * formData.newsGradientHeight; ctx.fillRect(0, H - h, W, h); } 
-                    else ctx.fillRect(0, splitY, W, H - splitY);
+                    if (appMode === 'poll') {
+                        // Poll Overlays
+                        // Top Fade for Question
+                        ctx.globalAlpha = 1;
+                        const gradTop = ctx.createLinearGradient(0, 0, 0, 250);
+                        gradTop.addColorStop(0, 'rgba(0,0,0,0.9)');
+                        gradTop.addColorStop(1, 'rgba(0,0,0,0)');
+                        ctx.fillStyle = gradTop;
+                        ctx.fillRect(0, 0, W, 250);
+
+                        // Bottom Split Boxes (Like vs Love)
+                        ctx.globalAlpha = formData.bgOpacity;
+                        ctx.fillStyle = '#1877F2'; // Facebook Blue
+                        ctx.fillRect(0, H - 240, W/2, 240);
+                        
+                        ctx.fillStyle = '#E4405F'; // Instagram/Love Red
+                        ctx.fillRect(W/2, H - 240, W/2, 240);
+                        ctx.globalAlpha = 1;
+
+                    } else {
+                        // Standard Overlays
+                        ctx.globalAlpha = formData.bgOpacity; 
+                        const gradient = ctx.createLinearGradient(0, splitY, 0, H);
+                        gradient.addColorStop(0, formData.primaryColor); gradient.addColorStop(1, formData.secondaryColor);
+                        ctx.fillStyle = gradient;
+                        
+                        if (appMode === 'news') { const h = H * formData.newsGradientHeight; ctx.fillRect(0, H - h, W, h); } 
+                        else ctx.fillRect(0, splitY, W, H - splitY);
+                        
+                        if (appMode !== 'news' && appMode !== 'career') { ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; ctx.fillRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH); }
+                    }
                     
-                    if (appMode !== 'news' && appMode !== 'career') { ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; ctx.fillRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH); }
                     ctx.fillStyle = '#0f172a'; ctx.fillRect(0, footerY, W, footerH); ctx.restore(); 
 
-                    // 5. Badge & Icon
+                    // 5. Badge & Icon (Show on all)
                     const badgeX = W - 320 - 40;
                     ctx.beginPath(); ctx.arc(badgeX + 45, 40 + 35, 22, 0, Math.PI * 2); ctx.fillStyle = '#1877F2'; ctx.fill();
                     drawText(ctx, "f", badgeX + 45, 40 + 48, 35, "#fff", "center", "bold");
                     ctx.save(); ctx.shadowColor = "rgba(0, 0, 0, 0.8)"; ctx.shadowBlur = 6;
                     drawText(ctx, formData.badgeText, badgeX + 80, 40 + 48, 32, '#fff', 'left', 'bold'); ctx.restore();
 
-                    // 6. Header (Removed from Career to save space)
-                    if (appMode !== 'news' && appMode !== 'career') {
+                    // 6. Header (Hidden for Career and Poll modes)
+                    if (appMode !== 'news' && appMode !== 'career' && appMode !== 'poll') {
                         ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 2;
                         ctx.strokeRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH);
                         drawText(ctx, formData.title, W / 2, titleBoxY + 60, 50, '#fff', 'center', 'bold');
                     }
 
                     // 7. Content Tools
-                    if (appMode === 'scorecard') {
+                    if (appMode === 'poll') {
+                        // Poll Question at Top
+                        ctx.save();
+                        ctx.shadowColor = "rgba(0, 0, 0, 0.9)"; ctx.shadowBlur = 10;
+                        drawText(ctx, formData.pollQuestion, W / 2, 120, 65, '#fff', 'center', 'bold');
+                        ctx.restore();
+
+                        // VS Circle in Center
+                        ctx.beginPath(); ctx.arc(W/2, H/2 - 20, 60, 0, Math.PI*2); ctx.fillStyle = '#1a1a1a'; ctx.fill();
+                        ctx.lineWidth = 4; ctx.strokeStyle = '#fff'; ctx.stroke();
+                        drawText(ctx, "VS", W/2, H/2 - 2, 50, '#fff', 'center', 'bold');
+
+                        // Bottom Left: Like (👍)
+                        ctx.font = "80px sans-serif"; ctx.textAlign = "center"; ctx.fillText("👍", W/4, H - 130);
+                        drawText(ctx, formData.pollPlayer1, W/4, H - 80, 45, '#fff', 'center', 'bold');
+
+                        // Bottom Right: Love (❤️)
+                        ctx.font = "80px sans-serif"; ctx.textAlign = "center"; ctx.fillText("❤️", 3*W/4, H - 130);
+                        drawText(ctx, formData.pollPlayer2, 3*W/4, H - 80, 45, '#fff', 'center', 'bold');
+
+                    } else if (appMode === 'scorecard') {
                         drawText(ctx, formData.team1, leftCenter, scoresY, 65, formData.team1Color, 'center', 'bold');
                         const t1w = measureText(ctx, formData.team1Score, 60, 'bold'), t1o = measureText(ctx, formData.team1Overs, 35, 'normal');
                         const t1x = leftCenter - ((t1w + 15 + t1o) / 2);
@@ -293,15 +342,12 @@
                         drawText(ctx, formData.playerName, W/2, py + 180, 60, '#fff', 'center', 'bold');
                         
                     } else if (appMode === 'career') {
-                        // NEW PERFECTLY SCALED 3-ROW LAYOUT
                         const py = splitY + 40; 
                         drawText(ctx, formData.playerName, W/2, py, 60, '#fff', 'center', 'bold');
                         
-                        // New: Player Role
                         drawText(ctx, formData.playerRole, W/2, py + 35, 25, formData.team1Color, 'center', 'bold');
                         ctx.beginPath(); ctx.moveTo(W/2-250, py+55); ctx.lineTo(W/2+250, py+55); ctx.strokeStyle='rgba(255,255,255,0.2)'; ctx.lineWidth=2; ctx.stroke();
                         
-                        // 2x3 Grid Math (Fits perfectly above the footer)
                         const boxW = 400; const boxH = 90; const gap = 15;
                         const leftX = W/2 - boxW - gap/2;
                         const rightX = W/2 + gap/2;
@@ -383,7 +429,7 @@
             };
             const resetImage = () => { if(bgImage) { const scale = Math.max(1080 / bgImage.width, 1200 / bgImage.height); setImgPos({ x: (1080 - bgImage.width * scale) / 2, y: (1200 - bgImage.height * scale) / 2, scale }); } };
             const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
-            const swapTeams = () => setFormData(p => ({ ...p, team1: p.team2, team1Score: p.team2Score, team1Overs: p.team2Overs, team1Color: p.team2Color, team2: p.team1, team2Score: p.team1Score, team2Overs: p.team1Overs, team2Color: p.team1Color }));
+            const swapTeams = () => setFormData(p => ({ ...p, team1: p.team2, team1Score: p.team2Score, team1Overs: p.team2Overs, team1Color: p.team2Color, team2: p.team1, team2Score: p.team1Score, team2Overs: p.team1Overs, team2Color: p.team1Color, pollPlayer1: p.pollPlayer2, pollPlayer2: p.pollPlayer1 }));
             const copyId = () => { navigator.clipboard.writeText(userId); alert("ID Copied: " + userId); };
 
             const handleDownloadClick = async () => {
@@ -468,7 +514,7 @@
                                     {isCheckingPoints ? <div className="loader"></div> : <span className="text-sm font-bold text-yellow-500">{points}</span>}
                                 </div>
                                 <button onClick={handleDownloadClick} disabled={isProcessing} className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 active:scale-95 transition-all shadow-lg shadow-red-600/20 disabled:opacity-50">
-                                    {isProcessing ? 'Saving...' : <><IconDownload /> Save Poster</>}
+                                    {isProcessing ? 'Saving...' : <><IconDownload /> Save</>}
                                 </button>
                             </div>
                         </div>
@@ -480,7 +526,8 @@
                         
                         {/* TOOL SELECTOR */}
                         <div className="bg-white p-1.5 rounded-xl shadow-sm border border-slate-200 flex gap-1 overflow-x-auto no-scrollbar">
-                            {['scorecard', 'schedule', 'player', 'career', 'news'].map(mode => (
+                            {/* ADDED 'poll' TO MENU */}
+                            {['scorecard', 'schedule', 'player', 'career', 'poll', 'news'].map(mode => (
                                 <button key={mode} onClick={() => setAppMode(mode)} className={`flex-1 min-w-[85px] py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${appMode === mode ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-slate-100'}`}>
                                     {mode}
                                 </button>
@@ -493,13 +540,21 @@
                             <div className="absolute top-4 right-4 flex flex-col gap-2"><button onClick={resetImage} className="bg-black/50 text-white p-2 rounded-full backdrop-blur-sm hover:bg-black/70"><IconRefresh /></button></div>
                             {!bgImage && <div className="absolute inset-0 pointer-events-none flex items-center justify-center"><span className="bg-white/90 text-slate-800 px-4 py-2 rounded-full text-sm font-bold shadow-lg">Loading...</span></div>}
                         </div>
+                        
+                        {/* POLL INSTRUCTIONS */}
+                        {appMode === 'poll' && !bgImage2 && (
+                            <div className="bg-blue-50 border border-blue-200 text-blue-700 p-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2">
+                                💡 Tip: Upload 2 photos (Photo 1 and Photo 2) for the best Poll layout!
+                            </div>
+                        )}
+
                         {bgImage && !bgImage2 && (<div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4"><IconMove /> <span className="text-xs text-slate-500 font-medium w-24">Drag Image</span><div className="h-6 w-px bg-slate-200"></div> <IconZoomIn /><input type="range" min="0.1" max="5" step="0.05" value={imgPos.scale} onChange={(e) => setImgPos(prev => ({ ...prev, scale: parseFloat(e.target.value) }))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" /></div>)}
                         
                         {/* EDITOR TABS */}
                         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                             <div className="flex border-b bg-slate-50">
                                 <button onClick={() => setActiveTab('match')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'match' ? 'bg-white text-slate-900 border-t-2 border-slate-900' : 'text-slate-500'}`}>Edit Info</button>
-                                {appMode !== 'player' && appMode !== 'career' && appMode !== 'news' && <button onClick={() => setActiveTab('teams')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'teams' ? 'bg-white text-slate-900 border-t-2 border-slate-900' : 'text-slate-500'}`}>Teams</button>}
+                                {appMode !== 'player' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'news' && <button onClick={() => setActiveTab('teams')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'teams' ? 'bg-white text-slate-900 border-t-2 border-slate-900' : 'text-slate-500'}`}>Teams</button>}
                                 <button onClick={() => setActiveTab('style')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'style' ? 'bg-white text-slate-900 border-t-2 border-slate-900' : 'text-slate-500'}`}>Style</button>
                             </div>
                             <div className="p-5 space-y-4">
@@ -516,7 +571,8 @@
                                         </div>
                                         <div className="grid grid-cols-2 gap-3">
                                             <input type="text" name="badgeText" value={formData.badgeText} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Badge" />
-                                            {appMode !== 'news' && appMode !== 'career' && <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Tournament" />}
+                                            {/* Hide title for Poll, News, and Career */}
+                                            {appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Tournament" />}
                                         </div>
                                         
                                         <div className="mt-3">
@@ -524,13 +580,34 @@
                                             <input type="text" name="footerHandle" value={formData.footerHandle} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Footer text (e.g., @proscorecard_bot)" />
                                         </div>
 
+                                        {/* NEW: REACTION POLL INPUTS */}
+                                        {appMode === 'poll' && (
+                                            <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-100 space-y-3">
+                                                <h4 className="text-xs font-bold text-indigo-700 uppercase flex items-center gap-2"><IconChart /> Reaction Poll Settings</h4>
+                                                <div>
+                                                    <label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Poll Question / Headline</label>
+                                                    <input type="text" name="pollQuestion" value={formData.pollQuestion} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold" />
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-blue-600 mb-1 block">👍 Left Player (Like)</label>
+                                                        <input type="text" name="pollPlayer1" value={formData.pollPlayer1} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm font-bold text-center" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-red-600 mb-1 block">❤️ Right Player (Love)</label>
+                                                        <input type="text" name="pollPlayer2" value={formData.pollPlayer2} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-red-200 rounded-lg text-sm font-bold text-center" />
+                                                    </div>
+                                                </div>
+                                                <button onClick={swapTeams} className="w-full py-2 mt-2 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2"><IconSwap /> Swap Players</button>
+                                            </div>
+                                        )}
+
                                         {appMode === 'scorecard' && <textarea name="result" value={formData.result} onChange={handleChange} rows="2" className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Result Text"></textarea>}
                                         
                                         {appMode === 'schedule' && (<div className="p-3 bg-slate-50 rounded-lg border space-y-3"><h4 className="text-xs font-bold text-slate-500 uppercase flex items-center gap-2"><IconCalendar /> Match Details</h4><input type="text" name="matchDate" value={formData.matchDate} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Date" /><div className="grid grid-cols-2 gap-3"><input type="text" name="matchTime" value={formData.matchTime} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Time" /><input type="text" name="matchVenue" value={formData.matchVenue} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Venue" /></div></div>)}
                                         
                                         {appMode === 'player' && (<div className="p-3 bg-amber-50 rounded-lg border border-amber-100 space-y-3"><h4 className="text-xs font-bold text-amber-700 uppercase flex items-center gap-2"><IconUser /> Player Stats</h4><input type="text" name="playerName" value={formData.playerName} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm font-bold" placeholder="Player Name" /><div className="grid grid-cols-2 gap-3"><input type="text" name="playerStatMain" value={formData.playerStatMain} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-xl font-bold text-center" placeholder="Run" /><input type="text" name="playerStatSub" value={formData.playerStatSub} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm" placeholder="Ball" /></div></div>)}
 
-                                        {/* CAREER MODE INPUTS */}
                                         {appMode === 'career' && (
                                             <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-100 space-y-3">
                                                 <h4 className="text-xs font-bold text-indigo-700 uppercase flex items-center gap-2"><IconChart /> Career Statistics</h4>
@@ -578,7 +655,7 @@
                                         {appMode === 'news' && (<div className="p-3 bg-red-50 rounded-lg border border-red-100 space-y-3"><h4 className="text-xs font-bold text-red-700 uppercase flex items-center gap-2"><IconQuote /> Breaking News / Quote</h4><textarea name="quoteText" value={formData.quoteText} onChange={handleChange} rows="3" className="w-full px-3 py-2 bg-white border border-red-200 rounded-lg text-sm" placeholder="Quote or News Body"></textarea><input type="text" name="quoteAuthor" value={formData.quoteAuthor} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-red-200 rounded-lg text-sm font-bold" placeholder="Headline or Author" /></div>)}
                                     </>
                                 )}
-                                {activeTab === 'teams' && appMode !== 'player' && appMode !== 'career' && appMode !== 'news' && (<div className="space-y-5"><button onClick={swapTeams} className="w-full py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2"><IconSwap /> Swap Sides</button><div className="bg-amber-50 p-4 rounded-xl border border-amber-100 space-y-3"><div className="flex justify-between"><h3 className="text-xs font-bold text-amber-800">Left Team</h3><input type="color" name="team1Color" value={formData.team1Color} onChange={handleChange} className="w-6 h-6 rounded-full overflow-hidden border-none" /></div><input type="text" name="team1" value={formData.team1} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm font-bold" />{appMode === 'scorecard' && <div className="flex gap-2"><input type="text" name="team1Score" value={formData.team1Score} onChange={handleChange} className="flex-1 px-3 py-2 bg-white border rounded-lg text-sm" /><input type="text" name="team1Overs" value={formData.team1Overs} onChange={handleChange} className="w-24 px-3 py-2 bg-white border rounded-lg text-sm" /></div>}</div><div className="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-3"><div className="flex justify-between"><h3 className="text-xs font-bold text-blue-800">Right Team</h3><input type="color" name="team2Color" value={formData.team2Color} onChange={handleChange} className="w-6 h-6 rounded-full overflow-hidden border-none" /></div><input type="text" name="team2" value={formData.team2} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm font-bold" />{appMode === 'scorecard' && <div className="flex gap-2"><input type="text" name="team2Score" value={formData.team2Score} onChange={handleChange} className="flex-1 px-3 py-2 bg-white border rounded-lg text-sm" /><input type="text" name="team2Overs" value={formData.team2Overs} onChange={handleChange} className="w-24 px-3 py-2 bg-white border rounded-lg text-sm" /></div>}</div></div>)}
+                                {activeTab === 'teams' && appMode !== 'player' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'news' && (<div className="space-y-5"><button onClick={swapTeams} className="w-full py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2"><IconSwap /> Swap Sides</button><div className="bg-amber-50 p-4 rounded-xl border border-amber-100 space-y-3"><div className="flex justify-between"><h3 className="text-xs font-bold text-amber-800">Left Team</h3><input type="color" name="team1Color" value={formData.team1Color} onChange={handleChange} className="w-6 h-6 rounded-full overflow-hidden border-none" /></div><input type="text" name="team1" value={formData.team1} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm font-bold" />{appMode === 'scorecard' && <div className="flex gap-2"><input type="text" name="team1Score" value={formData.team1Score} onChange={handleChange} className="flex-1 px-3 py-2 bg-white border rounded-lg text-sm" /><input type="text" name="team1Overs" value={formData.team1Overs} onChange={handleChange} className="w-24 px-3 py-2 bg-white border rounded-lg text-sm" /></div>}</div><div className="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-3"><div className="flex justify-between"><h3 className="text-xs font-bold text-blue-800">Right Team</h3><input type="color" name="team2Color" value={formData.team2Color} onChange={handleChange} className="w-6 h-6 rounded-full overflow-hidden border-none" /></div><input type="text" name="team2" value={formData.team2} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm font-bold" />{appMode === 'scorecard' && <div className="flex gap-2"><input type="text" name="team2Score" value={formData.team2Score} onChange={handleChange} className="flex-1 px-3 py-2 bg-white border rounded-lg text-sm" /><input type="text" name="team2Overs" value={formData.team2Overs} onChange={handleChange} className="w-24 px-3 py-2 bg-white border rounded-lg text-sm" /></div>}</div></div>)}
                                 {activeTab === 'style' && (<div className="space-y-5"><div><label className="block text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2"><IconEye /> Opacity</label><input type="range" min="0" max="1" step="0.05" value={formData.bgOpacity} onChange={(e) => setFormData({...formData, bgOpacity: parseFloat(e.target.value)})} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" /></div><div><label className="block text-xs font-bold text-slate-400 uppercase mb-2">Gradient Primary & Accent</label><div className="flex gap-2"><input type="color" name="primaryColor" value={formData.primaryColor} onChange={handleChange} className="h-10 w-full rounded-lg cursor-pointer" /><input type="color" name="team1Color" value={formData.team1Color} onChange={handleChange} className="h-10 w-full rounded-lg cursor-pointer" title="Accent Color (used in stats)" /></div></div>{appMode === 'news' && (<div><label className="block text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2"><IconHeight /> News Color Height</label><input type="range" min="0.2" max="0.9" step="0.05" value={formData.newsGradientHeight} onChange={(e) => setFormData({...formData, newsGradientHeight: parseFloat(e.target.value)})} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" /><div className="flex justify-between text-xs text-slate-400 mt-1"><span>Low</span><span>High</span></div></div>)}</div>)}
                             </div>
                         </div>
