@@ -148,7 +148,12 @@
                 playerName: 'সাকিব আল হাসান', playerStatMain: '৮২', playerStatSub: 'রান (৪৫ বল)',
                 stat1Label: '৪', stat1Value: '৮', stat2Label: '৬', stat2Value: '৫', stat3Label: 'S/R', stat3Value: '১৮২.২',
                 quoteText: 'আমাদের লক্ষ্য এখন বিশ্বকাপ জয় করা।', quoteAuthor: 'নাজমুল হোসেন শান্ত, অধিনায়ক',
-                careerMatches: '২৫৪', careerRuns: '৭৫৬২', careerBest: '১১৪*', careerWickets: '৩১২'
+                
+                // --- NEW CAREER FIELDS ---
+                playerRole: 'ব্যাটসম্যান',
+                careerMatches: '২৫৪', careerRuns: '৭৫৬২', 
+                careerHundreds: '১৪', careerFifties: '৪২',
+                careerBest: '১১৪*', careerWickets: '৩১২'
             });
 
             // --- USER & POINT SYSTEM LOGIC ---
@@ -254,7 +259,7 @@
                     ctx.save(); ctx.shadowColor = "rgba(0, 0, 0, 0.8)"; ctx.shadowBlur = 6;
                     drawText(ctx, formData.badgeText, badgeX + 80, 40 + 48, 32, '#fff', 'left', 'bold'); ctx.restore();
 
-                    // 6. Header (REMOVED FROM CAREER MODE)
+                    // 6. Header (Removed from Career to save space)
                     if (appMode !== 'news' && appMode !== 'career') {
                         ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 2;
                         ctx.strokeRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH);
@@ -288,17 +293,21 @@
                         drawText(ctx, formData.playerName, W/2, py + 180, 60, '#fff', 'center', 'bold');
                         
                     } else if (appMode === 'career') {
-                        // FIXED OVERLAP: Shifted player name and stat grid much higher up because the Tournament Title is gone
-                        const py = splitY + 90; 
-                        drawText(ctx, formData.playerName, W/2, py, 70, '#fff', 'center', 'bold');
-                        ctx.beginPath(); ctx.moveTo(W/2-250, py+25); ctx.lineTo(W/2+250, py+25); ctx.strokeStyle='rgba(255,255,255,0.2)'; ctx.lineWidth=2; ctx.stroke();
+                        // NEW PERFECTLY SCALED 3-ROW LAYOUT
+                        const py = splitY + 40; 
+                        drawText(ctx, formData.playerName, W/2, py, 60, '#fff', 'center', 'bold');
                         
-                        // Resized 2x2 Grid Math
-                        const boxW = 400; const boxH = 120; const gap = 40;
+                        // New: Player Role
+                        drawText(ctx, formData.playerRole, W/2, py + 35, 25, formData.team1Color, 'center', 'bold');
+                        ctx.beginPath(); ctx.moveTo(W/2-250, py+55); ctx.lineTo(W/2+250, py+55); ctx.strokeStyle='rgba(255,255,255,0.2)'; ctx.lineWidth=2; ctx.stroke();
+                        
+                        // 2x3 Grid Math (Fits perfectly above the footer)
+                        const boxW = 400; const boxH = 90; const gap = 15;
                         const leftX = W/2 - boxW - gap/2;
                         const rightX = W/2 + gap/2;
-                        const topY = py + 70; 
-                        const botY = topY + boxH + gap;
+                        const topY = py + 75; 
+                        const midY = topY + boxH + gap;
+                        const botY = midY + boxH + gap;
 
                         const drawStatBox = (label, val, x, y) => {
                             ctx.fillStyle = 'rgba(0,0,0,0.3)';
@@ -306,12 +315,16 @@
                             if(ctx.roundRect) ctx.roundRect(x, y, boxW, boxH, 15); else ctx.fillRect(x, y, boxW, boxH);
                             ctx.fill();
                             ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.stroke();
-                            drawText(ctx, label, x + boxW/2, y + 40, 24, formData.team1Color, 'center', 'bold'); 
-                            drawText(ctx, val, x + boxW/2, y + 95, 50, '#fff', 'center', 'bold');
+                            drawText(ctx, label, x + boxW/2, y + 35, 20, formData.team1Color, 'center', 'bold'); 
+                            drawText(ctx, val, x + boxW/2, y + 75, 45, '#fff', 'center', 'bold');
                         };
 
                         drawStatBox("ম্যাচ (MATCHES)", formData.careerMatches, leftX, topY);
                         drawStatBox("রান (RUNS)", formData.careerRuns, rightX, topY);
+                        
+                        drawStatBox("সেঞ্চুরি (100s)", formData.careerHundreds, leftX, midY);
+                        drawStatBox("ফিফটি (50s)", formData.careerFifties, rightX, midY);
+                        
                         drawStatBox("সর্বোচ্চ (BEST SCORE)", formData.careerBest, leftX, botY);
                         drawStatBox("উইকেট (WICKETS)", formData.careerWickets, rightX, botY);
 
@@ -452,7 +465,6 @@
                             <div className="flex items-center gap-3">
                                 <div className="flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700 cursor-pointer hover:bg-slate-800 transition-colors" onClick={() => setShowBuyModal(true)}>
                                     <IconCoin />
-                                    {/* FIXED: Removed 'pts' from here */}
                                     {isCheckingPoints ? <div className="loader"></div> : <span className="text-sm font-bold text-yellow-500">{points}</span>}
                                 </div>
                                 <button onClick={handleDownloadClick} disabled={isProcessing} className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 active:scale-95 transition-all shadow-lg shadow-red-600/20 disabled:opacity-50">
@@ -504,7 +516,6 @@
                                         </div>
                                         <div className="grid grid-cols-2 gap-3">
                                             <input type="text" name="badgeText" value={formData.badgeText} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Badge" />
-                                            {/* FIXED: Removed Title input from Career Mode */}
                                             {appMode !== 'news' && appMode !== 'career' && <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Tournament" />}
                                         </div>
                                         
@@ -523,8 +534,19 @@
                                         {appMode === 'career' && (
                                             <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-100 space-y-3">
                                                 <h4 className="text-xs font-bold text-indigo-700 uppercase flex items-center gap-2"><IconChart /> Career Statistics</h4>
-                                                <input type="text" name="playerName" value={formData.playerName} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold" placeholder="Player Name" />
+                                                
                                                 <div className="grid grid-cols-2 gap-3">
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Player Name</label>
+                                                        <input type="text" name="playerName" value={formData.playerName} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Role (Batsman/Bowler)</label>
+                                                        <input type="text" name="playerRole" value={formData.playerRole} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold" />
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-3 mt-3">
                                                     <div>
                                                         <label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Matches Played</label>
                                                         <input type="text" name="careerMatches" value={formData.careerMatches} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold text-center" />
@@ -532,6 +554,14 @@
                                                     <div>
                                                         <label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Total Runs</label>
                                                         <input type="text" name="careerRuns" value={formData.careerRuns} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold text-center" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Centuries (100s)</label>
+                                                        <input type="text" name="careerHundreds" value={formData.careerHundreds} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold text-center" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Fifties (50s)</label>
+                                                        <input type="text" name="careerFifties" value={formData.careerFifties} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold text-center" />
                                                     </div>
                                                     <div>
                                                         <label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Best Score</label>
