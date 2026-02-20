@@ -80,6 +80,7 @@
         const IconPlay = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>;
         const IconPause = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>;
         const IconVideo = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>;
+        const IconClose = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
 
         // --- EASING FUNCTIONS FOR ANIMATION ---
         const easeOutExpo = (x) => x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
@@ -87,17 +88,23 @@
         const easeInOutCubic = (x) => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 
         // --- GLOBAL CANVAS HELPERS ---
-        const drawText = (ctx, text, x, y, fs, color, align, fw, alpha = 1, shadow = true) => { 
+        const drawText = (ctx, text, x, y, fs, color, align, fw, alpha = 1, shadow = true, isExport = false) => { 
             ctx.save();
             ctx.globalAlpha = alpha;
             ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`; 
             ctx.textAlign = align; 
             
             if (shadow) {
-                ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
-                ctx.shadowBlur = 15;
-                ctx.shadowOffsetX = 0;
-                ctx.shadowOffsetY = 6;
+                if (isExport) {
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+                    ctx.shadowBlur = 15;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 6;
+                } else {
+                    // Performance optimization: Fast shadow for real-time preview (Prevents Lag)
+                    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                    ctx.fillText(text, x + 4, y + 4);
+                }
             }
             
             ctx.fillStyle = color; 
@@ -145,6 +152,9 @@
             const [isPlaying, setIsPlaying] = useState(false);
             const [isGenerating, setIsGenerating] = useState(false);
             const [progress, setProgress] = useState(0); 
+            const [isFullscreen, setIsFullscreen] = useState(false);
+            const [wrappedLines, setWrappedLines] = useState([]);
+            
             const animationRef = useRef(null);
             const startTimeRef = useRef(0);
             const pausedTimeRef = useRef(0);
@@ -182,8 +192,28 @@
                 img.onload = () => setBgImage(img);
             }, []);
 
+            // Pre-calculate text wrapping to prevent lag during animation loop
+            useEffect(() => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                ctx.font = "bold 65px 'Hind Siliguri', sans-serif"; 
+                const words = formData.quoteText.split(' ');
+                let currentLine = "";
+                const lines = [];
+                for (let i = 0; i < words.length; i++) {
+                    const word = words[i];
+                    if (ctx.measureText(currentLine + " " + word).width < 1080 * 0.8) {
+                        currentLine += (currentLine === "" ? "" : " ") + word;
+                    } else {
+                        lines.push(currentLine); currentLine = word;
+                    }
+                }
+                if(currentLine) lines.push(currentLine);
+                setWrappedLines(lines);
+            }, [formData.quoteText]);
+
             // --- THE HIGH-FIDELITY ANIMATION RENDERER ---
-            const renderFrame = useCallback((ctx, time, W, H) => {
+            const renderFrame = useCallback((ctx, time, W, H, isExport = false) => {
                 // 1. Base Background
                 ctx.fillStyle = '#050505'; 
                 ctx.fillRect(0, 0, W, H);
@@ -226,7 +256,7 @@
                 const liveAlpha = Math.sin(time * Math.PI * 8) * 0.5 + 0.5; // Blink effect
                 ctx.fillStyle = `rgba(239, 68, 68, ${liveAlpha})`; 
                 ctx.beginPath(); ctx.arc(W - 80, 80, 15, 0, Math.PI*2); ctx.fill();
-                drawText(ctx, "LIVE", W - 110, 92, 35, '#fff', 'right', 'bold', 1, true);
+                drawText(ctx, "LIVE", W - 110, 92, 35, '#fff', 'right', 'bold', 1, true, isExport);
                 ctx.restore();
 
                 // 6. Mode Specific Animations
@@ -238,41 +268,36 @@
                     const badgeY = cy - 200 + ((1 - boxIn) * 100);
                     ctx.save();
                     ctx.globalAlpha = boxIn;
-                    ctx.shadowColor = formData.primaryColor;
-                    ctx.shadowBlur = 30;
+                    if(isExport) {
+                        ctx.shadowColor = formData.primaryColor;
+                        ctx.shadowBlur = 30;
+                    }
                     ctx.fillStyle = '#ef4444'; 
                     if(ctx.roundRect) ctx.roundRect(W/2 - 200, badgeY - 70, 400, 80, 15); else ctx.fillRect(W/2 - 200, badgeY - 70, 400, 80);
                     ctx.fill();
-                    drawText(ctx, formData.headline, W/2, badgeY - 15, 45, '#fff', 'center', 'bold', 1, false);
+                    drawText(ctx, formData.headline, W/2, badgeY - 15, 45, '#fff', 'center', 'bold', 1, false, isExport);
                     ctx.restore();
 
-                    // Main Quote (Staggered Drift up)
-                    ctx.font = "bold 65px 'Hind Siliguri', sans-serif"; 
-                    const words = formData.quoteText.split(' ');
-                    let currentLine = "";
-                    const lines = [];
-                    for (let i = 0; i < words.length; i++) {
-                        const word = words[i];
-                        if (ctx.measureText(currentLine + " " + word).width < W * 0.8) {
-                            currentLine += (currentLine === "" ? "" : " ") + word;
-                        } else {
-                            lines.push(currentLine); currentLine = word;
-                        }
-                    }
-                    if(currentLine) lines.push(currentLine);
-
-                    lines.forEach((line, i) => { 
-                        // Staggered fade and drift
+                    // Main Quote (Professional clipping reveal effect)
+                    wrappedLines.forEach((line, i) => { 
                         const lineProgress = Math.min(Math.max((time - 0.15 - (i * 0.05)) * 5, 0), 1);
                         const lineEased = easeOutExpo(lineProgress);
-                        const driftY = cy + (i * 90) + ((1 - lineEased) * 40);
+                        const lineY = cy + (i * 90);
                         
-                        drawText(ctx, line, W / 2, driftY, 65, '#fff', 'center', 'bold', lineProgress, true);
+                        ctx.save();
+                        // Professional Masking (Text appears to emerge from thin air)
+                        ctx.beginPath();
+                        ctx.rect(0, lineY - 80, W, 110);
+                        ctx.clip();
+                        
+                        const driftY = lineY + ((1 - lineEased) * 80);
+                        drawText(ctx, line, W / 2, driftY, 65, '#fff', 'center', 'bold', lineProgress, true, isExport);
+                        ctx.restore();
                     });
 
                     // Author Line
                     const authorIn = easeOutBack(Math.min(Math.max((time - 0.3) * 5, 0), 1)); 
-                    const ay = cy + (lines.length * 90) + 60;
+                    const ay = cy + (wrappedLines.length * 90) + 60;
                     ctx.save();
                     ctx.globalAlpha = Math.min(authorIn, 1);
                     const lineScale = authorIn; 
@@ -280,49 +305,50 @@
                     ctx.moveTo(W/2 - (150 * lineScale), ay); 
                     ctx.lineTo(W/2 + (150 * lineScale), ay); 
                     ctx.strokeStyle = '#f87171'; ctx.lineWidth = 6; ctx.stroke();
-                    drawText(ctx, formData.quoteAuthor, W/2, ay + 70, 40, '#f8fafc', 'center', 'bold', 1, true);
+                    drawText(ctx, formData.quoteAuthor, W/2, ay + 70, 40, '#f8fafc', 'center', 'bold', 1, true, isExport);
                     ctx.restore();
 
                 } else if (appMode === 'match_reel') {
-                    const leftIn = easeOutExpo(Math.min(Math.max((time - 0.05) * 4, 0), 1));
-                    const rightIn = easeOutExpo(Math.min(Math.max((time - 0.1) * 4, 0), 1));
+                    // Snappy, energetic bounce physics for sports
+                    const leftIn = easeOutBack(Math.min(Math.max((time - 0.05) * 5, 0), 1));
+                    const rightIn = easeOutBack(Math.min(Math.max((time - 0.1) * 5, 0), 1));
                     const vsPop = easeOutBack(Math.min(Math.max((time - 0.2) * 5, 0), 1));
                     const resIn = easeOutExpo(Math.min(Math.max((time - 0.35) * 4, 0), 1));
 
                     const cy = H * 0.55;
 
-                    // Left Team (Dynamic Slide)
+                    // Left Team
                     const lx = (W * 0.25) - ((1 - leftIn) * 300);
-                    drawText(ctx, formData.team1, lx, cy - 80, 75, formData.team1Color, 'center', 'bold', leftIn, true);
-                    drawText(ctx, formData.team1Score, lx, cy + 30, 95, '#fff', 'center', 'bold', leftIn, true);
+                    drawText(ctx, formData.team1, lx, cy - 80, 75, formData.team1Color, 'center', 'bold', leftIn, true, isExport);
+                    drawText(ctx, formData.team1Score, lx, cy + 30, 95, '#fff', 'center', 'bold', leftIn, true, isExport);
 
-                    // Right Team (Dynamic Slide)
+                    // Right Team
                     const rx = (W * 0.75) + ((1 - rightIn) * 300);
-                    drawText(ctx, formData.team2, rx, cy - 80, 75, formData.team2Color, 'center', 'bold', rightIn, true);
-                    drawText(ctx, formData.team2Score, rx, cy + 30, 95, '#fff', 'center', 'bold', rightIn, true);
+                    drawText(ctx, formData.team2, rx, cy - 80, 75, formData.team2Color, 'center', 'bold', rightIn, true, isExport);
+                    drawText(ctx, formData.team2Score, rx, cy + 30, 95, '#fff', 'center', 'bold', rightIn, true, isExport);
 
                     // Glowing VS Circle
                     ctx.save();
                     ctx.globalAlpha = Math.min(vsPop, 1);
                     ctx.translate(W/2, cy - 20);
                     ctx.scale(vsPop, vsPop);
-                    ctx.shadowColor = '#fff'; ctx.shadowBlur = 20; // Glow
+                    if(isExport) { ctx.shadowColor = '#fff'; ctx.shadowBlur = 20; }
                     ctx.beginPath(); ctx.arc(0, 0, 65, 0, Math.PI*2); 
                     ctx.fillStyle = '#0f172a'; ctx.fill(); 
                     ctx.lineWidth = 6; ctx.strokeStyle = formData.primaryColor; ctx.stroke();
-                    ctx.shadowBlur = 0; // reset for text
-                    drawText(ctx, "VS", 0, 18, 50, '#fff', 'center', 'bold', 1, false);
+                    ctx.shadowBlur = 0;
+                    drawText(ctx, "VS", 0, 18, 50, '#fff', 'center', 'bold', 1, false, isExport);
                     ctx.restore();
 
                     // Sleek Result Box
                     const ry = cy + 250 + ((1 - resIn) * 100);
                     ctx.save();
                     ctx.globalAlpha = resIn;
-                    ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 20; ctx.shadowOffsetY = 10;
+                    if(isExport) { ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 20; ctx.shadowOffsetY = 10; }
                     ctx.fillStyle = formData.primaryColor;
                     if(ctx.roundRect) ctx.roundRect(W/2 - 380, ry - 60, 760, 90, 45); else ctx.fillRect(W/2 - 380, ry - 60, 760, 90);
                     ctx.fill();
-                    drawText(ctx, formData.result, W/2, ry + 5, 45, '#fff', 'center', 'bold', 1, false);
+                    drawText(ctx, formData.result, W/2, ry + 5, 45, '#fff', 'center', 'bold', 1, false, isExport);
                     ctx.restore();
 
                 } else if (appMode === 'stat_reel') {
@@ -339,7 +365,7 @@
                     
                     // Outer rotating dashed ring
                     ctx.save();
-                    ctx.rotate(time * Math.PI * 0.5); // Rotate smoothly
+                    ctx.rotate(time * Math.PI * 0.5); 
                     ctx.beginPath(); ctx.arc(0, 0, 210, 0, Math.PI*2);
                     ctx.setLineDash([15, 20]);
                     ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.stroke();
@@ -350,22 +376,22 @@
                     ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fill();
                     ctx.lineWidth = 12; ctx.strokeStyle = formData.team1Color || formData.primaryColor; ctx.stroke();
                     
-                    drawText(ctx, formData.playerStatMain, 0, 25, 160, '#fff', 'center', 'bold', 1, true);
-                    drawText(ctx, formData.playerStatSub, 0, 95, 45, formData.team1Color || formData.primaryColor, 'center', 'bold', 1, true);
+                    drawText(ctx, formData.playerStatMain, 0, 25, 160, '#fff', 'center', 'bold', 1, true, isExport);
+                    drawText(ctx, formData.playerStatSub, 0, 95, 45, formData.team1Color || formData.primaryColor, 'center', 'bold', 1, true, isExport);
                     ctx.restore();
 
                     // Player Name Box with Glow
                     const py = cy + 180 + ((1 - slideUp) * 100);
                     ctx.save();
                     ctx.globalAlpha = slideUp;
-                    drawText(ctx, formData.playerName, W/2, py, 85, '#fff', 'center', 'bold', 1, true);
+                    drawText(ctx, formData.playerName, W/2, py, 85, '#fff', 'center', 'bold', 1, true, isExport);
                     
-                    ctx.shadowColor = formData.primaryColor; ctx.shadowBlur = 20;
+                    if(isExport) { ctx.shadowColor = formData.primaryColor; ctx.shadowBlur = 20; }
                     ctx.fillStyle = formData.primaryColor;
                     if(ctx.roundRect) ctx.roundRect(W/2 - 250, py + 40, 500, 70, 35); else ctx.fillRect(W/2 - 250, py + 40, 500, 70);
                     ctx.fill();
                     ctx.shadowBlur = 0;
-                    drawText(ctx, formData.playerRole, W/2, py + 88, 35, '#fff', 'center', 'bold', 1, false);
+                    drawText(ctx, formData.playerRole, W/2, py + 88, 35, '#fff', 'center', 'bold', 1, false, isExport);
                     ctx.restore();
                 }
 
@@ -387,11 +413,11 @@
                 // FB Icon & Text
                 ctx.beginPath(); ctx.arc(W/2 - 160, footerY, 25, 0, Math.PI * 2); 
                 ctx.fillStyle = '#1877F2'; ctx.fill();
-                drawText(ctx, "f", W/2 - 160, footerY + 10, 35, "#fff", "center", "bold", 1, false);
-                drawText(ctx, formData.badgeText, W/2 - 120, footerY + 12, 35, '#fff', 'left', 'bold', 1, true);
+                drawText(ctx, "f", W/2 - 160, footerY + 10, 35, "#fff", "center", "bold", 1, false, isExport);
+                drawText(ctx, formData.badgeText, W/2 - 120, footerY + 12, 35, '#fff', 'left', 'bold', 1, true, isExport);
                 ctx.restore();
 
-            }, [bgImage, formData, appMode]);
+            }, [bgImage, formData, appMode, wrappedLines]);
 
             // --- ANIMATION LOOP ENGINE ---
             const tick = useCallback((timestamp) => {
@@ -407,13 +433,13 @@
                     currentProgress = 1;
                     setIsPlaying(false);
                     pausedTimeRef.current = 0; 
-                    renderFrame(canvasRef.current.getContext('2d'), 1, 1080, 1920);
+                    renderFrame(canvasRef.current.getContext('2d'), 1, 1080, 1920, false);
                     setProgress(1);
                     return; 
                 }
 
                 setProgress(currentProgress);
-                renderFrame(canvasRef.current.getContext('2d'), currentProgress, 1080, 1920);
+                renderFrame(canvasRef.current.getContext('2d'), currentProgress, 1080, 1920, false);
                 
                 if (isPlaying) {
                     animationRef.current = requestAnimationFrame(tick);
@@ -433,7 +459,7 @@
 
             useEffect(() => {
                 if (!isPlaying && canvasRef.current) {
-                    renderFrame(canvasRef.current.getContext('2d'), progress, 1080, 1920);
+                    renderFrame(canvasRef.current.getContext('2d'), progress, 1080, 1920, false);
                 }
             }, [formData, appMode, bgImage, progress, isPlaying, renderFrame]);
 
@@ -442,7 +468,7 @@
                 setProgress(val);
                 pausedTimeRef.current = val * (VIDEO_DURATION_SEC * 1000);
                 if (!isPlaying && canvasRef.current) {
-                    renderFrame(canvasRef.current.getContext('2d'), val, 1080, 1920);
+                    renderFrame(canvasRef.current.getContext('2d'), val, 1080, 1920, false);
                 }
             };
 
@@ -450,6 +476,9 @@
                 if (progress >= 1) {
                     setProgress(0);
                     pausedTimeRef.current = 0;
+                }
+                if (!isPlaying && window.innerWidth < 1024) {
+                    setIsFullscreen(true); // Open fullscreen player on mobile automatically
                 }
                 setIsPlaying(!isPlaying);
             };
@@ -510,7 +539,7 @@
                 const recordFrame = () => {
                     const currentProg = frameCount / totalFrames;
                     setProgress(currentProg);
-                    renderFrame(ctx, currentProg, 1080, 1920);
+                    renderFrame(ctx, currentProg, 1080, 1920, true); // True = High Quality Cinematic Shadows enabled
                     
                     frameCount++;
                     if (frameCount <= totalFrames) {
@@ -668,12 +697,21 @@
                         <div className="flex flex-row lg:flex-col items-center justify-center gap-4 lg:gap-6 w-full max-w-md lg:max-w-none mx-auto">
                             
                             {/* The Phone Outline / Canvas Container */}
-                            <div className="w-[110px] sm:w-[140px] lg:w-full lg:max-w-[360px] flex-shrink-0 relative shadow-xl lg:shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-xl lg:rounded-[2rem] overflow-hidden border-2 lg:border-[6px] border-slate-800 bg-black aspect-[9/16]">
+                            <div className={`transition-all duration-300 ${
+                                isFullscreen 
+                                ? 'fixed inset-0 z-[100] w-full h-full bg-black/95 backdrop-blur-3xl flex flex-col items-center justify-center' 
+                                : 'w-[110px] sm:w-[140px] lg:w-full lg:max-w-[360px] flex-shrink-0 relative shadow-xl lg:shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-xl lg:rounded-[2rem] overflow-hidden border-2 lg:border-[6px] border-slate-800 bg-black aspect-[9/16]'
+                            }`}>
+                                {isFullscreen && (
+                                    <button onClick={() => { setIsFullscreen(false); setIsPlaying(false); }} className="absolute top-6 right-6 z-[110] bg-white/10 hover:bg-white/20 text-white p-3 rounded-full backdrop-blur-md">
+                                        <IconClose />
+                                    </button>
+                                )}
                                 <canvas 
                                     ref={canvasRef} 
                                     width="1080" 
                                     height="1920" 
-                                    className="w-full h-full object-cover"
+                                    className={isFullscreen ? "max-h-[85vh] max-w-full aspect-[9/16] object-contain shadow-2xl rounded-2xl border-4 border-slate-800" : "w-full h-full object-cover"}
                                 ></canvas>
                                 
                                 {isGenerating && (
