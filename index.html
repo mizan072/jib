@@ -54,7 +54,7 @@
 
         // --- CONFIGURATION ---
         // 🚨🚨🚨 PASTE YOUR GOOGLE SCRIPT URL BELOW 🚨🚨🚨
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztp3j5Kh1tmcMcQpXfgNp9mhYQRchm2iSB-fPAk-V5ikDcXHcJlmVJ-yb93iIiycJ7/exec"; 
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyDorekc-EaWSFUynwzUrZF3DB9sxxXcut3QlaFH2wexfB7ccwX3B6T-PFNT5NqFH2x/exec"; 
         const DOWNLOAD_COST = 2; 
 
         // --- ICONS ---
@@ -92,28 +92,31 @@
             ctx.fillText(text, x, y); 
         };
 
-        const drawEmoji = (ctx, emoji, x, y, size) => {
-            // Using system fallback fonts ensures the emojis render correctly on Windows/Mac/Android
-            ctx.font = `${size}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
-            ctx.textAlign = 'center';
-            ctx.fillText(emoji, x, y);
-        };
+        // NEW: Bulletproof FB Icon Drawer (Using actual Canvas Paths instead of Text Emojis)
+        const drawFBIcon = (ctx, type, cx, cy, size) => {
+            ctx.save();
+            ctx.translate(cx, cy);
+            
+            // Draw standard circle background
+            ctx.beginPath();
+            ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
+            ctx.fillStyle = type === 'like' ? '#1877F2' : '#F02849'; // Perfect FB Blue and Red
+            ctx.fill();
 
-        const drawJustifiedText = (ctx, text, x, y, maxW, lh) => {
-            if (!text) return { lines: [], height: 0 };
-            const words = text.split(' '); 
-            let line = '', lines = [];
-            for (let n = 0; n < words.length; n++) { 
-                const tl = line + words[n] + ' '; 
-                if (ctx.measureText(tl).width > maxW && n > 0) { 
-                    lines.push(line.trim()); 
-                    line = words[n] + ' '; 
-                } else { 
-                    line = tl; 
-                } 
+            // Draw white icon inside
+            ctx.fillStyle = '#ffffff';
+            const scale = size / 40; // scales standard 24px icon to fit
+            ctx.scale(scale, scale);
+            ctx.translate(-12, -12); // center the vector
+            
+            if (type === 'like') {
+                // Thumbs Up Path
+                ctx.fill(new Path2D('M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z'));
+            } else {
+                // Heart Path
+                ctx.fill(new Path2D('M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'));
             }
-            lines.push(line.trim()); 
-            return { lines, height: lines.length * lh };
+            ctx.restore();
         };
 
         const drawCover = (ctx, img, x, y, w, h) => {
@@ -258,7 +261,7 @@
                     const scoresY = titleBoxY + 160; const leftCenter = W * 0.25; const rightCenter = W * 0.75;
                     const footerH = 60; const footerY = H - footerH;
 
-                    // 4. Overlays (Standard Concept applied everywhere)
+                    // 4. Overlays
                     ctx.save();
                     
                     ctx.globalAlpha = formData.bgOpacity; 
@@ -272,7 +275,7 @@
                         ctx.fillRect(0, splitY, W, H - splitY);
                     }
                     
-                    // Standard Title Box Background
+                    // Box behind the standard tournament title
                     if (appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone') { 
                         ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; 
                         ctx.fillRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH); 
@@ -287,25 +290,18 @@
                     ctx.save(); ctx.shadowColor = "rgba(0, 0, 0, 0.8)"; ctx.shadowBlur = 6;
                     drawText(ctx, formData.badgeText, badgeX + 80, 40 + 48, 32, '#fff', 'left', 'bold'); ctx.restore();
 
-                    // 6. Header Text
+                    // 6. Header (REMOVED completely from Poll, Milestone, News, Career)
                     if (appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone') {
                         ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 2;
                         ctx.strokeRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH);
                         drawText(ctx, formData.title, W / 2, titleBoxY + 60, 50, '#fff', 'center', 'bold');
-                    } else if (appMode === 'poll' || appMode === 'milestone') {
-                        // For Poll and Milestone, draw the tournament title at the very top (above the images)
-                        ctx.save();
-                        ctx.shadowColor = "rgba(0, 0, 0, 0.9)"; ctx.shadowBlur = 10;
-                        drawText(ctx, formData.title, W / 2, 85, 45, formData.team1Color, 'center', 'bold');
-                        ctx.restore();
-                    }
+                    } 
 
                     // 7. Content Tools
                     if (appMode === 'poll') {
-                        // FIXED POLL LAYOUT - using the app's main theme (transparent boxes instead of solid blocks)
                         const py = splitY + 40;
                         
-                        // Question at top center of gradient
+                        // Question at top center
                         drawText(ctx, formData.pollQuestion, W / 2, py + 20, 55, '#fff', 'center', 'bold');
                         ctx.beginPath(); ctx.moveTo(W/2-250, py+40); ctx.lineTo(W/2+250, py+40); ctx.strokeStyle='rgba(255,255,255,0.2)'; ctx.lineWidth=2; ctx.stroke();
 
@@ -318,9 +314,10 @@
                         ctx.fillStyle = 'rgba(0,0,0,0.5)';
                         if(ctx.roundRect) ctx.roundRect(leftX, topY, boxW, boxH, 20); else ctx.fillRect(leftX, topY, boxW, boxH);
                         ctx.fill();
-                        ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 3; ctx.stroke(); // Blue border
+                        ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 3; ctx.stroke();
                         
-                        drawEmoji(ctx, "👍", leftX + 80, topY + 90, 65);
+                        // FIXED: Drawing flawless native FB Like Vector
+                        drawFBIcon(ctx, 'like', leftX + 80, topY + 70, 75);
                         drawText(ctx, "লাইক (LIKE)", leftX + boxW/2 + 20, topY + 60, 26, '#3b82f6', 'center', 'bold');
                         drawText(ctx, formData.pollPlayer1, leftX + boxW/2 + 20, topY + 105, 40, '#fff', 'center', 'bold');
 
@@ -329,9 +326,10 @@
                         ctx.fillStyle = 'rgba(0,0,0,0.5)';
                         if(ctx.roundRect) ctx.roundRect(rightX, topY, boxW, boxH, 20); else ctx.fillRect(rightX, topY, boxW, boxH);
                         ctx.fill();
-                        ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3; ctx.stroke(); // Red border
+                        ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3; ctx.stroke();
 
-                        drawEmoji(ctx, "❤️", rightX + 80, topY + 90, 65);
+                        // FIXED: Drawing flawless native FB Love Vector
+                        drawFBIcon(ctx, 'love', rightX + 80, topY + 70, 75);
                         drawText(ctx, "লাভ (LOVE)", rightX + boxW/2 + 20, topY + 60, 26, '#ef4444', 'center', 'bold');
                         drawText(ctx, formData.pollPlayer2, rightX + boxW/2 + 20, topY + 105, 40, '#fff', 'center', 'bold');
 
@@ -341,7 +339,6 @@
                         drawText(ctx, "VS", W/2, topY + boxH/2 + 15, 38, formData.team1Color, 'center', 'bold');
 
                     } else if (appMode === 'milestone') {
-                        // NEW MILESTONE / BIRTHDAY LAYOUT
                         const py = splitY + 40;
                         
                         // Main Elegant Box
@@ -418,29 +415,50 @@
                         drawStatBox("উইকেট (WICKETS)", formData.careerWickets, rightX, botY);
 
                     } else if (appMode === 'news') {
-                        const h = H * formData.newsGradientHeight; const nsy = H - h; const csy = nsy + 50; 
-                        const ny = csy, nw = 880, nx = 100, lh = 80;
-                        ctx.font = "100px serif"; ctx.fillStyle = "rgba(255,215,0,0.2)"; ctx.textAlign = "left"; ctx.fillText("❝", 80, csy);
+                        // FIXED: Perfectly Centered Professional News Section
+                        const h = H * formData.newsGradientHeight; const nsy = H - h; const csy = nsy + 60; 
+                        const nw = 880, lh = 75;
+                        
+                        // Centered Breaking News Box
+                        ctx.fillStyle = '#d32f2f'; 
+                        if(ctx.roundRect) ctx.roundRect(W/2 - 150, csy - 90, 300, 55, 10); else ctx.fillRect(W/2 - 150, csy - 90, 300, 55);
+                        ctx.fill();
+                        drawText(ctx, "ব্রেকিং নিউজ", W/2, csy - 52, 32, '#fff', 'center', 'bold');
+                        
+                        // Centered Quote Mark
+                        ctx.font = "140px serif"; ctx.fillStyle = "rgba(255,215,0,0.2)"; ctx.textAlign = "center"; ctx.fillText("❝", W/2, csy + 30);
+                        
+                        // Centered Body Text Wrapping
                         ctx.font = "bold 55px 'Hind Siliguri', sans-serif"; ctx.fillStyle = "#fff";
-                        const td = drawJustifiedText(ctx, formData.quoteText || "", nx, csy + 60, nw, lh);
-                        td.lines.forEach((l, i) => { 
-                            if (i === td.lines.length - 1) { ctx.textAlign = 'left'; ctx.fillText(l, nx, csy + 60 + (i * lh)); }
-                            else { 
-                                const words = l.split(' '); 
-                                if(words.length > 1) {
-                                     const lineW = ctx.measureText(l.replace(/\s/g, '')).width;
-                                     const spaceAvail = nw - lineW;
-                                     const gap = spaceAvail / (words.length - 1);
-                                     let cx = nx;
-                                     words.forEach(w => { ctx.textAlign='left'; ctx.fillText(w, cx, csy + 60 + (i * lh)); cx += ctx.measureText(w).width + gap; });
-                                } else { ctx.textAlign = 'left'; ctx.fillText(l, nx, csy + 60 + (i * lh)); }
+                        const textToDraw = formData.quoteText || "";
+                        const lines = [];
+                        const words = textToDraw.split(' ');
+                        let currentLine = words[0] || "";
+                        
+                        for (let i = 1; i < words.length; i++) {
+                            const word = words[i];
+                            const width = ctx.measureText(currentLine + " " + word).width;
+                            if (width < nw) {
+                                currentLine += " " + word;
+                            } else {
+                                lines.push(currentLine);
+                                currentLine = word;
                             }
+                        }
+                        if(currentLine) lines.push(currentLine);
+
+                        const startY = csy + 110;
+                        lines.forEach((line, i) => { 
+                            ctx.textAlign = 'center'; 
+                            ctx.fillText(line, W / 2, startY + (i * lh)); 
                         });
-                        const ay = csy + 60 + (td.lines.length * lh) + 40;
-                        ctx.beginPath(); ctx.moveTo(nx, ay); ctx.lineTo(nx + 200, ay); ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 5; ctx.stroke();
-                        drawText(ctx, formData.quoteAuthor, nx, ay + 50, 40, '#ddd', 'left', 'bold');
-                        ctx.fillStyle = '#d32f2f'; ctx.fillRect(80, csy - 100, 300, 60); drawText(ctx, "ব্রেকিং নিউজ", 230, csy - 60, 35, '#fff', 'center', 'bold');
+
+                        // Centered Author Divider & Name
+                        const ay = startY + (lines.length * lh) + 10;
+                        ctx.beginPath(); ctx.moveTo(W/2 - 120, ay); ctx.lineTo(W/2 + 120, ay); ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 5; ctx.stroke();
+                        drawText(ctx, formData.quoteAuthor, W/2, ay + 60, 38, '#ddd', 'center', 'bold');
                     }
+                    
                     drawText(ctx, formData.footerHandle, W / 2, footerY + 40, 24, '#94a3b8', 'center', 'normal');
 
                     // WATERMARK
@@ -567,7 +585,7 @@
                     <main className="flex-1 max-w-2xl mx-auto w-full p-4 space-y-6">
                         {showInstallPrompt && (<div className="install-prompt bg-slate-900 text-white p-4 rounded-xl shadow-2xl flex items-center justify-between border border-slate-700"><div className="flex items-center gap-3"><div className="bg-red-600 p-2 rounded-lg"><IconInstall /></div><div><h4 className="font-bold text-sm">Install App</h4><p className="text-xs text-slate-400">Add to Home Screen</p></div></div><div className="flex gap-2"><button onClick={() => setShowInstallPrompt(false)} className="p-2 text-slate-400"><IconClose /></button><button onClick={handleInstallApp} className="bg-white text-slate-900 px-4 py-2 rounded-lg text-xs font-bold">Install</button></div></div>)}
                         
-                        {/* TOOL SELECTOR - ADDED MILESTONE */}
+                        {/* TOOL SELECTOR */}
                         <div className="bg-white p-1.5 rounded-xl shadow-sm border border-slate-200 flex gap-1 overflow-x-auto no-scrollbar">
                             {['scorecard', 'schedule', 'player', 'career', 'poll', 'milestone', 'news'].map(mode => (
                                 <button key={mode} onClick={() => setAppMode(mode)} className={`flex-1 min-w-[85px] py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${appMode === mode ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-slate-100'}`}>
@@ -613,8 +631,8 @@
                                         </div>
                                         <div className="grid grid-cols-2 gap-3">
                                             <input type="text" name="badgeText" value={formData.badgeText} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Badge" />
-                                            {/* Hide title for News and Career */}
-                                            {appMode !== 'news' && appMode !== 'career' && <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Tournament" />}
+                                            {/* FIXED: Title input is hidden for all non-match modes */}
+                                            {appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone' && <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Tournament" />}
                                         </div>
                                         
                                         <div className="mt-3">
