@@ -77,6 +77,7 @@
         const IconHeight = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 15 12 20 17 15"></polyline><polyline points="7 9 12 4 17 9"></polyline><line x1="12" y1="4" x2="12" y2="20"></line></svg>;
         const IconTg = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.543 2.457L2.613 9.77c-1.32.533-1.316 1.272-.24 1.6l4.86 1.516 11.36-7.16c.536-.325 1.027.15.777.373l-9.206 8.307-.36 5.43c.528 0 .762-.24.905-.373l2.17-2.106 4.513 3.333c.832.458 1.432.22 1.64-.773l2.968-13.987c.304-1.216-.464-1.767-1.4-.93z"/></svg>;
         const IconChart = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>;
+        const IconStar = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>;
 
         // --- GLOBAL HELPERS ---
         const measureText = (ctx, text, fs, fw) => { 
@@ -89,6 +90,13 @@
             ctx.fillStyle = color; 
             ctx.textAlign = align; 
             ctx.fillText(text, x, y); 
+        };
+
+        const drawEmoji = (ctx, emoji, x, y, size) => {
+            // Using system fallback fonts ensures the emojis render correctly on Windows/Mac/Android
+            ctx.font = `${size}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.fillText(emoji, x, y);
         };
 
         const drawJustifiedText = (ctx, text, x, y, maxW, lh) => {
@@ -120,7 +128,7 @@
             const canvasRef = useRef(null);
             
             // --- STATE ---
-            const [appMode, setAppMode] = useState('poll'); // default to poll to show it off
+            const [appMode, setAppMode] = useState('scorecard'); 
             const [activeTab, setActiveTab] = useState('match');
             const [bgImage, setBgImage] = useState(null);
             const [bgImage2, setBgImage2] = useState(null);
@@ -158,7 +166,13 @@
                 // Poll Fields
                 pollQuestion: 'বর্তমান সময়ের সেরা ব্যাটার কে?',
                 pollPlayer1: 'সাকিব আল হাসান',
-                pollPlayer2: 'বিরাট কোহলি'
+                pollPlayer2: 'বিরাট কোহলি',
+
+                // Milestone Fields
+                milestoneOccasion: 'শুভ জন্মদিন',
+                milestoneName: 'সাকিব আল হাসান',
+                milestoneNumber: '৩৭ তম',
+                milestoneMessage: 'বাংলাদেশ ক্রিকেটের জান, বাংলাদেশ ক্রিকেটের প্রাণ! শুভকামনা রইলো।'
             });
 
             // --- USER & POINT SYSTEM LOGIC ---
@@ -244,39 +258,24 @@
                     const scoresY = titleBoxY + 160; const leftCenter = W * 0.25; const rightCenter = W * 0.75;
                     const footerH = 60; const footerY = H - footerH;
 
-                    // 4. Overlays
+                    // 4. Overlays (Standard Concept applied everywhere)
                     ctx.save();
                     
-                    if (appMode === 'poll') {
-                        // Poll Overlays
-                        // Top Fade for Question
-                        ctx.globalAlpha = 1;
-                        const gradTop = ctx.createLinearGradient(0, 0, 0, 250);
-                        gradTop.addColorStop(0, 'rgba(0,0,0,0.9)');
-                        gradTop.addColorStop(1, 'rgba(0,0,0,0)');
-                        ctx.fillStyle = gradTop;
-                        ctx.fillRect(0, 0, W, 250);
-
-                        // Bottom Split Boxes (Like vs Love)
-                        ctx.globalAlpha = formData.bgOpacity;
-                        ctx.fillStyle = '#1877F2'; // Facebook Blue
-                        ctx.fillRect(0, H - 240, W/2, 240);
-                        
-                        ctx.fillStyle = '#E4405F'; // Instagram/Love Red
-                        ctx.fillRect(W/2, H - 240, W/2, 240);
-                        ctx.globalAlpha = 1;
-
+                    ctx.globalAlpha = formData.bgOpacity; 
+                    const gradient = ctx.createLinearGradient(0, splitY, 0, H);
+                    gradient.addColorStop(0, formData.primaryColor); gradient.addColorStop(1, formData.secondaryColor);
+                    ctx.fillStyle = gradient;
+                    
+                    if (appMode === 'news') { 
+                        const h = H * formData.newsGradientHeight; ctx.fillRect(0, H - h, W, h); 
                     } else {
-                        // Standard Overlays
-                        ctx.globalAlpha = formData.bgOpacity; 
-                        const gradient = ctx.createLinearGradient(0, splitY, 0, H);
-                        gradient.addColorStop(0, formData.primaryColor); gradient.addColorStop(1, formData.secondaryColor);
-                        ctx.fillStyle = gradient;
-                        
-                        if (appMode === 'news') { const h = H * formData.newsGradientHeight; ctx.fillRect(0, H - h, W, h); } 
-                        else ctx.fillRect(0, splitY, W, H - splitY);
-                        
-                        if (appMode !== 'news' && appMode !== 'career') { ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; ctx.fillRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH); }
+                        ctx.fillRect(0, splitY, W, H - splitY);
+                    }
+                    
+                    // Standard Title Box Background
+                    if (appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone') { 
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; 
+                        ctx.fillRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH); 
                     }
                     
                     ctx.fillStyle = '#0f172a'; ctx.fillRect(0, footerY, W, footerH); ctx.restore(); 
@@ -288,33 +287,77 @@
                     ctx.save(); ctx.shadowColor = "rgba(0, 0, 0, 0.8)"; ctx.shadowBlur = 6;
                     drawText(ctx, formData.badgeText, badgeX + 80, 40 + 48, 32, '#fff', 'left', 'bold'); ctx.restore();
 
-                    // 6. Header (Hidden for Career and Poll modes)
-                    if (appMode !== 'news' && appMode !== 'career' && appMode !== 'poll') {
+                    // 6. Header Text
+                    if (appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone') {
                         ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 2;
                         ctx.strokeRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH);
                         drawText(ctx, formData.title, W / 2, titleBoxY + 60, 50, '#fff', 'center', 'bold');
+                    } else if (appMode === 'poll' || appMode === 'milestone') {
+                        // For Poll and Milestone, draw the tournament title at the very top (above the images)
+                        ctx.save();
+                        ctx.shadowColor = "rgba(0, 0, 0, 0.9)"; ctx.shadowBlur = 10;
+                        drawText(ctx, formData.title, W / 2, 85, 45, formData.team1Color, 'center', 'bold');
+                        ctx.restore();
                     }
 
                     // 7. Content Tools
                     if (appMode === 'poll') {
-                        // Poll Question at Top
-                        ctx.save();
-                        ctx.shadowColor = "rgba(0, 0, 0, 0.9)"; ctx.shadowBlur = 10;
-                        drawText(ctx, formData.pollQuestion, W / 2, 120, 65, '#fff', 'center', 'bold');
-                        ctx.restore();
+                        // FIXED POLL LAYOUT - using the app's main theme (transparent boxes instead of solid blocks)
+                        const py = splitY + 40;
+                        
+                        // Question at top center of gradient
+                        drawText(ctx, formData.pollQuestion, W / 2, py + 20, 55, '#fff', 'center', 'bold');
+                        ctx.beginPath(); ctx.moveTo(W/2-250, py+40); ctx.lineTo(W/2+250, py+40); ctx.strokeStyle='rgba(255,255,255,0.2)'; ctx.lineWidth=2; ctx.stroke();
+
+                        const boxW = 440; const boxH = 140; 
+                        const leftX = W/4 - boxW/2;
+                        const rightX = (3*W/4) - boxW/2;
+                        const topY = py + 80;
+
+                        // Left Player Box (Like - Blue tinted)
+                        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                        if(ctx.roundRect) ctx.roundRect(leftX, topY, boxW, boxH, 20); else ctx.fillRect(leftX, topY, boxW, boxH);
+                        ctx.fill();
+                        ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 3; ctx.stroke(); // Blue border
+                        
+                        drawEmoji(ctx, "👍", leftX + 80, topY + 90, 65);
+                        drawText(ctx, "লাইক (LIKE)", leftX + boxW/2 + 20, topY + 60, 26, '#3b82f6', 'center', 'bold');
+                        drawText(ctx, formData.pollPlayer1, leftX + boxW/2 + 20, topY + 105, 40, '#fff', 'center', 'bold');
+
+                        // Right Player Box (Love - Red tinted)
+                        ctx.beginPath();
+                        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                        if(ctx.roundRect) ctx.roundRect(rightX, topY, boxW, boxH, 20); else ctx.fillRect(rightX, topY, boxW, boxH);
+                        ctx.fill();
+                        ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3; ctx.stroke(); // Red border
+
+                        drawEmoji(ctx, "❤️", rightX + 80, topY + 90, 65);
+                        drawText(ctx, "লাভ (LOVE)", rightX + boxW/2 + 20, topY + 60, 26, '#ef4444', 'center', 'bold');
+                        drawText(ctx, formData.pollPlayer2, rightX + boxW/2 + 20, topY + 105, 40, '#fff', 'center', 'bold');
 
                         // VS Circle in Center
-                        ctx.beginPath(); ctx.arc(W/2, H/2 - 20, 60, 0, Math.PI*2); ctx.fillStyle = '#1a1a1a'; ctx.fill();
-                        ctx.lineWidth = 4; ctx.strokeStyle = '#fff'; ctx.stroke();
-                        drawText(ctx, "VS", W/2, H/2 - 2, 50, '#fff', 'center', 'bold');
+                        ctx.beginPath(); ctx.arc(W/2, topY + boxH/2, 45, 0, Math.PI*2); ctx.fillStyle = '#0f172a'; ctx.fill();
+                        ctx.lineWidth = 3; ctx.strokeStyle = formData.team1Color; ctx.stroke();
+                        drawText(ctx, "VS", W/2, topY + boxH/2 + 15, 38, formData.team1Color, 'center', 'bold');
 
-                        // Bottom Left: Like (👍)
-                        ctx.font = "80px sans-serif"; ctx.textAlign = "center"; ctx.fillText("👍", W/4, H - 130);
-                        drawText(ctx, formData.pollPlayer1, W/4, H - 80, 45, '#fff', 'center', 'bold');
+                    } else if (appMode === 'milestone') {
+                        // NEW MILESTONE / BIRTHDAY LAYOUT
+                        const py = splitY + 40;
+                        
+                        // Main Elegant Box
+                        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+                        if(ctx.roundRect) ctx.roundRect(100, py, W - 200, 240, 20); else ctx.fillRect(100, py, W - 200, 240);
+                        ctx.fill();
+                        ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 3; ctx.stroke();
 
-                        // Bottom Right: Love (❤️)
-                        ctx.font = "80px sans-serif"; ctx.textAlign = "center"; ctx.fillText("❤️", 3*W/4, H - 130);
-                        drawText(ctx, formData.pollPlayer2, 3*W/4, H - 80, 45, '#fff', 'center', 'bold');
+                        // Inner Text
+                        drawText(ctx, formData.milestoneOccasion, W/2, py + 55, 35, formData.team1Color, 'center', 'bold');
+                        drawText(ctx, formData.milestoneNumber, W/2, py + 140, 90, '#fff', 'center', 'bold');
+                        drawText(ctx, formData.milestoneName, W/2, py + 210, 50, '#fff', 'center', 'bold');
+                        
+                        // Long Sub-message below the box
+                        ctx.fillStyle = '#ddd';
+                        drawText(ctx, formData.milestoneMessage, W/2, py + 300, 28, '#ddd', 'center', 'normal');
 
                     } else if (appMode === 'scorecard') {
                         drawText(ctx, formData.team1, leftCenter, scoresY, 65, formData.team1Color, 'center', 'bold');
@@ -514,7 +557,7 @@
                                     {isCheckingPoints ? <div className="loader"></div> : <span className="text-sm font-bold text-yellow-500">{points}</span>}
                                 </div>
                                 <button onClick={handleDownloadClick} disabled={isProcessing} className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 active:scale-95 transition-all shadow-lg shadow-red-600/20 disabled:opacity-50">
-                                    {isProcessing ? 'Saving...' : <><IconDownload /> Save</>}
+                                    {isProcessing ? 'Saving...' : <><IconDownload /> Save Poster</>}
                                 </button>
                             </div>
                         </div>
@@ -524,10 +567,9 @@
                     <main className="flex-1 max-w-2xl mx-auto w-full p-4 space-y-6">
                         {showInstallPrompt && (<div className="install-prompt bg-slate-900 text-white p-4 rounded-xl shadow-2xl flex items-center justify-between border border-slate-700"><div className="flex items-center gap-3"><div className="bg-red-600 p-2 rounded-lg"><IconInstall /></div><div><h4 className="font-bold text-sm">Install App</h4><p className="text-xs text-slate-400">Add to Home Screen</p></div></div><div className="flex gap-2"><button onClick={() => setShowInstallPrompt(false)} className="p-2 text-slate-400"><IconClose /></button><button onClick={handleInstallApp} className="bg-white text-slate-900 px-4 py-2 rounded-lg text-xs font-bold">Install</button></div></div>)}
                         
-                        {/* TOOL SELECTOR */}
+                        {/* TOOL SELECTOR - ADDED MILESTONE */}
                         <div className="bg-white p-1.5 rounded-xl shadow-sm border border-slate-200 flex gap-1 overflow-x-auto no-scrollbar">
-                            {/* ADDED 'poll' TO MENU */}
-                            {['scorecard', 'schedule', 'player', 'career', 'poll', 'news'].map(mode => (
+                            {['scorecard', 'schedule', 'player', 'career', 'poll', 'milestone', 'news'].map(mode => (
                                 <button key={mode} onClick={() => setAppMode(mode)} className={`flex-1 min-w-[85px] py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${appMode === mode ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-slate-100'}`}>
                                     {mode}
                                 </button>
@@ -541,7 +583,7 @@
                             {!bgImage && <div className="absolute inset-0 pointer-events-none flex items-center justify-center"><span className="bg-white/90 text-slate-800 px-4 py-2 rounded-full text-sm font-bold shadow-lg">Loading...</span></div>}
                         </div>
                         
-                        {/* POLL INSTRUCTIONS */}
+                        {/* INSTRUCTIONS */}
                         {appMode === 'poll' && !bgImage2 && (
                             <div className="bg-blue-50 border border-blue-200 text-blue-700 p-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2">
                                 💡 Tip: Upload 2 photos (Photo 1 and Photo 2) for the best Poll layout!
@@ -554,7 +596,7 @@
                         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                             <div className="flex border-b bg-slate-50">
                                 <button onClick={() => setActiveTab('match')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'match' ? 'bg-white text-slate-900 border-t-2 border-slate-900' : 'text-slate-500'}`}>Edit Info</button>
-                                {appMode !== 'player' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'news' && <button onClick={() => setActiveTab('teams')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'teams' ? 'bg-white text-slate-900 border-t-2 border-slate-900' : 'text-slate-500'}`}>Teams</button>}
+                                {appMode !== 'player' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone' && appMode !== 'news' && <button onClick={() => setActiveTab('teams')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'teams' ? 'bg-white text-slate-900 border-t-2 border-slate-900' : 'text-slate-500'}`}>Teams</button>}
                                 <button onClick={() => setActiveTab('style')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'style' ? 'bg-white text-slate-900 border-t-2 border-slate-900' : 'text-slate-500'}`}>Style</button>
                             </div>
                             <div className="p-5 space-y-4">
@@ -571,8 +613,8 @@
                                         </div>
                                         <div className="grid grid-cols-2 gap-3">
                                             <input type="text" name="badgeText" value={formData.badgeText} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Badge" />
-                                            {/* Hide title for Poll, News, and Career */}
-                                            {appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Tournament" />}
+                                            {/* Hide title for News and Career */}
+                                            {appMode !== 'news' && appMode !== 'career' && <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Tournament" />}
                                         </div>
                                         
                                         <div className="mt-3">
@@ -580,7 +622,7 @@
                                             <input type="text" name="footerHandle" value={formData.footerHandle} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Footer text (e.g., @proscorecard_bot)" />
                                         </div>
 
-                                        {/* NEW: REACTION POLL INPUTS */}
+                                        {/* POLL INPUTS */}
                                         {appMode === 'poll' && (
                                             <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-100 space-y-3">
                                                 <h4 className="text-xs font-bold text-indigo-700 uppercase flex items-center gap-2"><IconChart /> Reaction Poll Settings</h4>
@@ -590,15 +632,40 @@
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-3">
                                                     <div>
-                                                        <label className="text-[10px] uppercase font-bold text-blue-600 mb-1 block">👍 Left Player (Like)</label>
+                                                        <label className="text-[10px] uppercase font-bold text-blue-600 mb-1 block">👍 Left Player</label>
                                                         <input type="text" name="pollPlayer1" value={formData.pollPlayer1} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm font-bold text-center" />
                                                     </div>
                                                     <div>
-                                                        <label className="text-[10px] uppercase font-bold text-red-600 mb-1 block">❤️ Right Player (Love)</label>
+                                                        <label className="text-[10px] uppercase font-bold text-red-600 mb-1 block">❤️ Right Player</label>
                                                         <input type="text" name="pollPlayer2" value={formData.pollPlayer2} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-red-200 rounded-lg text-sm font-bold text-center" />
                                                     </div>
                                                 </div>
                                                 <button onClick={swapTeams} className="w-full py-2 mt-2 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2"><IconSwap /> Swap Players</button>
+                                            </div>
+                                        )}
+
+                                        {/* MILESTONE INPUTS */}
+                                        {appMode === 'milestone' && (
+                                            <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200 space-y-3">
+                                                <h4 className="text-xs font-bold text-yellow-700 uppercase flex items-center gap-2"><IconStar /> Birthday & Milestone</h4>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-yellow-600 mb-1 block">Occasion Type</label>
+                                                        <input type="text" name="milestoneOccasion" value={formData.milestoneOccasion} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-yellow-300 rounded-lg text-sm font-bold" placeholder="e.g. শুভ জন্মদিন" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-yellow-600 mb-1 block">Player Name</label>
+                                                        <input type="text" name="milestoneName" value={formData.milestoneName} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-yellow-300 rounded-lg text-sm font-bold" />
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] uppercase font-bold text-yellow-600 mb-1 block">Main Highlight (Age / Record)</label>
+                                                    <input type="text" name="milestoneNumber" value={formData.milestoneNumber} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-yellow-300 rounded-lg text-xl font-bold text-center" placeholder="e.g. ১০,০০০ রান" />
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] uppercase font-bold text-yellow-600 mb-1 block">Sub-Message</label>
+                                                    <textarea name="milestoneMessage" value={formData.milestoneMessage} onChange={handleChange} rows="2" className="w-full px-3 py-2 bg-white border border-yellow-300 rounded-lg text-sm" placeholder="Wishing text..."></textarea>
+                                                </div>
                                             </div>
                                         )}
 
@@ -655,7 +722,7 @@
                                         {appMode === 'news' && (<div className="p-3 bg-red-50 rounded-lg border border-red-100 space-y-3"><h4 className="text-xs font-bold text-red-700 uppercase flex items-center gap-2"><IconQuote /> Breaking News / Quote</h4><textarea name="quoteText" value={formData.quoteText} onChange={handleChange} rows="3" className="w-full px-3 py-2 bg-white border border-red-200 rounded-lg text-sm" placeholder="Quote or News Body"></textarea><input type="text" name="quoteAuthor" value={formData.quoteAuthor} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-red-200 rounded-lg text-sm font-bold" placeholder="Headline or Author" /></div>)}
                                     </>
                                 )}
-                                {activeTab === 'teams' && appMode !== 'player' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'news' && (<div className="space-y-5"><button onClick={swapTeams} className="w-full py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2"><IconSwap /> Swap Sides</button><div className="bg-amber-50 p-4 rounded-xl border border-amber-100 space-y-3"><div className="flex justify-between"><h3 className="text-xs font-bold text-amber-800">Left Team</h3><input type="color" name="team1Color" value={formData.team1Color} onChange={handleChange} className="w-6 h-6 rounded-full overflow-hidden border-none" /></div><input type="text" name="team1" value={formData.team1} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm font-bold" />{appMode === 'scorecard' && <div className="flex gap-2"><input type="text" name="team1Score" value={formData.team1Score} onChange={handleChange} className="flex-1 px-3 py-2 bg-white border rounded-lg text-sm" /><input type="text" name="team1Overs" value={formData.team1Overs} onChange={handleChange} className="w-24 px-3 py-2 bg-white border rounded-lg text-sm" /></div>}</div><div className="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-3"><div className="flex justify-between"><h3 className="text-xs font-bold text-blue-800">Right Team</h3><input type="color" name="team2Color" value={formData.team2Color} onChange={handleChange} className="w-6 h-6 rounded-full overflow-hidden border-none" /></div><input type="text" name="team2" value={formData.team2} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm font-bold" />{appMode === 'scorecard' && <div className="flex gap-2"><input type="text" name="team2Score" value={formData.team2Score} onChange={handleChange} className="flex-1 px-3 py-2 bg-white border rounded-lg text-sm" /><input type="text" name="team2Overs" value={formData.team2Overs} onChange={handleChange} className="w-24 px-3 py-2 bg-white border rounded-lg text-sm" /></div>}</div></div>)}
+                                {activeTab === 'teams' && appMode !== 'player' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone' && appMode !== 'news' && (<div className="space-y-5"><button onClick={swapTeams} className="w-full py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2"><IconSwap /> Swap Sides</button><div className="bg-amber-50 p-4 rounded-xl border border-amber-100 space-y-3"><div className="flex justify-between"><h3 className="text-xs font-bold text-amber-800">Left Team</h3><input type="color" name="team1Color" value={formData.team1Color} onChange={handleChange} className="w-6 h-6 rounded-full overflow-hidden border-none" /></div><input type="text" name="team1" value={formData.team1} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm font-bold" />{appMode === 'scorecard' && <div className="flex gap-2"><input type="text" name="team1Score" value={formData.team1Score} onChange={handleChange} className="flex-1 px-3 py-2 bg-white border rounded-lg text-sm" /><input type="text" name="team1Overs" value={formData.team1Overs} onChange={handleChange} className="w-24 px-3 py-2 bg-white border rounded-lg text-sm" /></div>}</div><div className="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-3"><div className="flex justify-between"><h3 className="text-xs font-bold text-blue-800">Right Team</h3><input type="color" name="team2Color" value={formData.team2Color} onChange={handleChange} className="w-6 h-6 rounded-full overflow-hidden border-none" /></div><input type="text" name="team2" value={formData.team2} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm font-bold" />{appMode === 'scorecard' && <div className="flex gap-2"><input type="text" name="team2Score" value={formData.team2Score} onChange={handleChange} className="flex-1 px-3 py-2 bg-white border rounded-lg text-sm" /><input type="text" name="team2Overs" value={formData.team2Overs} onChange={handleChange} className="w-24 px-3 py-2 bg-white border rounded-lg text-sm" /></div>}</div></div>)}
                                 {activeTab === 'style' && (<div className="space-y-5"><div><label className="block text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2"><IconEye /> Opacity</label><input type="range" min="0" max="1" step="0.05" value={formData.bgOpacity} onChange={(e) => setFormData({...formData, bgOpacity: parseFloat(e.target.value)})} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" /></div><div><label className="block text-xs font-bold text-slate-400 uppercase mb-2">Gradient Primary & Accent</label><div className="flex gap-2"><input type="color" name="primaryColor" value={formData.primaryColor} onChange={handleChange} className="h-10 w-full rounded-lg cursor-pointer" /><input type="color" name="team1Color" value={formData.team1Color} onChange={handleChange} className="h-10 w-full rounded-lg cursor-pointer" title="Accent Color (used in stats)" /></div></div>{appMode === 'news' && (<div><label className="block text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2"><IconHeight /> News Color Height</label><input type="range" min="0.2" max="0.9" step="0.05" value={formData.newsGradientHeight} onChange={(e) => setFormData({...formData, newsGradientHeight: parseFloat(e.target.value)})} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" /><div className="flex justify-between text-xs text-slate-400 mt-1"><span>Low</span><span>High</span></div></div>)}</div>)}
                             </div>
                         </div>
