@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Reel Bot Pro | Video Generator</title>
+    
+    <meta name="theme-color" content="#020617">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        body { 
+            font-family: 'Hind Siliguri', sans-serif; 
+            background-color: #020617; 
+            color: #f8fafc; 
+            user-select: none; 
+            -webkit-user-select: none; 
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .canvas-container { 
+            touch-action: none; 
+            background: #000;
+            background-image: radial-gradient(#1e293b 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .loader { 
+            border: 3px solid rgba(255,255,255,0.1); 
+            border-top: 3px solid #3b82f6; 
+            border-radius: 50%; 
+            width: 20px; 
+            height: 20px; 
+            animation: spin 1s linear infinite; 
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        input[type=range].timeline {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range].timeline::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px; width: 16px;
+            border-radius: 50%;
+            background: #ef4444;
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+        }
+        input[type=range].timeline::-webkit-slider-runnable-track {
+            width: 100%; height: 4px;
+            cursor: pointer;
+            background: #334155;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useCallback } = React;
+
+        // --- CONFIGURATION ---
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztp3j5Kh1tmcMcQpXfgNp9mhYQRchm2iSB-fPAk-V5ikDcXHcJlmVJ-yb93iIiycJ7/exec"; 
+        const DOWNLOAD_COST = 5; 
+        const VIDEO_DURATION_SEC = 8; 
+        const FPS = 60; // Upgraded to 60 FPS for broadcast smoothness
+
+        // --- ICONS ---
+        const IconLogo = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14v-4z"/><rect x="3" y="6" width="12" height="12" rx="2" ry="2"/></svg>;
+        const IconCoin = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="gold" stroke="#b45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 18V6"></path></svg>;
+        const IconUpload = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path></svg>;
+        const IconPlay = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>;
+        const IconPause = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>;
+        const IconVideo = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>;
+
+        // --- EASING FUNCTIONS FOR ANIMATION ---
+        const easeOutExpo = (x) => x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
+        const easeOutBack = (x) => { const c1 = 1.70158; const c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+        const easeInOutCubic = (x) => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+
+        // --- GLOBAL CANVAS HELPERS ---
+        const drawText = (ctx, text, x, y, fs, color, align, fw, alpha = 1, shadow = true) => { 
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`; 
+            ctx.textAlign = align; 
+            
+            if (shadow) {
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+                ctx.shadowBlur = 15;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 6;
+            }
+            
+            ctx.fillStyle = color; 
+            ctx.fillText(text, x, y); 
+            ctx.restore();
+        };
+
+        const drawCover = (ctx, img, x, y, w, h, scale = 1, panX = 0, panY = 0, alpha = 1) => {
+            if(!img) return;
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            
+            const cx = x + w/2;
+            const cy = y + h/2;
+            ctx.translate(cx + panX, cy + panY);
+            ctx.scale(scale, scale);
+            ctx.translate(-cx, -cy);
+
+            const r = img.width/img.height, tr = w/h;
+            let sx, sy, sw, sh;
+            if (r > tr) { sh = img.height; sw = img.height * tr; sy = 0; sx = (img.width - sw) / 2; }
+            else { sw = img.width; sh = img.width / tr; sx = 0; sy = (img.height - sh) / 2; }
+            
+            ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+            ctx.restore();
+        };
+
+        const drawGrid = (ctx, W, H, alpha) => {
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.lineWidth = 2;
+            const gridSize = 60;
+            for (let x = 0; x <= W; x += gridSize) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+            for (let y = 0; y <= H; y += gridSize) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+            ctx.restore();
+        };
+
+        function App() {
+            const canvasRef = useRef(null);
+            
+            const [appMode, setAppMode] = useState('news_reel'); 
+            const [bgImage, setBgImage] = useState(null);
+            
+            const [isPlaying, setIsPlaying] = useState(false);
+            const [isGenerating, setIsGenerating] = useState(false);
+            const [progress, setProgress] = useState(0); 
+            const animationRef = useRef(null);
+            const startTimeRef = useRef(0);
+            const pausedTimeRef = useRef(0);
+            
+            const [userId, setUserId] = useState('');
+            const [points, setPoints] = useState(50); 
+
+            const [formData, setFormData] = useState({
+                badgeText: 'ProReels_Bot',
+                primaryColor: '#e11d48', 
+                secondaryColor: '#881337', 
+                bgOpacity: 0.85,
+                
+                headline: 'ব্রেকিং নিউজ',
+                quoteText: 'আমাদের লক্ষ্য এখন বিশ্বকাপ জয় করা। কোনো দলকেই আমরা ছোট করে দেখছি না।',
+                quoteAuthor: 'নাজমুল হোসেন শান্ত, অধিনায়ক',
+
+                team1: 'বাংলাদেশ', team1Color: '#16a34a', team1Score: '১৮৪/৭',
+                team2: 'ভারত', team2Color: '#2563eb', team2Score: '১৮০/৬',
+                result: 'বাংলাদেশ ৪ রানে জয়ী',
+                
+                playerName: 'সাকিব আল হাসান',
+                playerStatMain: '৮২', playerStatSub: 'রান (৪৫ বল)',
+                playerRole: 'ম্যান অফ দ্যা ম্যাচ'
+            });
+
+            useEffect(() => {
+                let storedId = localStorage.getItem('poster_user_id');
+                if (!storedId) { storedId = 'u_' + Math.random().toString(36).substr(2, 9); localStorage.setItem('poster_user_id', storedId); }
+                setUserId(storedId); 
+                
+                const img = new Image(); 
+                img.crossOrigin = "Anonymous"; 
+                img.src = "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?q=80&w=1080&auto=format&fit=crop";
+                img.onload = () => setBgImage(img);
+            }, []);
+
+            // --- THE HIGH-FIDELITY ANIMATION RENDERER ---
+            const renderFrame = useCallback((ctx, time, W, H) => {
+                // 1. Base Background
+                ctx.fillStyle = '#050505'; 
+                ctx.fillRect(0, 0, W, H);
+
+                // Advanced Ken Burns (Scale + Slow Pan)
+                const kenBurnsScale = 1.05 + (time * 0.1); 
+                const panX = Math.sin(time * Math.PI) * 30; // Subtle side-to-side
+                const panY = -(time * 40); // Slow pan up
+                
+                // 2. Image
+                if (bgImage) {
+                    drawCover(ctx, bgImage, 0, 0, W, H, kenBurnsScale, panX, panY, 1);
+                }
+
+                // 3. Broadcast Grid Overlay
+                drawGrid(ctx, W, H, 0.4);
+
+                // 4. Cinematic Vignette & Gradient Overlay
+                ctx.save();
+                
+                // Vignette (Dark Edges)
+                const vignette = ctx.createRadialGradient(W/2, H/2, H*0.2, W/2, H/2, H*0.8);
+                vignette.addColorStop(0, 'rgba(0,0,0,0)');
+                vignette.addColorStop(1, 'rgba(0,0,0,0.7)');
+                ctx.fillStyle = vignette;
+                ctx.fillRect(0, 0, W, H);
+
+                // Lower Third Gradient
+                ctx.globalAlpha = formData.bgOpacity; 
+                const gradient = ctx.createLinearGradient(0, H * 0.35, 0, H);
+                gradient.addColorStop(0, 'rgba(0,0,0,0)'); 
+                gradient.addColorStop(0.4, formData.primaryColor);
+                gradient.addColorStop(1, formData.secondaryColor);
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, W, H);
+                ctx.restore();
+
+                // 5. LIVE Broadcast Badge
+                ctx.save();
+                const liveAlpha = Math.sin(time * Math.PI * 8) * 0.5 + 0.5; // Blink effect
+                ctx.fillStyle = `rgba(239, 68, 68, ${liveAlpha})`; 
+                ctx.beginPath(); ctx.arc(W - 80, 80, 15, 0, Math.PI*2); ctx.fill();
+                drawText(ctx, "LIVE", W - 110, 92, 35, '#fff', 'right', 'bold', 1, true);
+                ctx.restore();
+
+                // 6. Mode Specific Animations
+                if (appMode === 'news_reel') {
+                    const boxIn = easeOutExpo(Math.min(Math.max((time - 0.05) * 5, 0), 1)); 
+                    const cy = H * 0.65;
+
+                    // Breaking News Badge (Glow & Slide)
+                    const badgeY = cy - 200 + ((1 - boxIn) * 100);
+                    ctx.save();
+                    ctx.globalAlpha = boxIn;
+                    ctx.shadowColor = formData.primaryColor;
+                    ctx.shadowBlur = 30;
+                    ctx.fillStyle = '#ef4444'; 
+                    if(ctx.roundRect) ctx.roundRect(W/2 - 200, badgeY - 70, 400, 80, 15); else ctx.fillRect(W/2 - 200, badgeY - 70, 400, 80);
+                    ctx.fill();
+                    drawText(ctx, formData.headline, W/2, badgeY - 15, 45, '#fff', 'center', 'bold', 1, false);
+                    ctx.restore();
+
+                    // Main Quote (Staggered Drift up)
+                    ctx.font = "bold 65px 'Hind Siliguri', sans-serif"; 
+                    const words = formData.quoteText.split(' ');
+                    let currentLine = "";
+                    const lines = [];
+                    for (let i = 0; i < words.length; i++) {
+                        const word = words[i];
+                        if (ctx.measureText(currentLine + " " + word).width < W * 0.8) {
+                            currentLine += (currentLine === "" ? "" : " ") + word;
+                        } else {
+                            lines.push(currentLine); currentLine = word;
+                        }
+                    }
+                    if(currentLine) lines.push(currentLine);
+
+                    lines.forEach((line, i) => { 
+                        // Staggered fade and drift
+                        const lineProgress = Math.min(Math.max((time - 0.15 - (i * 0.05)) * 5, 0), 1);
+                        const lineEased = easeOutExpo(lineProgress);
+                        const driftY = cy + (i * 90) + ((1 - lineEased) * 40);
+                        
+                        drawText(ctx, line, W / 2, driftY, 65, '#fff', 'center', 'bold', lineProgress, true);
+                    });
+
+                    // Author Line
+                    const authorIn = easeOutBack(Math.min(Math.max((time - 0.3) * 5, 0), 1)); 
+                    const ay = cy + (lines.length * 90) + 60;
+                    ctx.save();
+                    ctx.globalAlpha = Math.min(authorIn, 1);
+                    const lineScale = authorIn; 
+                    ctx.beginPath(); 
+                    ctx.moveTo(W/2 - (150 * lineScale), ay); 
+                    ctx.lineTo(W/2 + (150 * lineScale), ay); 
+                    ctx.strokeStyle = '#f87171'; ctx.lineWidth = 6; ctx.stroke();
+                    drawText(ctx, formData.quoteAuthor, W/2, ay + 70, 40, '#f8fafc', 'center', 'bold', 1, true);
+                    ctx.restore();
+
+                } else if (appMode === 'match_reel') {
+                    const leftIn = easeOutExpo(Math.min(Math.max((time - 0.05) * 4, 0), 1));
+                    const rightIn = easeOutExpo(Math.min(Math.max((time - 0.1) * 4, 0), 1));
+                    const vsPop = easeOutBack(Math.min(Math.max((time - 0.2) * 5, 0), 1));
+                    const resIn = easeOutExpo(Math.min(Math.max((time - 0.35) * 4, 0), 1));
+
+                    const cy = H * 0.55;
+
+                    // Left Team (Dynamic Slide)
+                    const lx = (W * 0.25) - ((1 - leftIn) * 300);
+                    drawText(ctx, formData.team1, lx, cy - 80, 75, formData.team1Color, 'center', 'bold', leftIn, true);
+                    drawText(ctx, formData.team1Score, lx, cy + 30, 95, '#fff', 'center', 'bold', leftIn, true);
+
+                    // Right Team (Dynamic Slide)
+                    const rx = (W * 0.75) + ((1 - rightIn) * 300);
+                    drawText(ctx, formData.team2, rx, cy - 80, 75, formData.team2Color, 'center', 'bold', rightIn, true);
+                    drawText(ctx, formData.team2Score, rx, cy + 30, 95, '#fff', 'center', 'bold', rightIn, true);
+
+                    // Glowing VS Circle
+                    ctx.save();
+                    ctx.globalAlpha = Math.min(vsPop, 1);
+                    ctx.translate(W/2, cy - 20);
+                    ctx.scale(vsPop, vsPop);
+                    ctx.shadowColor = '#fff'; ctx.shadowBlur = 20; // Glow
+                    ctx.beginPath(); ctx.arc(0, 0, 65, 0, Math.PI*2); 
+                    ctx.fillStyle = '#0f172a'; ctx.fill(); 
+                    ctx.lineWidth = 6; ctx.strokeStyle = formData.primaryColor; ctx.stroke();
+                    ctx.shadowBlur = 0; // reset for text
+                    drawText(ctx, "VS", 0, 18, 50, '#fff', 'center', 'bold', 1, false);
+                    ctx.restore();
+
+                    // Sleek Result Box
+                    const ry = cy + 250 + ((1 - resIn) * 100);
+                    ctx.save();
+                    ctx.globalAlpha = resIn;
+                    ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 20; ctx.shadowOffsetY = 10;
+                    ctx.fillStyle = formData.primaryColor;
+                    if(ctx.roundRect) ctx.roundRect(W/2 - 380, ry - 60, 760, 90, 45); else ctx.fillRect(W/2 - 380, ry - 60, 760, 90);
+                    ctx.fill();
+                    drawText(ctx, formData.result, W/2, ry + 5, 45, '#fff', 'center', 'bold', 1, false);
+                    ctx.restore();
+
+                } else if (appMode === 'stat_reel') {
+                    const pop1 = easeOutBack(Math.min(Math.max((time - 0.1) * 5, 0), 1));
+                    const slideUp = easeOutExpo(Math.min(Math.max((time - 0.25) * 4, 0), 1));
+
+                    const cy = H * 0.6;
+
+                    // Advanced Rotating Stat Circle
+                    ctx.save();
+                    ctx.globalAlpha = Math.min(pop1, 1);
+                    ctx.translate(W/2, cy - 150);
+                    ctx.scale(pop1, pop1);
+                    
+                    // Outer rotating dashed ring
+                    ctx.save();
+                    ctx.rotate(time * Math.PI * 0.5); // Rotate smoothly
+                    ctx.beginPath(); ctx.arc(0, 0, 210, 0, Math.PI*2);
+                    ctx.setLineDash([15, 20]);
+                    ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.stroke();
+                    ctx.restore();
+
+                    // Inner Solid Ring
+                    ctx.beginPath(); ctx.arc(0, 0, 180, 0, Math.PI*2);
+                    ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fill();
+                    ctx.lineWidth = 12; ctx.strokeStyle = formData.team1Color || formData.primaryColor; ctx.stroke();
+                    
+                    drawText(ctx, formData.playerStatMain, 0, 25, 160, '#fff', 'center', 'bold', 1, true);
+                    drawText(ctx, formData.playerStatSub, 0, 95, 45, formData.team1Color || formData.primaryColor, 'center', 'bold', 1, true);
+                    ctx.restore();
+
+                    // Player Name Box with Glow
+                    const py = cy + 180 + ((1 - slideUp) * 100);
+                    ctx.save();
+                    ctx.globalAlpha = slideUp;
+                    drawText(ctx, formData.playerName, W/2, py, 85, '#fff', 'center', 'bold', 1, true);
+                    
+                    ctx.shadowColor = formData.primaryColor; ctx.shadowBlur = 20;
+                    ctx.fillStyle = formData.primaryColor;
+                    if(ctx.roundRect) ctx.roundRect(W/2 - 250, py + 40, 500, 70, 35); else ctx.fillRect(W/2 - 250, py + 40, 500, 70);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    drawText(ctx, formData.playerRole, W/2, py + 88, 35, '#fff', 'center', 'bold', 1, false);
+                    ctx.restore();
+                }
+
+                // 7. Glassmorphism Footer Badge
+                const globalFade = Math.min(time * 5, 1);
+                ctx.save();
+                ctx.globalAlpha = globalFade;
+                const footerY = H - 120;
+                
+                // Pill Background
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.lineWidth = 2;
+                const pillWidth = 450;
+                if(ctx.roundRect) ctx.roundRect(W/2 - pillWidth/2, footerY - 40, pillWidth, 80, 40);
+                else ctx.fillRect(W/2 - pillWidth/2, footerY - 40, pillWidth, 80);
+                ctx.fill(); ctx.stroke();
+
+                // FB Icon & Text
+                ctx.beginPath(); ctx.arc(W/2 - 160, footerY, 25, 0, Math.PI * 2); 
+                ctx.fillStyle = '#1877F2'; ctx.fill();
+                drawText(ctx, "f", W/2 - 160, footerY + 10, 35, "#fff", "center", "bold", 1, false);
+                drawText(ctx, formData.badgeText, W/2 - 120, footerY + 12, 35, '#fff', 'left', 'bold', 1, true);
+                ctx.restore();
+
+            }, [bgImage, formData, appMode]);
+
+            // --- ANIMATION LOOP ENGINE ---
+            const tick = useCallback((timestamp) => {
+                if (!canvasRef.current) return;
+                
+                if (!startTimeRef.current) startTimeRef.current = timestamp - pausedTimeRef.current;
+                const elapsedMs = timestamp - startTimeRef.current;
+                const totalDurationMs = VIDEO_DURATION_SEC * 1000;
+                
+                let currentProgress = elapsedMs / totalDurationMs;
+                
+                if (currentProgress >= 1) {
+                    currentProgress = 1;
+                    setIsPlaying(false);
+                    pausedTimeRef.current = 0; 
+                    renderFrame(canvasRef.current.getContext('2d'), 1, 1080, 1920);
+                    setProgress(1);
+                    return; 
+                }
+
+                setProgress(currentProgress);
+                renderFrame(canvasRef.current.getContext('2d'), currentProgress, 1080, 1920);
+                
+                if (isPlaying) {
+                    animationRef.current = requestAnimationFrame(tick);
+                }
+            }, [isPlaying, renderFrame]);
+
+            useEffect(() => {
+                if (isPlaying) {
+                    animationRef.current = requestAnimationFrame(tick);
+                } else {
+                    if (animationRef.current) cancelAnimationFrame(animationRef.current);
+                    pausedTimeRef.current = progress * (VIDEO_DURATION_SEC * 1000);
+                    startTimeRef.current = 0;
+                }
+                return () => { if (animationRef.current) cancelAnimationFrame(animationRef.current); };
+            }, [isPlaying, tick, progress]);
+
+            useEffect(() => {
+                if (!isPlaying && canvasRef.current) {
+                    renderFrame(canvasRef.current.getContext('2d'), progress, 1080, 1920);
+                }
+            }, [formData, appMode, bgImage, progress, isPlaying, renderFrame]);
+
+            const handleTimelineChange = (e) => {
+                const val = parseFloat(e.target.value);
+                setProgress(val);
+                pausedTimeRef.current = val * (VIDEO_DURATION_SEC * 1000);
+                if (!isPlaying && canvasRef.current) {
+                    renderFrame(canvasRef.current.getContext('2d'), val, 1080, 1920);
+                }
+            };
+
+            const togglePlay = () => {
+                if (progress >= 1) {
+                    setProgress(0);
+                    pausedTimeRef.current = 0;
+                }
+                setIsPlaying(!isPlaying);
+            };
+
+            // --- VIDEO GENERATION ---
+            const handleGenerateVideo = async () => {
+                if (isGenerating || !canvasRef.current) return;
+                if (points < DOWNLOAD_COST) {
+                    alert(`Not enough points. You need ${DOWNLOAD_COST} points.`);
+                    return;
+                }
+
+                setIsGenerating(true);
+                setIsPlaying(false); 
+                setProgress(0);
+                
+                const canvas = canvasRef.current;
+                const ctx = canvas.getContext('2d');
+                // Request stream at exactly 60fps
+                const stream = canvas.captureStream(FPS);
+                
+                let mimeType = 'video/webm';
+                if (MediaRecorder.isTypeSupported('video/webm; codecs=vp9')) {
+                    mimeType = 'video/webm; codecs=vp9';
+                } else if (MediaRecorder.isTypeSupported('video/mp4')) {
+                    mimeType = 'video/mp4'; 
+                }
+
+                // Upgraded Bitrate to 8 Mbps for ultra-crisp social media quality
+                const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8000000 }); 
+                const chunks = [];
+                
+                recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+
+                recorder.onstop = () => {
+                    const blob = new Blob(chunks, { type: mimeType });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = `fb-reel-${Date.now()}.${mimeType.includes('mp4') ? 'mp4' : 'webm'}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(() => {
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        setIsGenerating(false);
+                        setPoints(prev => prev - DOWNLOAD_COST); 
+                    }, 100);
+                };
+
+                recorder.start();
+
+                // High-fidelity manual render loop synced for 60fps export
+                let frameCount = 0;
+                const totalFrames = VIDEO_DURATION_SEC * FPS;
+                
+                const recordFrame = () => {
+                    const currentProg = frameCount / totalFrames;
+                    setProgress(currentProg);
+                    renderFrame(ctx, currentProg, 1080, 1920);
+                    
+                    frameCount++;
+                    if (frameCount <= totalFrames) {
+                        setTimeout(recordFrame, 1000/FPS); 
+                    } else {
+                        recorder.stop();
+                    }
+                };
+                
+                recordFrame();
+            };
+
+            const handleImageUpload = (e) => {
+                const file = e.target.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const img = new Image();
+                    img.onload = () => { setBgImage(img); setProgress(0); };
+                    img.src = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            };
+
+            const handleChange = (e) => {
+                setFormData({ ...formData, [e.target.name]: e.target.value });
+                if(progress === 1) setProgress(0); 
+            };
+
+            return (
+                <div className="flex flex-col lg:flex-row min-h-screen bg-slate-950">
+                    {/* LEFT PANEL: EDITOR */}
+                    <div className="order-2 lg:order-1 w-full lg:w-[450px] bg-slate-900 border-r-0 lg:border-r border-slate-800 flex flex-col h-auto lg:h-screen overflow-visible lg:overflow-y-auto custom-scrollbar shadow-2xl z-10 relative pb-10 lg:pb-0">
+                        <header className="p-4 border-b border-slate-800 bg-slate-900/90 static lg:sticky top-0 backdrop-blur-md z-20 flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                                <div className="bg-gradient-to-tr from-blue-600 to-indigo-500 p-2 rounded-xl shadow-lg">
+                                    <IconVideo className="text-white w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h1 className="text-lg font-black tracking-tight leading-tight text-white">Reel Bot <span className="text-blue-500">PRO</span></h1>
+                                    <p className="text-[10px] text-slate-400 font-medium uppercase tracking-widest">Video Generator</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-1.5 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700">
+                                <IconCoin /> <span className="text-sm font-bold text-yellow-500">{points}</span>
+                            </div>
+                        </header>
+
+                        <div className="p-4 space-y-6">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Reel Template</label>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {['news_reel', 'match_reel', 'stat_reel'].map(mode => (
+                                        <button key={mode} onClick={() => { setAppMode(mode); setProgress(0); setIsPlaying(false); }} 
+                                            className={`py-3 rounded-xl text-xs font-bold transition-all border ${appMode === mode ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700'}`}>
+                                            {mode.split('_')[0].toUpperCase()}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Background Media</label>
+                                <div className="relative group w-full h-24 bg-slate-800 border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-xl flex flex-col items-center justify-center transition-colors cursor-pointer overflow-hidden">
+                                    <input type="file" accept="image/*" onChange={handleImageUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                                    {bgImage ? (
+                                        <div className="absolute inset-0 opacity-40 bg-cover bg-center" style={{backgroundImage: `url(${bgImage.src})`}}></div>
+                                    ) : null}
+                                    <IconUpload className="text-slate-400 mb-1 z-0 relative" />
+                                    <span className="text-xs font-bold text-slate-400 z-0 relative">{bgImage ? 'Change Image' : 'Upload 9:16 Photo'}</span>
+                                </div>
+                            </div>
+
+                            <hr className="border-slate-800" />
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Color Theme</label>
+                                    <div className="flex gap-2">
+                                        <input type="color" name="primaryColor" value={formData.primaryColor} onChange={handleChange} className="h-10 w-full rounded-lg cursor-pointer bg-slate-800 border border-slate-700" title="Primary Gradient" />
+                                        <input type="color" name="secondaryColor" value={formData.secondaryColor} onChange={handleChange} className="h-10 w-full rounded-lg cursor-pointer bg-slate-800 border border-slate-700" title="Secondary Gradient" />
+                                    </div>
+                                </div>
+
+                                {appMode === 'news_reel' && (
+                                    <>
+                                        <div>
+                                            <label className="block text-[10px] uppercase font-bold text-red-500 mb-1">Headline Badge</label>
+                                            <input type="text" name="headline" value={formData.headline} onChange={handleChange} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:border-blue-500 outline-none" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">Breaking News / Quote text</label>
+                                            <textarea name="quoteText" value={formData.quoteText} onChange={handleChange} rows="4" className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:border-blue-500 outline-none resize-none"></textarea>
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">Source / Author</label>
+                                            <input type="text" name="quoteAuthor" value={formData.quoteAuthor} onChange={handleChange} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:border-blue-500 outline-none" />
+                                        </div>
+                                    </>
+                                )}
+
+                                {appMode === 'match_reel' && (
+                                    <>
+                                        <div className="p-3 border border-slate-700 rounded-lg bg-slate-800/50 space-y-2">
+                                            <div className="flex justify-between items-center"><span className="text-xs font-bold text-green-500">Team 1 (Left)</span><input type="color" name="team1Color" value={formData.team1Color} onChange={handleChange} className="w-6 h-6 rounded bg-transparent border-0 cursor-pointer"/></div>
+                                            <input type="text" name="team1" value={formData.team1} onChange={handleChange} className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white outline-none mb-2" placeholder="Team Name" />
+                                            <input type="text" name="team1Score" value={formData.team1Score} onChange={handleChange} className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white outline-none font-bold" placeholder="Score (e.g. 180/4)" />
+                                        </div>
+                                        <div className="p-3 border border-slate-700 rounded-lg bg-slate-800/50 space-y-2">
+                                            <div className="flex justify-between items-center"><span className="text-xs font-bold text-blue-500">Team 2 (Right)</span><input type="color" name="team2Color" value={formData.team2Color} onChange={handleChange} className="w-6 h-6 rounded bg-transparent border-0 cursor-pointer"/></div>
+                                            <input type="text" name="team2" value={formData.team2} onChange={handleChange} className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white outline-none mb-2" placeholder="Team Name" />
+                                            <input type="text" name="team2Score" value={formData.team2Score} onChange={handleChange} className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white outline-none font-bold" placeholder="Score" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">Match Result</label>
+                                            <input type="text" name="result" value={formData.result} onChange={handleChange} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white outline-none" />
+                                        </div>
+                                    </>
+                                )}
+
+                                {appMode === 'stat_reel' && (
+                                    <>
+                                        <div>
+                                            <label className="block text-[10px] uppercase font-bold text-yellow-500 mb-1">Player Name</label>
+                                            <input type="text" name="playerName" value={formData.playerName} onChange={handleChange} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white outline-none" />
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <div className="flex-1">
+                                                <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">Main Stat (Big)</label>
+                                                <input type="text" name="playerStatMain" value={formData.playerStatMain} onChange={handleChange} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xl text-white outline-none font-bold text-center" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">Sub Stat (Small)</label>
+                                                <input type="text" name="playerStatSub" value={formData.playerStatSub} onChange={handleChange} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white outline-none" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">Tagline / Role</label>
+                                            <input type="text" name="playerRole" value={formData.playerRole} onChange={handleChange} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white outline-none" />
+                                        </div>
+                                    </>
+                                )}
+
+                                <div className="pt-4">
+                                    <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">Watermark Handle</label>
+                                    <input type="text" name="badgeText" value={formData.badgeText} onChange={handleChange} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-400 outline-none" placeholder="@yourpage" />
+                                </div>
+                            </div>
+                            
+                            <div className="pb-10"></div>
+                        </div>
+                    </div>
+
+                    {/* RIGHT PANEL: VIDEO PREVIEW & RENDER */}
+                    <div className="order-1 lg:order-2 w-full lg:flex-1 flex flex-col items-center justify-center p-3 sm:p-4 lg:p-8 bg-[#020617]/95 lg:bg-[#020617] sticky top-0 z-40 lg:relative lg:h-screen lg:overflow-y-auto border-b lg:border-b-0 border-slate-800 shadow-2xl lg:shadow-none backdrop-blur-xl lg:backdrop-blur-none">
+                        <div className="flex flex-row lg:flex-col items-center justify-center gap-4 lg:gap-6 w-full max-w-md lg:max-w-none mx-auto">
+                            
+                            {/* The Phone Outline / Canvas Container */}
+                            <div className="w-[110px] sm:w-[140px] lg:w-full lg:max-w-[360px] flex-shrink-0 relative shadow-xl lg:shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-xl lg:rounded-[2rem] overflow-hidden border-2 lg:border-[6px] border-slate-800 bg-black aspect-[9/16]">
+                                <canvas 
+                                    ref={canvasRef} 
+                                    width="1080" 
+                                    height="1920" 
+                                    className="w-full h-full object-cover"
+                                ></canvas>
+                                
+                                {isGenerating && (
+                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center z-50">
+                                        <div className="loader mb-2 lg:mb-4"></div>
+                                        <p className="text-white font-bold animate-pulse text-[10px] lg:text-base text-center leading-tight">Rendering<br className="lg:hidden"/> Reel...</p>
+                                        <p className="text-slate-400 text-[8px] lg:text-xs mt-1 lg:mt-2">{Math.round(progress * 100)}%</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Player Controls */}
+                            <div className="flex-1 lg:w-full lg:max-w-[360px] bg-slate-900 border border-slate-800 rounded-xl lg:rounded-2xl p-3 lg:p-4 shadow-xl">
+                                <div className="flex items-center gap-2 sm:gap-3 mb-3 lg:mb-4">
+                                    <button onClick={togglePlay} disabled={isGenerating} className="bg-blue-600 hover:bg-blue-500 text-white p-2.5 lg:p-3 rounded-full flex-shrink-0 transition-colors disabled:opacity-50">
+                                        {isPlaying ? <IconPause /> : <IconPlay />}
+                                    </button>
+                                    
+                                    <div className="flex-1 flex flex-col justify-center">
+                                        <div className="flex justify-between text-[10px] text-slate-400 font-bold mb-1 font-mono">
+                                            <span>{(progress * VIDEO_DURATION_SEC).toFixed(1)}s</span>
+                                            <span>{VIDEO_DURATION_SEC}.0s</span>
+                                        </div>
+                                        <input 
+                                            type="range" 
+                                            className="timeline" 
+                                            min="0" max="1" step="0.001" 
+                                            value={progress} 
+                                            onChange={handleTimelineChange}
+                                            disabled={isGenerating}
+                                        />
+                                    </div>
+                                </div>
+
+                                <button 
+                                    onClick={handleGenerateVideo} 
+                                    disabled={isGenerating || !bgImage}
+                                    className={`w-full py-2.5 lg:py-3.5 rounded-lg lg:rounded-xl font-bold text-xs lg:text-sm tracking-wide transition-all flex justify-center items-center gap-2 ${
+                                        isGenerating || !bgImage ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : 'bg-red-600 hover:bg-red-500 text-white shadow-[0_0_20px_rgba(220,38,38,0.4)]'
+                                    }`}
+                                >
+                                    {isGenerating ? 'Encoding...' : (
+                                        <>Export Reel ({DOWNLOAD_COST} Pts)</>
+                                    )}
+                                </button>
+                                {!bgImage && <p className="text-center text-[8px] lg:text-[10px] text-red-400 mt-2 leading-tight">Upload background to export.</p>}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
