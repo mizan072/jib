@@ -73,14 +73,14 @@
         const IconNews = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><path d="M18 14h-8"></path><path d="M15 18h-5"></path><path d="M10 6h8v4h-8V6Z"></path></svg>;
         const IconMatch = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"></path></svg>;
         const IconStat = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg>;
+        const IconCalendar = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>;
 
-        // --- EASING FUNCTIONS FOR ANIMATION ---
+        // --- EASING FUNCTIONS ---
         const easeOutExpo = (x) => x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
         const easeOutBack = (x) => { const c1 = 1.70158; const c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
         const easeOutQuint = (x) => 1 - Math.pow(1 - x, 5);
 
-        // --- GLOBAL CANVAS HELPERS ---
-        // Added maxWidth parameter to automatically scale down ultra-long texts!
+        // --- CANVAS HELPERS ---
         const drawText = (ctx, text, x, y, fs, color, align, fw, alpha = 1, shadow = true, isExport = false, maxWidth = null) => { 
             ctx.save();
             ctx.globalAlpha = alpha;
@@ -90,7 +90,7 @@
             
             if (shadow) {
                 if (isExport) {
-                    ctx.shadowColor = 'rgba(0, 0, 0, 0.9)'; // Darkened for better contrast
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.9)'; 
                     ctx.shadowBlur = 15;
                     ctx.shadowOffsetX = 3;
                     ctx.shadowOffsetY = 5;
@@ -107,21 +107,32 @@
             ctx.restore();
         };
 
-        // Professional TV-style angled background panel
-        const drawAngledPanel = (ctx, x, y, w, h, skew, color, alpha = 1, shadow = false, isExport = false) => {
+        const drawAngledPanel = (ctx, x, y, w, h, skew, color, alpha = 1, shadow = false, isExport = false, radius = 0) => {
             ctx.save();
             ctx.globalAlpha = alpha;
             if (shadow && isExport) {
-                ctx.shadowColor = 'rgba(0,0,0,0.5)';
-                ctx.shadowBlur = 20;
-                ctx.shadowOffsetY = 10;
+                ctx.shadowColor = 'rgba(0,0,0,0.6)';
+                ctx.shadowBlur = 25;
+                ctx.shadowOffsetY = 15;
             }
             ctx.fillStyle = color;
             ctx.beginPath();
-            ctx.moveTo(x + skew, y);
-            ctx.lineTo(x + w + skew, y);
-            ctx.lineTo(x + w, y + h);
-            ctx.lineTo(x, y + h);
+            if (radius > 0 && ctx.roundRect) {
+                ctx.moveTo(x + skew + radius, y);
+                ctx.lineTo(x + w + skew - radius, y);
+                ctx.quadraticCurveTo(x + w + skew, y, x + w + skew - (skew>0?radius:0), y + radius);
+                ctx.lineTo(x + w + (skew<0?radius:0), y + h - radius);
+                ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+                ctx.lineTo(x + radius, y + h);
+                ctx.quadraticCurveTo(x, y + h, x + (skew>0?radius:0), y + h - radius);
+                ctx.lineTo(x + skew - (skew<0?radius:0), y + radius);
+                ctx.quadraticCurveTo(x + skew, y, x + skew + radius, y);
+            } else {
+                ctx.moveTo(x + skew, y);
+                ctx.lineTo(x + w + skew, y);
+                ctx.lineTo(x + w, y + h);
+                ctx.lineTo(x, y + h);
+            }
             ctx.closePath();
             ctx.fill();
             ctx.restore();
@@ -131,18 +142,14 @@
             if(!img) return;
             ctx.save();
             ctx.globalAlpha = alpha;
-            
-            const cx = x + w/2;
-            const cy = y + h/2;
+            const cx = x + w/2; const cy = y + h/2;
             ctx.translate(cx + panX, cy + panY);
             ctx.scale(scale, scale);
             ctx.translate(-cx, -cy);
-
             const r = img.width/img.height, tr = w/h;
             let sx, sy, sw, sh;
             if (r > tr) { sh = img.height; sw = img.height * tr; sy = 0; sx = (img.width - sw) / 2; }
             else { sw = img.width; sh = img.width / tr; sx = 0; sy = (img.height - sh) / 2; }
-            
             ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
             ctx.restore();
         };
@@ -170,11 +177,11 @@
                 badgeText: 'ProReels_Bot',
                 primaryColor: '#e11d48', 
                 secondaryColor: '#881337', 
-                bgOpacity: 0.85,
+                bgOpacity: 0.75,
                 
+                quoteAuthor: 'নাজমুল হোসেন শান্ত',
                 headline: 'ব্রেকিং নিউজ',
                 quoteText: 'আমাদের লক্ষ্য এখন বিশ্বকাপ জয় করা। কোনো দলকেই আমরা ছোট করে দেখছি না।',
-                quoteAuthor: 'নাজমুল হোসেন শান্ত, অধিনায়ক',
 
                 team1: 'বাংলাদেশ', team1Color: '#16a34a', team1Score: '১৮৪/৭',
                 team2: 'ভারত', team2Color: '#2563eb', team2Score: '১৮০/৬',
@@ -182,7 +189,12 @@
                 
                 playerName: 'সাকিব আল হাসান',
                 playerStatMain: '৮২', playerStatSub: 'রান (৪৫ বল)',
-                playerRole: 'ম্যান অফ দ্যা ম্যাচ'
+                playerRole: 'ম্যান অফ দ্যা ম্যাচ',
+
+                // Schedule Specific
+                matchDate: '২০ অক্টোবর, ২০২৬',
+                matchTime: 'রাত ৮:০০ টা',
+                matchVenue: 'শেরে বাংলা জাতীয় স্টেডিয়াম, ঢাকা'
             });
 
             useEffect(() => {
@@ -191,17 +203,17 @@
                 setUserId(storedId); 
             }, []);
 
-            // Pre-calculate precise text wrapping for News Quotes to prevent lag
+            // Pre-calculate text wrapping for the quote
             useEffect(() => {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-                ctx.font = "bold 55px 'Hind Siliguri', sans-serif"; 
+                ctx.font = "bold 75px 'Hind Siliguri', sans-serif"; 
                 const words = formData.quoteText.split(' ');
                 let currentLine = "";
                 const lines = [];
                 for (let i = 0; i < words.length; i++) {
                     const word = words[i];
-                    if (ctx.measureText(currentLine + " " + word).width < 1080 * 0.75) {
+                    if (ctx.measureText(currentLine + " " + word).width < 1080 * 0.85) {
                         currentLine += (currentLine === "" ? "" : " ") + word;
                     } else {
                         lines.push(currentLine); currentLine = word;
@@ -217,7 +229,7 @@
                 ctx.fillRect(0, 0, W, H);
 
                 // Cinematic Ken Burns
-                const kenBurnsScale = 1.05 + (time * 0.1); 
+                const kenBurnsScale = 1.05 + (time * 0.08); 
                 const panX = Math.sin(time * Math.PI) * 20; 
                 const panY = -(time * 30); 
                 
@@ -225,13 +237,13 @@
 
                 // Cinematic Overlays
                 ctx.save();
-                const vignette = ctx.createRadialGradient(W/2, H/2, H*0.3, W/2, H/2, H*0.8);
-                vignette.addColorStop(0, 'rgba(0,0,0,0)');
-                vignette.addColorStop(1, 'rgba(0,0,0,0.8)');
+                const vignette = ctx.createRadialGradient(W/2, H/2, H*0.2, W/2, H/2, H*0.9);
+                vignette.addColorStop(0, 'rgba(0,0,0,0.2)');
+                vignette.addColorStop(1, 'rgba(0,0,0,0.9)');
                 ctx.fillStyle = vignette; ctx.fillRect(0, 0, W, H);
 
                 ctx.globalAlpha = formData.bgOpacity; 
-                const gradient = ctx.createLinearGradient(0, H * 0.35, 0, H);
+                const gradient = ctx.createLinearGradient(0, H * 0.2, 0, H);
                 gradient.addColorStop(0, 'rgba(0,0,0,0)'); 
                 gradient.addColorStop(0.5, formData.primaryColor);
                 gradient.addColorStop(1, '#000000'); 
@@ -247,66 +259,69 @@
                 ctx.restore();
 
                 // ---------------------------------------------------------------------------------
-                // NEWS REEL MODE
+                // NEWS/QUOTE REEL MODE 
                 // ---------------------------------------------------------------------------------
                 if (appMode === 'news_reel') {
-                    const inAnim = easeOutQuint(Math.min(Math.max((time - 0.05) * 5, 0), 1)); 
-                    const cy = H * 0.55; 
+                    // Anchor layout perfectly vertically
+                    const totalBlockHeight = 120 + (wrappedLines.length * 110);
+                    const startY = (H / 2) - (totalBlockHeight / 2) + 50;
 
-                    const boxHeight = (wrappedLines.length * 90) + 160;
-                    const boxY = cy - boxHeight/2 + ((1 - inAnim) * 100);
-                    
+                    // 1. Watermark / Headline Badge (Top)
+                    const badgeIn = easeOutQuint(Math.min(Math.max((time - 0.02) * 5, 0), 1)); 
                     ctx.save();
-                    ctx.globalAlpha = inAnim;
-                    
-                    // Glass backdrop
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-                    if(ctx.roundRect) ctx.roundRect(W*0.1, boxY, W*0.8, boxHeight, 30); else ctx.fillRect(W*0.1, boxY, W*0.8, boxHeight);
-                    ctx.fill();
-                    
-                    // Decorative Quote Mark inside glass
-                    ctx.globalAlpha = inAnim * 0.15;
-                    ctx.font = 'bold 300px serif';
-                    ctx.fillStyle = formData.primaryColor;
-                    ctx.fillText('"', W*0.1 + 80, boxY + 150);
-
-                    // Glowing Left Border accent
-                    ctx.globalAlpha = inAnim;
-                    ctx.fillStyle = formData.primaryColor;
-                    if(ctx.roundRect) ctx.roundRect(W*0.1, boxY, 15, boxHeight, {tl: 30, bl: 30, tr: 0, br: 0}); else ctx.fillRect(W*0.1, boxY, 15, boxHeight);
-                    if (isExport) { ctx.shadowColor = formData.primaryColor; ctx.shadowBlur = 20; }
-                    ctx.fill();
+                    ctx.globalAlpha = badgeIn;
+                    const badgeW = ctx.measureText(formData.headline).width + 80;
+                    drawAngledPanel(ctx, W/2 - badgeW/2, startY - 140, badgeW, 60, 20, formData.primaryColor, badgeIn, true, isExport, 8);
+                    drawText(ctx, formData.headline, W/2, startY - 110, 35, '#fff', 'center', 'bold', badgeIn, true, isExport);
                     ctx.restore();
 
-                    // Breaking News Badge 
-                    const badgeWidth = ctx.measureText(formData.headline).width + 80;
-                    drawAngledPanel(ctx, W*0.1 + 40, boxY - 30, badgeWidth, 60, 20, '#ef4444', inAnim, true, isExport);
-                    drawText(ctx, formData.headline, W*0.1 + 40 + badgeWidth/2 + 10, boxY, 32, '#fff', 'center', 'bold', inAnim, true, isExport);
-
-                    // Quote Text
+                    // 2. THE QUOTE (Statement appears FIRST)
                     wrappedLines.forEach((line, i) => { 
-                        const lineProgress = Math.min(Math.max((time - 0.15 - (i * 0.05)) * 5, 0), 1);
-                        const lineEased = easeOutExpo(lineProgress);
-                        const lineY = boxY + 100 + (i * 90);
+                        const lineStartTime = 0.05 + (i * 0.08); // Pops in early
+                        const lineAnim = easeOutBack(Math.min(Math.max((time - lineStartTime) * 6, 0), 1));
                         
-                        ctx.save();
-                        // Increased clipping height to protect tall Bengali fonts from getting sliced
-                        ctx.beginPath(); ctx.rect(0, lineY - 60, W, 120); ctx.clip(); 
-                        const driftY = lineY + ((1 - lineEased) * 50);
-                        drawText(ctx, line, W*0.1 + 50, driftY, 55, '#fff', 'left', 'bold', lineProgress, true, isExport);
-                        ctx.restore();
+                        if (lineAnim > 0) {
+                            const lineY = startY + (i * 110);
+                            ctx.font = "bold 75px 'Hind Siliguri', sans-serif";
+                            const lw = ctx.measureText(line).width + 60;
+                            const lh = 100;
+                            
+                            ctx.save();
+                            ctx.translate(W/2, lineY);
+                            ctx.scale(lineAnim, lineAnim); // Pop effect
+                            
+                            drawAngledPanel(ctx, -lw/2, -lh/2, lw, lh, -15, 'rgba(0,0,0,0.85)', 1, true, isExport, 10);
+                            drawAngledPanel(ctx, -lw/2, -lh/2, 10, lh, -15, formData.primaryColor, 1, false, false, 5);
+                            drawText(ctx, line, 0, 5, 75, '#ffffff', 'center', 'bold', 1, false, false);
+                            ctx.restore();
+                        }
                     });
 
-                    // Author Line
-                    const authorIn = easeOutBack(Math.min(Math.max((time - 0.3) * 5, 0), 1)); 
-                    const ay = boxY + boxHeight - 50;
-                    ctx.save();
-                    ctx.globalAlpha = Math.min(authorIn, 1);
-                    drawText(ctx, "— " + formData.quoteAuthor, W*0.1 + 50, ay, 38, '#cbd5e1', 'left', 'bold', 1, true, isExport);
-                    ctx.restore();
+                    // 3. SPEAKER/AUTHOR (Appears AFTER the statement)
+                    const authorStartTime = 0.1 + (wrappedLines.length * 0.08) + 0.15; // Waits for quote lines to finish
+                    const authorIn = easeOutBack(Math.min(Math.max((time - authorStartTime) * 5, 0), 1)); 
+                    
+                    if (authorIn > 0) {
+                        ctx.save();
+                        const authorY = startY + (wrappedLines.length * 110) + 20;
+                        ctx.translate(W/2, authorY);
+                        ctx.scale(authorIn, authorIn);
+                        
+                        ctx.fillStyle = '#ffffff';
+                        const authorText = "🎙 " + formData.quoteAuthor.toUpperCase();
+                        ctx.font = "bold 40px 'Hind Siliguri', sans-serif";
+                        const authorW = ctx.measureText(authorText).width + 60;
+                        if(ctx.roundRect) ctx.roundRect(-authorW/2, -35, authorW, 70, 35); else ctx.fillRect(-authorW/2, -35, authorW, 70);
+                        if(isExport) { ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 15; }
+                        ctx.fill();
+                        
+                        ctx.shadowBlur = 0;
+                        drawText(ctx, authorText, 0, 0, 35, '#000000', 'center', 'bold', 1, false, false);
+                        ctx.restore();
+                    }
 
                 // ---------------------------------------------------------------------------------
-                // MATCH REEL MODE (FIXED & WIDENED)
+                // MATCH REEL MODE
                 // ---------------------------------------------------------------------------------
                 } else if (appMode === 'match_reel') {
                     const t1In = easeOutBack(Math.min(Math.max((time - 0.05) * 5, 0), 1));
@@ -315,23 +330,29 @@
                     const resIn = easeOutQuint(Math.min(Math.max((time - 0.3) * 4, 0), 1));
 
                     const cy = H * 0.55;
-                    const pWidth = 760; // Much wider for professional broadcast feel
+                    const pWidth = 760; 
                     const pHeight = 170;
-                    const skewAmount = 45; // Sleek angled cut
+                    const skewAmount = 45; 
 
                     // --- Left Team (Top Panel) ---
-                    // It slides perfectly from outside the screen to exactly W/2 center
                     const targetLx = (W/2) - (pWidth/2);
                     const startLx = -pWidth - skewAmount;
                     const lx = startLx + (targetLx - startLx) * t1In;
                     
                     drawAngledPanel(ctx, lx, cy - pHeight - 20, pWidth, pHeight, skewAmount, formData.team1Color, t1In, true, isExport);
-                    
-                    // Text geometrically aligns WITH the sliding panel
                     const t1CenterX = lx + (pWidth/2) + (skewAmount/2);
-                    // Use maxWidth = pWidth - 100 to ensure huge names like "South Africa" never bleed out!
-                    drawText(ctx, formData.team1, t1CenterX, cy - pHeight + 25, 55, '#fff', 'center', 'bold', t1In, true, isExport, pWidth - 100);
-                    drawText(ctx, formData.team1Score, t1CenterX, cy - pHeight + 100, 95, '#fff', 'center', 'bold', t1In, true, isExport, pWidth - 100);
+                    
+                    // Score Appears FIRST (Scale/Fade in)
+                    const t1ScoreAnim = easeOutBack(Math.min(Math.max((time - 0.15) * 5, 0), 1));
+                    ctx.save();
+                    ctx.translate(t1CenterX, cy - pHeight + 50);
+                    ctx.scale(t1ScoreAnim, t1ScoreAnim);
+                    drawText(ctx, formData.team1Score, 0, 0, 95, '#fff', 'center', 'bold', t1ScoreAnim, true, isExport, pWidth - 100);
+                    ctx.restore();
+                    
+                    // Name Appears SECOND (Fade and drift up)
+                    const t1NameAnim = easeOutQuint(Math.min(Math.max((time - 0.25) * 5, 0), 1));
+                    drawText(ctx, formData.team1, t1CenterX, cy - pHeight + 120 + ((1-t1NameAnim)*20), 55, '#fff', 'center', 'bold', t1NameAnim, true, isExport, pWidth - 100);
 
                     // --- Right Team (Bottom Panel) ---
                     const targetRx = (W/2) - (pWidth/2);
@@ -339,12 +360,21 @@
                     const rx = startRx + (targetRx - startRx) * t2In;
                     
                     drawAngledPanel(ctx, rx, cy + 20, pWidth, pHeight, skewAmount, formData.team2Color, t2In, true, isExport);
-                    
                     const t2CenterX = rx + (pWidth/2) + (skewAmount/2);
-                    drawText(ctx, formData.team2, t2CenterX, cy + 65, 55, '#fff', 'center', 'bold', t2In, true, isExport, pWidth - 100);
-                    drawText(ctx, formData.team2Score, t2CenterX, cy + 140, 95, '#fff', 'center', 'bold', t2In, true, isExport, pWidth - 100);
+                    
+                    // Score Appears FIRST
+                    const t2ScoreAnim = easeOutBack(Math.min(Math.max((time - 0.2) * 5, 0), 1));
+                    ctx.save();
+                    ctx.translate(t2CenterX, cy + 90);
+                    ctx.scale(t2ScoreAnim, t2ScoreAnim);
+                    drawText(ctx, formData.team2Score, 0, 0, 95, '#fff', 'center', 'bold', t2ScoreAnim, true, isExport, pWidth - 100);
+                    ctx.restore();
 
-                    // --- VS Circle Overlap ---
+                    // Name Appears SECOND
+                    const t2NameAnim = easeOutQuint(Math.min(Math.max((time - 0.3) * 5, 0), 1));
+                    drawText(ctx, formData.team2, t2CenterX, cy + 160 + ((1-t2NameAnim)*20), 55, '#fff', 'center', 'bold', t2NameAnim, true, isExport, pWidth - 100);
+
+                    // --- VS Circle ---
                     ctx.save();
                     ctx.globalAlpha = Math.min(vsPop, 1);
                     ctx.translate(W/2, cy); ctx.scale(vsPop, vsPop);
@@ -354,20 +384,74 @@
                     drawText(ctx, "VS", 0, 0, 40, '#fff', 'center', 'bold', 1, false, isExport);
                     ctx.restore();
 
-                    // --- Result Box (Bottom) ---
-                    const ry = cy + 300 + ((1 - resIn) * 100); // Shifted down for breathing room
-                    const rawW = ctx.measureText(formData.result).width + 160; // Extra padding
-                    const resW = Math.min(rawW, W - 80); // Ensure it doesn't touch screen edges
+                    // --- Result Box ---
+                    const ry = cy + 300 + ((1 - resIn) * 100); 
+                    const rawW = ctx.measureText(formData.result).width + 160; 
+                    const resW = Math.min(rawW, W - 80); 
                     const resSkew = -35;
                     
-                    // Dark solid panel for maximum contrast against ANY background image
                     drawAngledPanel(ctx, W/2 - resW/2, ry - 45, resW, 90, resSkew, 'rgba(0,0,0,0.85)', resIn, true, isExport);
-                    // Colored accent line at the bottom using Primary Color
                     drawAngledPanel(ctx, W/2 - resW/2, ry + 35, resW, 10, resSkew, formData.primaryColor, resIn, false, isExport);
                     
                     const resCenterX = (W/2) + (resSkew/2);
-                    // Force white text on the dark background so it is always 100% visible
                     drawText(ctx, formData.result, resCenterX, ry - 5, 48, '#ffffff', 'center', 'bold', resIn, true, isExport, resW - 60);
+
+                // ---------------------------------------------------------------------------------
+                // SCHEDULE REEL MODE (NEW!)
+                // ---------------------------------------------------------------------------------
+                } else if (appMode === 'schedule_reel') {
+                    const t1In = easeOutBack(Math.min(Math.max((time - 0.05) * 5, 0), 1));
+                    const t2In = easeOutBack(Math.min(Math.max((time - 0.1) * 5, 0), 1));
+                    const vsPop = easeOutBack(Math.min(Math.max((time - 0.2) * 5, 0), 1));
+                    const dateIn = easeOutQuint(Math.min(Math.max((time - 0.3) * 4, 0), 1));
+                    const venueIn = easeOutQuint(Math.min(Math.max((time - 0.4) * 4, 0), 1));
+
+                    const cy = H * 0.45; // Move up to fit schedule details
+                    const pWidth = 760; 
+                    const pHeight = 130; // Slightly thinner than match panels
+                    const skewAmount = 45; 
+
+                    // --- Left Team (Top Panel) ---
+                    const targetLx = (W/2) - (pWidth/2);
+                    const startLx = -pWidth - skewAmount;
+                    const lx = startLx + (targetLx - startLx) * t1In;
+                    
+                    drawAngledPanel(ctx, lx, cy - pHeight - 15, pWidth, pHeight, skewAmount, formData.team1Color, t1In, true, isExport);
+                    const t1CenterX = lx + (pWidth/2) + (skewAmount/2);
+                    drawText(ctx, formData.team1, t1CenterX, cy - pHeight + (pHeight/2) - 15, 65, '#fff', 'center', 'bold', t1In, true, isExport, pWidth - 100);
+
+                    // --- Right Team (Bottom Panel) ---
+                    const targetRx = (W/2) - (pWidth/2);
+                    const startRx = W + skewAmount;
+                    const rx = startRx + (targetRx - startRx) * t2In;
+                    
+                    drawAngledPanel(ctx, rx, cy + 15, pWidth, pHeight, skewAmount, formData.team2Color, t2In, true, isExport);
+                    const t2CenterX = rx + (pWidth/2) + (skewAmount/2);
+                    drawText(ctx, formData.team2, t2CenterX, cy + 15 + (pHeight/2), 65, '#fff', 'center', 'bold', t2In, true, isExport, pWidth - 100);
+
+                    // --- VS Circle ---
+                    ctx.save();
+                    ctx.globalAlpha = Math.min(vsPop, 1);
+                    ctx.translate(W/2, cy); ctx.scale(vsPop, vsPop);
+                    ctx.beginPath(); ctx.arc(0, 0, 50, 0, Math.PI*2); 
+                    ctx.fillStyle = '#0f172a'; ctx.fill(); 
+                    ctx.lineWidth = 5; ctx.strokeStyle = '#fff'; ctx.stroke();
+                    drawText(ctx, "VS", 0, 0, 40, '#fff', 'center', 'bold', 1, false, isExport);
+                    ctx.restore();
+
+                    // --- Date & Time Box ---
+                    const dtY = cy + 200 + ((1 - dateIn) * 60); 
+                    const dtW = 600;
+                    drawAngledPanel(ctx, W/2 - dtW/2, dtY, dtW, 80, -25, formData.primaryColor, dateIn, true, isExport);
+                    const dtText = `${formData.matchDate}  |  ${formData.matchTime}`;
+                    drawText(ctx, dtText, W/2, dtY + 40, 40, '#ffffff', 'center', 'bold', dateIn, true, isExport, dtW - 40);
+
+                    // --- Venue Box ---
+                    const vY = dtY + 110 + ((1 - venueIn) * 60);
+                    const vW = ctx.measureText(formData.matchVenue).width + 120;
+                    const maxVW = Math.min(vW, W - 80);
+                    drawAngledPanel(ctx, W/2 - maxVW/2, vY, maxVW, 70, 20, 'rgba(0,0,0,0.85)', venueIn, true, isExport);
+                    drawText(ctx, formData.matchVenue, W/2, vY + 35, 35, '#ffffff', 'center', 'bold', venueIn, true, isExport, maxVW - 60);
 
                 // ---------------------------------------------------------------------------------
                 // STAT REEL MODE
@@ -377,7 +461,6 @@
                     const slideUp = easeOutQuint(Math.min(Math.max((time - 0.2) * 4, 0), 1));
                     const cy = H * 0.55;
 
-                    // High Tech Box for Stat
                     ctx.save();
                     ctx.globalAlpha = Math.min(pop1, 1);
                     ctx.translate(W/2, cy - 100);
@@ -392,7 +475,6 @@
                     drawText(ctx, formData.playerStatSub, 0, 90, 35, '#fff', 'center', 'bold', 1, false, false, 200);
                     ctx.restore();
 
-                    // Player Name & Role
                     const py = cy + 200 + ((1 - slideUp) * 100);
                     ctx.save();
                     ctx.globalAlpha = slideUp;
@@ -402,18 +484,25 @@
                 }
 
                 // ---------------------------------------------------------------------------------
-                // GLOBAL FOOTER / WATERMARK
+                // GLOBAL FOOTER & VIDEO PROGRESS BAR
                 // ---------------------------------------------------------------------------------
                 const globalFade = Math.min(time * 5, 1);
                 ctx.save();
                 ctx.globalAlpha = globalFade;
-                const footerY = H - 100;
+                const footerY = H - 120;
                 
+                // Handle/Watermark
                 drawAngledPanel(ctx, W/2 - 200, footerY - 35, 400, 70, 20, 'rgba(0,0,0,0.6)', 1, false, false);
                 ctx.beginPath(); ctx.arc(W/2 - 140, footerY, 20, 0, Math.PI * 2); 
                 ctx.fillStyle = '#1877F2'; ctx.fill();
                 drawText(ctx, "f", W/2 - 140, footerY, 28, "#fff", "center", "bold", 1, false, isExport);
                 drawText(ctx, formData.badgeText, W/2 - 100, footerY, 30, '#fff', 'left', 'bold', 1, true, isExport, 260);
+                
+                // Professional Bottom Progress Bar (TikTok/Reel standard)
+                ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                ctx.fillRect(0, H - 15, W, 15);
+                ctx.fillStyle = formData.primaryColor;
+                ctx.fillRect(0, H - 15, W * time, 15);
                 ctx.restore();
 
             }, [bgImage, formData, appMode, wrappedLines]);
@@ -486,7 +575,7 @@
                 const recordFrame = () => {
                     const currentProg = frameCount / totalFrames;
                     setProgress(currentProg);
-                    renderFrame(ctx, currentProg, 1080, 1920, true); // true = High Quality Shadows Active!
+                    renderFrame(ctx, currentProg, 1080, 1920, true); 
                     frameCount++;
                     if (frameCount <= totalFrames) setTimeout(recordFrame, 1000/FPS); 
                     else recorder.stop();
@@ -533,14 +622,15 @@
                             {/* Templates Card */}
                             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
                                 <label className="block text-xs font-bold text-slate-400 uppercase mb-3 flex items-center gap-2">Select Template</label>
-                                <div className="grid grid-cols-3 gap-2">
+                                <div className="grid grid-cols-4 gap-2">
                                     {[
-                                        { id: 'news_reel', label: 'News', icon: <IconNews/> },
+                                        { id: 'news_reel', label: 'Quote', icon: <IconNews/> },
                                         { id: 'match_reel', label: 'Match', icon: <IconMatch/> },
+                                        { id: 'schedule_reel', label: 'Schedule', icon: <IconCalendar/> },
                                         { id: 'stat_reel', label: 'Stats', icon: <IconStat/> }
                                     ].map(tmpl => (
                                         <button key={tmpl.id} onClick={() => { setAppMode(tmpl.id); setProgress(0); setIsPlaying(false); }} 
-                                            className={`flex flex-col items-center justify-center gap-2 py-4 rounded-xl text-xs font-bold transition-all border ${appMode === tmpl.id ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-600/30' : 'bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-800'}`}>
+                                            className={`flex flex-col items-center justify-center gap-2 py-3 rounded-xl text-[10px] sm:text-xs font-bold transition-all border ${appMode === tmpl.id ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-600/30' : 'bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-800'}`}>
                                             {tmpl.icon}
                                             <span>{tmpl.label}</span>
                                         </button>
@@ -576,12 +666,12 @@
 
                                 {appMode === 'news_reel' && (
                                     <div className="space-y-1">
-                                        <InputField label="Headline Badge" name="headline" value={formData.headline} />
+                                        <InputField label="Speaker / Author" name="quoteAuthor" value={formData.quoteAuthor} />
                                         <div className="mb-3">
-                                            <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1.5 ml-1">News / Quote Body</label>
+                                            <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1.5 ml-1">Statement / Quote</label>
                                             <textarea name="quoteText" value={formData.quoteText} onChange={handleChange} rows="4" className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:border-blue-500 focus:bg-slate-900 transition-all outline-none resize-none"></textarea>
                                         </div>
-                                        <InputField label="Source / Author" name="quoteAuthor" value={formData.quoteAuthor} />
+                                        <InputField label="Context Badge" name="headline" value={formData.headline} />
                                     </div>
                                 )}
 
@@ -602,6 +692,24 @@
                                             </div>
                                         </div>
                                         <InputField label="Match Result" name="result" value={formData.result} />
+                                    </div>
+                                )}
+
+                                {appMode === 'schedule_reel' && (
+                                    <div className="space-y-4">
+                                        <div className="p-4 border border-slate-800 rounded-xl bg-slate-950/50">
+                                            <div className="flex justify-between items-center mb-3"><span className="text-xs font-bold text-slate-300">Home Team (Top)</span><input type="color" name="team1Color" value={formData.team1Color} onChange={handleChange} className="w-6 h-6 rounded bg-transparent border-0 cursor-pointer"/></div>
+                                            <input type="text" name="team1" value={formData.team1} onChange={handleChange} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-white outline-none" placeholder="Team Name" />
+                                        </div>
+                                        <div className="p-4 border border-slate-800 rounded-xl bg-slate-950/50">
+                                            <div className="flex justify-between items-center mb-3"><span className="text-xs font-bold text-slate-300">Away Team (Bottom)</span><input type="color" name="team2Color" value={formData.team2Color} onChange={handleChange} className="w-6 h-6 rounded bg-transparent border-0 cursor-pointer"/></div>
+                                            <input type="text" name="team2" value={formData.team2} onChange={handleChange} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-white outline-none" placeholder="Team Name" />
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <div className="flex-1"><InputField label="Date" name="matchDate" value={formData.matchDate} /></div>
+                                            <div className="flex-1"><InputField label="Time" name="matchTime" value={formData.matchTime} /></div>
+                                        </div>
+                                        <InputField label="Venue / Location" name="matchVenue" value={formData.matchVenue} />
                                     </div>
                                 )}
 
