@@ -6,7 +6,7 @@
     <title>Poster Bot Pro</title>
     
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#020617">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1165/1165249.png">
 
@@ -23,26 +23,47 @@
             if (args[0] && typeof args[0] === 'string' && (args[0].includes('CloudStorage') || args[0].includes('cache'))) return;
             originalError.apply(console, args);
         };
-    </script>
-    <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => { navigator.serviceWorker.register('./service-worker.js').catch(e => console.log(e)); });
         }
     </script>
 
     <style>
-        body { font-family: 'Hind Siliguri', sans-serif; touch-action: pan-y; background-color: #f1f5f9; color: #0f172a; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+        body { 
+            font-family: 'Hind Siliguri', sans-serif; 
+            touch-action: pan-y; 
+            background-color: #020617; /* slate-950 */
+            color: #f8fafc; /* slate-50 */
+            user-select: none; 
+            -webkit-user-select: none; 
+            -webkit-touch-callout: none; 
+        }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .canvas-container { touch-action: none; }
-        .modal-backdrop { animation: fadeIn 0.2s ease-out; }
-        .modal-content { animation: scaleIn 0.3s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #eab308; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; }
+        
+        /* Smooth Modal Animations */
+        .modal-backdrop { animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .modal-content { animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .animation-fadeIn { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .animation-slideUpFade { animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        
+        @keyframes fadeIn { from { opacity: 0; backdrop-filter: blur(0px); } to { opacity: 1; backdrop-filter: blur(8px); } }
+        @keyframes slideUpFade { from { transform: translateY(20px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+        
+        /* Loader */
+        .loader { border: 2px solid rgba(255,255,255,0.1); border-top: 2px solid #eab308; border-radius: 50%; width: 16px; height: 16px; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .install-prompt { position: fixed; bottom: 20px; left: 20px; right: 20px; z-index: 100; animation: slideUp 0.4s ease-out; }
-        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        /* Custom Range Slider */
+        input[type=range] { -webkit-appearance: none; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #f43f5e; cursor: pointer; margin-top: -6px; box-shadow: 0 0 10px rgba(244, 63, 94, 0.5); border: 2px solid #fff; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #334155; border-radius: 4px; }
+        
+        /* Custom Scrollbar for inputs */
+        textarea::-webkit-scrollbar { width: 6px; }
+        textarea::-webkit-scrollbar-track { background: transparent; }
+        textarea::-webkit-scrollbar-thumb { background-color: #334155; border-radius: 20px; }
     </style>
 </head>
 <body oncontextmenu="return false;">
@@ -56,26 +77,42 @@
         const DOWNLOAD_COST = 2; 
 
         // --- ICONS ---
-        const IconLogo = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 Z"/></svg>;
+        const IconLogo = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 Z"/></svg>;
         const IconCoin = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="gold" stroke="#b45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 18V6"></path></svg>;
         const IconDownload = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>;
         const IconUpload = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path></svg>;
         const IconRefresh = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>;
         const IconSwap = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m7 2 10 10-10 10"></path><path d="M17 12H3"></path></svg>;
-        const IconMove = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="5 9 2 12 5 15"></polyline><polyline points="9 5 12 2 15 5"></polyline><polyline points="15 19 12 22 9 19"></polyline><polyline points="19 9 22 12 19 15"></polyline><line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line></svg>;
+        const IconMove = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="5 9 2 12 5 15"></polyline><polyline points="9 5 12 2 15 5"></polyline><polyline points="15 19 12 22 9 19"></polyline><polyline points="19 9 22 12 19 15"></polyline><line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line></svg>;
         const IconZoomIn = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>;
         const IconEye = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>;
-        const IconCalendar = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>;
-        const IconUser = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
-        const IconQuote = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/></svg>;
+        const IconCalendar = ({className}) => <svg className={className || ""} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>;
+        const IconUser = ({className}) => <svg className={className || ""} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
+        const IconQuote = ({className}) => <svg className={className || ""} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/></svg>;
         const IconClose = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
         const IconInstall = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>;
-        const IconTrash = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>;
-        const IconCopy = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>;
+        const IconTrash = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>;
+        const IconCopy = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>;
         const IconHeight = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 15 12 20 17 15"></polyline><polyline points="7 9 12 4 17 9"></polyline><line x1="12" y1="4" x2="12" y2="20"></line></svg>;
-        const IconTg = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.543 2.457L2.613 9.77c-1.32.533-1.316 1.272-.24 1.6l4.86 1.516 11.36-7.16c.536-.325 1.027.15.777.373l-9.206 8.307-.36 5.43c.528 0 .762-.24.905-.373l2.17-2.106 4.513 3.333c.832.458 1.432.22 1.64-.773l2.968-13.987c.304-1.216-.464-1.767-1.4-.93z"/></svg>;
-        const IconChart = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>;
-        const IconStar = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>;
+        const IconTg = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.543 2.457L2.613 9.77c-1.32.533-1.316 1.272-.24 1.6l4.86 1.516 11.36-7.16c.536-.325 1.027.15.777.373l-9.206 8.307-.36 5.43c.528 0 .762-.24.905-.373l2.17-2.106 4.513 3.333c.832.458 1.432.22 1.64-.773l2.968-13.987c.304-1.216-.464-1.767-1.4-.93z"/></svg>;
+        const IconChart = ({className}) => <svg className={className || ""} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>;
+        const IconStar = ({className}) => <svg className={className || ""} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>;
+        const IconArrowLeft = ({className}) => <svg className={className || "w-5 h-5"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>;
+        const IconTrophy = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 1.1-.9 2-2 2H4"/><path d="M14 14.66V17c0 1.1.9 2 2 2h4"/><path d="M8 22H16"/><path d="M14 8c0 3.31-2.69 6-6 6s-6-2.69-6-6V2h12v6z"/></svg>;
+        const IconMegaphone = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>;
+        const IconMessage = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
+
+        // --- DASHBOARD TOOLS ---
+        const TOOLS = [
+            { id: 'scorecard', name: 'Match Scorecard', desc: 'Create live match score updates', icon: IconTrophy, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
+            { id: 'schedule', name: 'Match Schedule', desc: 'Upcoming fixtures and venues', icon: IconCalendar, color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/20' },
+            { id: 'player', name: 'Player Profile', desc: 'Highlight player performance', icon: IconUser, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
+            { id: 'career', name: 'Career Stats', desc: 'Overall career statistics', icon: IconChart, color: 'text-cyan-400', bg: 'bg-cyan-400/10', border: 'border-cyan-400/20' },
+            { id: 'poll', name: 'Reaction Poll', desc: 'Facebook-style reaction polls', icon: IconSwap, color: 'text-indigo-400', bg: 'bg-indigo-400/10', border: 'border-indigo-400/20' },
+            { id: 'milestone', name: 'Milestones', desc: 'Birthdays and records', icon: IconStar, color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/20' },
+            { id: 'news', name: 'Breaking News', desc: 'Urgent updates and headlines', icon: IconMegaphone, color: 'text-red-500', bg: 'bg-red-500/10', border: 'border-red-500/20' },
+            { id: 'statement', name: 'Quote Overlay', desc: 'Player quotes with avatar cutout', icon: IconMessage, color: 'text-rose-400', bg: 'bg-rose-400/10', border: 'border-rose-400/20' }
+        ];
 
         // --- GLOBAL HELPERS ---
         const measureText = (ctx, text, fs, fw) => { ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`; return ctx.measureText(text).width; };
@@ -88,23 +125,22 @@
             else { ctx.fill(new Path2D('M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z')); }
             ctx.restore();
         };
-        const drawCover = (ctx, img, x, y, w, h) => {
-            const r = img.width/img.height, tr = w/h; let sx, sy, sw, sh;
-            if (r > tr) { sh = img.height; sw = img.height * tr; sy = 0; sx = (img.width - sw) / 2; }
-            else { sw = img.width; sh = img.width / tr; sx = 0; sy = (img.height - sh) / 2; }
-            ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
-        };
 
         function App() {
             const canvasRef = useRef(null);
             
-            // STATE
-            const [appMode, setAppMode] = useState('poll'); 
+            // APP STATE
+            const [currentView, setCurrentView] = useState('home'); // 'home' or 'editor'
+            const [appMode, setAppMode] = useState('scorecard'); 
             const [activeTab, setActiveTab] = useState('match');
+            
+            // CANVAS STATE
             const [bgImage, setBgImage] = useState(null);
             const [bgImage2, setBgImage2] = useState(null);
+            const [avatarImage, setAvatarImage] = useState(null);
             const [img1Pos, setImg1Pos] = useState({ x: 0, y: 0, scale: 1 });
             const [img2Pos, setImg2Pos] = useState({ x: 0, y: 0, scale: 1 });
+            const [avatarPos, setAvatarPos] = useState({ x: 0, y: 0, scale: 1 });
             const [showBuyModal, setShowBuyModal] = useState(false);
             const [isProcessing, setIsProcessing] = useState(false); 
             const gestureStart = useRef({ mode: null, target: null, x: 0, y: 0, dist: 0, scale: 1, imgX: 0, imgY: 0 });
@@ -122,12 +158,12 @@
 
             const [formData, setFormData] = useState({
                 badgeText: 'proscorecard_bot', title: 'আইসিসি টি-টোয়েন্টি বিশ্বকাপ', footerHandle: 'এই রকম পোস্টার তৈরি করুন এই টেলিগ্রাম বট দিয়েঃ  @proscorecard_bot',
-                primaryColor: '#990000', secondaryColor: '#4a0000', bgOpacity: 0.9, newsGradientHeight: 0.55,
-                team1: 'ইংল্যান্ড', team1Color: '#ffd700', team2: 'নেপাল', team2Color: '#ffd700', team1Score: '১৮৪/৭', team1Overs: '(২০ ওভার)', team2Score: '১৮0/৬', team2Overs: '(২০ ওভার)',
+                primaryColor: '#b91c1c', secondaryColor: '#4a0000', bgOpacity: 0.9, newsGradientHeight: 0.55,
+                team1: 'ইংল্যান্ড', team1Color: '#eab308', team2: 'নেপাল', team2Color: '#ef4444', team1Score: '১৮৪/৭', team1Overs: '(২০ ওভার)', team2Score: '১৮0/৬', team2Overs: '(২০ ওভার)',
                 result: 'নেপালকে ৪ রানে হারিয়েছে ইংল্যান্ড', resultColor: '#ffd700', matchDate: '২০ অক্টোবর, ২০২৫', matchTime: 'দুপুর ২:০০টা', matchVenue: 'শেরে বাংলা স্টেডিয়াম',
                 playerName: 'সাকিব আল হাসান', playerStatMain: '৮২', playerStatSub: 'রান (৪৫ বল)', stat1Label: '৪', stat1Value: '৮', stat2Label: '৬', stat2Value: '৫', stat3Label: 'S/R', stat3Value: '১৮২.২',
-                quoteText: 'আমাদের লক্ষ্য এখন বিশ্বকাপ জয় করা।', quoteAuthor: 'নাজমুল হোসেন শান্ত, অধিনায়ক', playerRole: 'ব্যাটসম্যান', careerMatches: '২৫৪', careerRuns: '৭৫৬২', 
-                careerHundreds: '১৪', careerFifties: '৪২', careerBest: '১১৪*', careerWickets: '৩১২', pollQuestion: 'বর্তমান সময়ের সেরা ব্যাটার কে?', pollPlayer1: 'সাকিব আল হাসান', pollPlayer2: 'বিরাট কোহলি',
+                quoteText: 'ফিলিস্তিনের মাটিতে জন্ম নেওয়াটাই কি দোষ? আমাদের নিষ্পাপ শিশুরা কি দোষ করছে?', quoteAuthor: 'পেপ গার্দিওলা', playerRole: 'ব্যাটসম্যান', careerMatches: '২৫৪', careerRuns: '৭৫৬২', 
+                careerHundreds: '১৪', careerFifties: '৪২', careerBest: '১১৪*', careerWickets: '৩১২', pollQuestion: 'বর্তমান সময়ের সেরা ব্যাটার কে?', pollPlayer1: 'সাকিব আল হাসান', pollPlayer2: 'বিরাট কোহলি',
                 milestoneOccasion: 'শুভ জন্মদিন', milestoneName: 'সাকিব আল হাসান', milestoneNumber: '৩৭ তম', milestoneMessage: 'বাংলাদেশ ক্রিকেটের জান, বাংলাদেশ ক্রিকেটের প্রাণ! শুভকামনা রইলো।'
             });
 
@@ -148,7 +184,6 @@
                 return () => window.removeEventListener('beforeinstallprompt', handler);
             }, []);
 
-            // FETCH POINTS AND NOTIFICATIONS
             const fetchPoints = async (uid) => {
                 if(GOOGLE_SCRIPT_URL.includes("xxxxxxxx")) { setPoints(0); setIsCheckingPoints(false); return; }
                 setIsCheckingPoints(true);
@@ -158,7 +193,6 @@
                     const data = await response.json();
                     if (data.status === 'success') {
                         setPoints(Number(data.points) || 0);
-                        // SMART NOTIFICATION LOGIC
                         if (data.notification && data.notification.status === 'ON') {
                             const msgId = data.notification.title + data.notification.message;
                             const dismissedId = localStorage.getItem('dismissed_notification');
@@ -175,7 +209,7 @@
             const dismissNotification = () => {
                 if (appNotification) {
                     const msgId = appNotification.title + appNotification.message;
-                    localStorage.setItem('dismissed_notification', msgId); // Remember this specific message is read
+                    localStorage.setItem('dismissed_notification', msgId);
                 }
                 setShowAppNotification(false);
             };
@@ -195,7 +229,7 @@
                 const W = 1080, H = 1200, splitY = 700;
                 canvas.width = W; canvas.height = H;
 
-                ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, W, H);
+                ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
 
                 try {
                     if (bgImage && bgImage2) {
@@ -205,8 +239,8 @@
                     } else if (bgImage) {
                         ctx.save(); ctx.translate(img1Pos.x, img1Pos.y); ctx.scale(img1Pos.scale, img1Pos.scale); ctx.drawImage(bgImage, 0, 0); ctx.restore();
                     } else {
-                        const grd = ctx.createLinearGradient(0, 0, 0, splitY); grd.addColorStop(0, '#1b5e20'); grd.addColorStop(1, '#2e7d32');
-                        ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H); drawText(ctx, "Loading Image...", W/2, H/2, 50, "#fff", "center", "bold");
+                        const grd = ctx.createLinearGradient(0, 0, 0, splitY); grd.addColorStop(0, '#1e293b'); grd.addColorStop(1, '#0f172a');
+                        ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H); drawText(ctx, "Loading Image...", W/2, H/2, 50, "#94a3b8", "center", "bold");
                     }
 
                     const titleBoxY = splitY + 40; const titleBoxW = 800; const titleBoxH = 90; const titleBoxX = (W - titleBoxW) / 2;
@@ -219,12 +253,12 @@
                     ctx.fillStyle = gradient;
                     
                     if (appMode === 'news') { const h = H * formData.newsGradientHeight; ctx.fillRect(0, H - h, W, h); } 
-                    else { ctx.fillRect(0, splitY, W, H - splitY); }
+                    else if (appMode !== 'statement') { ctx.fillRect(0, splitY, W, H - splitY); }
                     
-                    if (appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone') { 
+                    if (appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone' && appMode !== 'statement') { 
                         ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; ctx.fillRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH); 
                     }
-                    ctx.fillStyle = '#0f172a'; ctx.fillRect(0, footerY, W, footerH); ctx.restore(); 
+                    ctx.fillStyle = '#020617'; ctx.fillRect(0, footerY, W, footerH); ctx.restore(); 
 
                     const badgeX = W - 320 - 40;
                     ctx.beginPath(); ctx.arc(badgeX + 45, 40 + 35, 22, 0, Math.PI * 2); ctx.fillStyle = '#1877F2'; ctx.fill();
@@ -232,7 +266,7 @@
                     ctx.save(); ctx.shadowColor = "rgba(0, 0, 0, 0.8)"; ctx.shadowBlur = 6;
                     drawText(ctx, formData.badgeText, badgeX + 80, 40 + 48, 32, '#fff', 'left', 'bold'); ctx.restore();
 
-                    if (appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone') {
+                    if (appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone' && appMode !== 'statement') {
                         ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 2; ctx.strokeRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH);
                         drawText(ctx, formData.title, W / 2, titleBoxY + 60, 50, '#fff', 'center', 'bold');
                     } 
@@ -317,9 +351,9 @@
                         drawStatBox("সর্বোচ্চ (BEST SCORE)", formData.careerBest, leftX, botY); drawStatBox("উইকেট (WICKETS)", formData.careerWickets, rightX, botY);
                     } else if (appMode === 'news') {
                         const h = H * formData.newsGradientHeight; const nsy = H - h; const csy = nsy + 60; const nw = 880, lh = 75;
-                        ctx.fillStyle = '#d32f2f'; if(ctx.roundRect) ctx.roundRect(W/2 - 150, csy - 90, 300, 55, 10); else ctx.fillRect(W/2 - 150, csy - 90, 300, 55); ctx.fill();
+                        ctx.fillStyle = '#dc2626'; if(ctx.roundRect) ctx.roundRect(W/2 - 150, csy - 90, 300, 55, 10); else ctx.fillRect(W/2 - 150, csy - 90, 300, 55); ctx.fill();
                         drawText(ctx, "ব্রেকিং নিউজ", W/2, csy - 52, 32, '#fff', 'center', 'bold');
-                        ctx.font = "140px serif"; ctx.fillStyle = "rgba(255,215,0,0.2)"; ctx.textAlign = "center"; ctx.fillText("❝", W/2, csy + 30);
+                        ctx.font = "140px serif"; ctx.fillStyle = "rgba(255,215,0,0.15)"; ctx.textAlign = "center"; ctx.fillText("❝", W/2, csy + 30);
                         ctx.font = "bold 55px 'Hind Siliguri', sans-serif"; ctx.fillStyle = "#fff";
                         const textToDraw = formData.quoteText || ""; const lines = []; const words = textToDraw.split(' '); let currentLine = words[0] || "";
                         for (let i = 1; i < words.length; i++) {
@@ -330,19 +364,92 @@
                         const startY = csy + 110; lines.forEach((line, i) => { ctx.textAlign = 'center'; ctx.fillText(line, W / 2, startY + (i * lh)); });
                         const ay = startY + (lines.length * lh) + 10;
                         ctx.beginPath(); ctx.moveTo(W/2 - 120, ay); ctx.lineTo(W/2 + 120, ay); ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 5; ctx.stroke();
-                        drawText(ctx, formData.quoteAuthor, W/2, ay + 60, 38, '#ddd', 'center', 'bold');
+                        drawText(ctx, formData.quoteAuthor, W/2, ay + 60, 38, '#cbd5e1', 'center', 'bold');
+                    } else if (appMode === 'statement') {
+                        const sy = 750;
+                        ctx.save();
+                        ctx.globalAlpha = 1.0;
+                        
+                        // Main Bottom Box Gradient
+                        const grad = ctx.createLinearGradient(0, sy, 0, H);
+                        grad.addColorStop(0, formData.primaryColor);
+                        grad.addColorStop(1, '#450a0a'); 
+                        ctx.fillStyle = grad;
+                        ctx.fillRect(0, sy, W, H - sy);
+
+                        // Yellow Divider Line
+                        ctx.fillStyle = formData.team1Color;
+                        ctx.fillRect(0, sy - 10, W, 10);
+
+                        // Circular Avatar Properties
+                        const cx = W / 2, cy = sy;
+                        const r = 160;
+
+                        // Draw Avatar Background/Clip
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                        ctx.closePath();
+                        ctx.fillStyle = '#0f172a';
+                        ctx.fill();
+
+                        ctx.save();
+                        ctx.clip();
+                        if (avatarImage) {
+                            ctx.translate(cx - r + avatarPos.x, cy - r + avatarPos.y);
+                            ctx.scale(avatarPos.scale, avatarPos.scale);
+                            ctx.drawImage(avatarImage, 0, 0);
+                        } else {
+                            drawText(ctx, "Upload Avatar", cx, cy + 10, 30, "#64748b", "center", "bold");
+                        }
+                        ctx.restore();
+
+                        // Border for Avatar
+                        ctx.lineWidth = 12;
+                        ctx.strokeStyle = formData.team1Color;
+                        ctx.stroke();
+                        ctx.restore();
+
+                        // Render Quote Text
+                        ctx.font = "bold 55px 'Hind Siliguri', sans-serif";
+                        ctx.fillStyle = "#fff";
+                        const quote = `“${formData.quoteText}”`;
+                        const nw = 960, lh = 75;
+                        const words = quote.split(' '); let currentLine = words[0] || "";
+                        const lines = [];
+                        for (let i = 1; i < words.length; i++) {
+                            const width = ctx.measureText(currentLine + " " + words[i]).width;
+                            if (width < nw) { currentLine += " " + words[i]; } else { lines.push(currentLine); currentLine = words[i]; }
+                        }
+                        if(currentLine) lines.push(currentLine);
+                        
+                        const startY = sy + r + 80;
+                        lines.forEach((line, i) => { ctx.textAlign = 'center'; ctx.fillText(line, W / 2, startY + (i * lh)); });
+                        
+                        // Render Author & Underline
+                        const authorY = startY + (lines.length * lh) + 30;
+                        drawText(ctx, `— ${formData.quoteAuthor}`, W/2, authorY, 45, '#fff', 'center', 'bold');
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(W/2 - 250, authorY + 40);
+                        ctx.lineTo(W/2 + 250, authorY + 40);
+                        ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+                        ctx.lineWidth = 3;
+                        ctx.stroke();
+                        ctx.restore();
                     }
                     
-                    drawText(ctx, formData.footerHandle, W / 2, footerY + 40, 24, '#94a3b8', 'center', 'normal');
+                    drawText(ctx, formData.footerHandle, W / 2, footerY + 40, 24, '#64748b', 'center', 'normal');
 
                     if (!isExport) {
                         ctx.save(); ctx.translate(W/2, H/2); ctx.rotate(-Math.PI / 6);
-                        ctx.font = "bold 150px sans-serif"; ctx.fillStyle = "rgba(255, 255, 255, 0.15)"; ctx.textAlign = "center"; ctx.fillText("PREVIEW", 0, 0); ctx.restore();
+                        ctx.font = "bold 150px sans-serif"; ctx.fillStyle = "rgba(255, 255, 255, 0.08)"; ctx.textAlign = "center"; ctx.fillText("PREVIEW", 0, 0); ctx.restore();
                     }
                 } catch(e) { console.error(e); }
             };
 
-            useEffect(() => { drawCanvas(false); }, [bgImage, bgImage2, formData, img1Pos, img2Pos, appMode]);
+            // Added currentView to dependency array to ensure canvas draws after switching views
+            useEffect(() => { drawCanvas(false); }, [bgImage, bgImage2, formData, img1Pos, img2Pos, avatarPos, avatarImage, appMode, currentView]);
 
             const handleImageUpload = (e, isSecond = false) => {
                 const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
@@ -361,15 +468,42 @@
                 }; reader.readAsDataURL(file);
             };
 
+            const handleAvatarUpload = (e) => {
+                const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        setAvatarImage(img); 
+                        const scale = Math.max(320 / img.width, 320 / img.height);
+                        setAvatarPos({ x: (320 - img.width * scale) / 2, y: (320 - img.height * scale) / 2, scale: scale });
+                    }; img.src = ev.target.result;
+                }; reader.readAsDataURL(file);
+            };
+
             const resetImage = () => { 
                 if (bgImage) { const targetW = bgImage2 ? 540 : 1080; const scale1 = Math.max(targetW / bgImage.width, 1200 / bgImage.height); setImg1Pos({ x: (targetW - bgImage.width * scale1) / 2, y: (1200 - bgImage.height * scale1) / 2, scale: scale1 }); }
                 if (bgImage2) { const scale2 = Math.max(540 / bgImage2.width, 1200 / bgImage2.height); setImg2Pos({ x: 540 + (540 - bgImage2.width * scale2) / 2, y: (1200 - bgImage2.height * scale2) / 2, scale: scale2 }); }
+                if (avatarImage) { const scale3 = Math.max(320 / avatarImage.width, 320 / avatarImage.height); setAvatarPos({ x: (320 - avatarImage.width * scale3) / 2, y: (320 - avatarImage.height * scale3) / 2, scale: scale3 }); }
             };
 
             const handleTouchStart = (e) => { 
-                const t = e.touches; const rect = e.target.getBoundingClientRect(); const touchX = t[0].clientX - rect.left;
-                let targetImg = 'img1'; if (bgImage2 && touchX > rect.width / 2) targetImg = 'img2';
-                const currentPos = targetImg === 'img1' ? img1Pos : img2Pos;
+                const t = e.touches; const rect = e.target.getBoundingClientRect(); 
+                const touchX = t[0].clientX - rect.left;
+                const touchY = t[0].clientY - rect.top;
+                
+                let targetImg = 'img1'; 
+                const s = 1080 / rect.width;
+                const canvasX = touchX * s;
+                const canvasY = touchY * s;
+
+                if (appMode === 'statement' && avatarImage) {
+                    const dist = Math.hypot(canvasX - 1080/2, canvasY - 750);
+                    if (dist < 160) targetImg = 'avatar';
+                } else if (bgImage2 && touchX > rect.width / 2 && appMode !== 'statement') {
+                    targetImg = 'img2';
+                }
+                
+                const currentPos = targetImg === 'img1' ? img1Pos : (targetImg === 'img2' ? img2Pos : avatarPos);
                 if (t.length === 1) { gestureStart.current = { mode: 'pan', target: targetImg, x: t[0].clientX, y: t[0].clientY, imgX: currentPos.x, imgY: currentPos.y }; 
                 } else if (t.length === 2) { gestureStart.current = { mode: 'zoom', target: targetImg, dist: Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY), scale: currentPos.scale }; } 
             };
@@ -378,21 +512,35 @@
                 if (!gestureStart.current.mode) return; e.preventDefault(); 
                 const s = 1080 / e.target.getBoundingClientRect().width; const t = e.touches; 
                 const { target, imgX, x, imgY, y, scale, dist } = gestureStart.current;
-                const setPos = target === 'img1' ? setImg1Pos : setImg2Pos;
+                const setPos = target === 'img1' ? setImg1Pos : (target === 'img2' ? setImg2Pos : setAvatarPos);
                 if (t.length === 1 && gestureStart.current.mode === 'pan') { setPos(prev => ({ ...prev, x: imgX + (t[0].clientX - x) * s, y: imgY + (t[0].clientY - y) * s })); 
                 } else if (t.length === 2 && gestureStart.current.mode === 'zoom') { const d = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); setPos(prev => ({ ...prev, scale: scale * (d / dist) })); } 
             };
 
             const handleMouseDown = (e) => {
-                const rect = e.target.getBoundingClientRect(); const touchX = e.clientX - rect.left;
-                let targetImg = 'img1'; if (bgImage2 && touchX > rect.width / 2) targetImg = 'img2';
-                const currentPos = targetImg === 'img1' ? img1Pos : img2Pos;
+                const rect = e.target.getBoundingClientRect(); 
+                const touchX = e.clientX - rect.left;
+                const touchY = e.clientY - rect.top;
+                
+                let targetImg = 'img1'; 
+                const s = 1080 / rect.width;
+                const canvasX = touchX * s;
+                const canvasY = touchY * s;
+
+                if (appMode === 'statement' && avatarImage) {
+                    const dist = Math.hypot(canvasX - 1080/2, canvasY - 750);
+                    if (dist < 160) targetImg = 'avatar';
+                } else if (bgImage2 && touchX > rect.width / 2 && appMode !== 'statement') {
+                    targetImg = 'img2';
+                }
+                
+                const currentPos = targetImg === 'img1' ? img1Pos : (targetImg === 'img2' ? img2Pos : avatarPos);
                 gestureStart.current = { mode: 'pan', target: targetImg, x: e.clientX, y: e.clientY, imgX: currentPos.x, imgY: currentPos.y };
             };
             const handleMouseMove = (e) => {
                 if (gestureStart.current.mode === 'pan') {
                     const s = 1080 / e.target.getBoundingClientRect().width; const { target, imgX, x, imgY, y } = gestureStart.current;
-                    const setPos = target === 'img1' ? setImg1Pos : setImg2Pos;
+                    const setPos = target === 'img1' ? setImg1Pos : (target === 'img2' ? setImg2Pos : setAvatarPos);
                     setPos(p => ({...p, x: imgX + (e.clientX - x) * s, y: imgY + (e.clientY - y) * s}));
                 }
             };
@@ -425,218 +573,490 @@
             };
 
             return (
-                <div className="flex flex-col min-h-screen" onContextMenu={(e) => e.preventDefault()}>
+                <div className="flex flex-col min-h-screen text-slate-200 selection:bg-rose-500/30 selection:text-white" onContextMenu={(e) => e.preventDefault()}>
                     
                     {/* SMART NOTIFICATION MODAL */}
                     {showAppNotification && appNotification && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm modal-backdrop">
-                            <div className="bg-gradient-to-b from-slate-800 to-slate-900 rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center modal-content border border-slate-700 relative overflow-hidden">
-                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-yellow-500"></div>
-                                <button onClick={dismissNotification} className="absolute top-3 right-3 text-slate-400 hover:text-white transition-colors bg-slate-800 p-1.5 rounded-full"><IconClose /></button>
-                                <div className="bg-slate-800 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-lg border border-slate-700">🔔</div>
-                                <h3 className="text-xl font-bold text-white mb-2">{appNotification.title}</h3>
-                                <p className="text-slate-300 text-sm mb-6 leading-relaxed">{appNotification.message}</p>
-                                <button onClick={dismissNotification} className="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl shadow-lg transition-colors">Got it!</button>
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md modal-backdrop">
+                            <div className="bg-slate-900 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] w-full max-w-sm p-8 text-center modal-content border border-slate-800 relative overflow-hidden">
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-rose-500 to-amber-500"></div>
+                                <button onClick={dismissNotification} className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors bg-slate-800 hover:bg-slate-700 p-2 rounded-full"><IconClose /></button>
+                                <div className="bg-slate-800/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-inner border border-slate-700">🔔</div>
+                                <h3 className="text-2xl font-black text-white mb-3 tracking-tight">{appNotification.title}</h3>
+                                <p className="text-slate-400 text-sm mb-8 leading-relaxed font-medium">{appNotification.message}</p>
+                                <button onClick={dismissNotification} className="w-full bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(225,29,72,0.3)] transition-all">Got it!</button>
                             </div>
                         </div>
                     )}
 
                     {/* BUY MODAL */}
                     {showBuyModal && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm modal-backdrop">
-                            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center modal-content border border-gray-200">
-                                <div className="bg-red-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">💎</div>
-                                <h3 className="text-xl font-bold text-gray-900 mb-2">Buy Points</h3>
-                                <p className="text-gray-500 text-sm mb-4">You need {DOWNLOAD_COST} points. Balance: {points}</p>
-                                <div className="bg-blue-50 p-4 rounded-lg mb-4 text-sm text-blue-800 text-left"><p className="font-bold mb-2">Pricing:</p><ul className="list-disc pl-4 space-y-1"><li>100 Points = 100 Tk</li><li>200 Points = 150 Tk</li></ul></div>
-                                <div className="bg-gray-100 p-3 rounded-lg mb-4 text-left"><p className="text-xs text-gray-500 uppercase font-bold mb-1">Your User ID:</p><div className="flex justify-between items-center bg-white p-2 rounded border"><code className="text-sm font-mono text-red-600">{userId}</code><button onClick={copyId} className="text-gray-400 hover:text-gray-600"><IconCopy /></button></div></div>
-                                <a href="https://t.me/Mizan0072" target="_blank" rel="noreferrer" className="block w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg mb-3 flex items-center justify-center gap-2"><IconTg /> Contact Admin</a>
-                                <button onClick={() => { setShowBuyModal(false); fetchPoints(userId); }} className="w-full bg-slate-900 text-white font-bold py-3 rounded-xl">Refresh Balance</button>
-                                <button className="mt-3 text-xs text-gray-400 underline" onClick={() => setShowBuyModal(false)}>Cancel</button>
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md modal-backdrop">
+                            <div className="bg-slate-900 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] w-full max-w-sm p-8 text-center modal-content border border-slate-800">
+                                <div className="bg-rose-500/10 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl border border-rose-500/20">💎</div>
+                                <h3 className="text-2xl font-black text-white mb-2 tracking-tight">Get Pro Points</h3>
+                                <p className="text-slate-400 text-sm mb-6 font-medium">Export costs {DOWNLOAD_COST} points. Balance: <span className="text-amber-400 font-bold">{points}</span></p>
+                                
+                                <div className="bg-slate-800/50 p-5 rounded-2xl mb-6 text-sm text-slate-300 border border-slate-700/50 text-left">
+                                    <p className="font-bold text-white mb-3 uppercase tracking-wider text-xs">Pricing Tiers</p>
+                                    <ul className="space-y-2 font-medium">
+                                        <li className="flex justify-between"><span>100 Points</span><span className="text-white">৳100</span></li>
+                                        <li className="flex justify-between"><span>200 Points</span><span className="text-white">৳150</span></li>
+                                    </ul>
+                                </div>
+                                
+                                <div className="bg-slate-950 p-4 rounded-2xl mb-6 text-left border border-slate-800">
+                                    <p className="text-[10px] text-slate-500 uppercase font-bold mb-2 tracking-wider">Your Account ID</p>
+                                    <div className="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-800">
+                                        <code className="text-sm font-mono text-rose-400 select-all">{userId}</code>
+                                        <button onClick={copyId} className="text-slate-400 hover:text-white p-1 transition-colors"><IconCopy /></button>
+                                    </div>
+                                </div>
+                                
+                                <div className="space-y-3">
+                                    <a href="https://t.me/Mizan0072" target="_blank" rel="noreferrer" className="block w-full bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.3)] transition-all flex items-center justify-center gap-2"><IconTg className="w-5 h-5"/> Contact Admin</a>
+                                    <button onClick={() => { setShowBuyModal(false); fetchPoints(userId); }} className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 rounded-xl transition-all border border-slate-700">Refresh Balance</button>
+                                    <button className="mt-2 text-sm text-slate-500 hover:text-slate-300 font-medium transition-colors" onClick={() => setShowBuyModal(false)}>Cancel</button>
+                                </div>
                             </div>
                         </div>
                     )}
 
                     {/* HEADER */}
-                    <header className="bg-[#0b1120] border-b border-slate-800 sticky top-0 z-30 px-4 py-3 shadow-md">
-                        <div className="max-w-4xl mx-auto flex items-center justify-between">
+                    <header className="bg-slate-950/80 backdrop-blur-xl border-b border-slate-800 sticky top-0 z-30 px-4 py-3 shadow-lg shadow-black/20">
+                        <div className="max-w-5xl mx-auto flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <div className="bg-gradient-to-tr from-red-600 to-rose-500 p-2 rounded-xl shadow-lg shadow-red-500/20">
-                                    <IconLogo className="text-white" />
-                                </div>
+                                {currentView === 'editor' ? (
+                                    <button onClick={() => setCurrentView('home')} className="p-2.5 bg-slate-900 hover:bg-slate-800 rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors flex items-center justify-center" title="Back to Dashboard">
+                                        <IconArrowLeft />
+                                    </button>
+                                ) : (
+                                    <div className="bg-gradient-to-tr from-rose-600 to-rose-400 p-2.5 rounded-xl shadow-[0_0_15px_rgba(225,29,72,0.4)] flex items-center justify-center">
+                                        <IconLogo className="text-white w-5 h-5" />
+                                    </div>
+                                )}
                                 <div className="hidden sm:block">
-                                    <h1 className="text-lg font-black text-white tracking-tight leading-tight">Poster Bot <span className="text-red-500">PRO</span></h1>
-                                    <p className="text-[10px] text-slate-400 font-medium uppercase tracking-widest">Premium Graphics</p>
+                                    <h1 className="text-lg font-black text-white tracking-tight leading-none">
+                                        {currentView === 'editor' ? TOOLS.find(t => t.id === appMode)?.name : 'Poster Bot'} <span className="text-rose-500">PRO</span>
+                                    </h1>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                                        {currentView === 'editor' ? 'Editor Studio' : 'Studio'}
+                                    </p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3">
-                                <div className="flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700 cursor-pointer hover:bg-slate-800 transition-colors" onClick={() => setShowBuyModal(true)}>
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2.5 bg-slate-900 px-4 py-2 rounded-full border border-slate-800 cursor-pointer hover:bg-slate-800 transition-colors shadow-inner" onClick={() => setShowBuyModal(true)}>
                                     <IconCoin />
-                                    {isCheckingPoints ? <div className="loader"></div> : <span className="text-sm font-bold text-yellow-500">{points}</span>}
+                                    {isCheckingPoints ? <div className="loader"></div> : <span className="text-sm font-bold text-amber-400">{points}</span>}
                                 </div>
-                                <button onClick={handleDownloadClick} disabled={isProcessing} className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 active:scale-95 transition-all shadow-lg shadow-red-600/20 disabled:opacity-50">
-                                    {isProcessing ? 'Saving...' : <><IconDownload /> Save</>}
-                                </button>
+                                {currentView === 'editor' && (
+                                    <button onClick={handleDownloadClick} disabled={isProcessing} className="bg-rose-600 hover:bg-rose-500 text-white px-5 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 active:scale-95 transition-all shadow-[0_0_15px_rgba(225,29,72,0.4)] disabled:opacity-50 disabled:active:scale-100 disabled:shadow-none">
+                                        {isProcessing ? 'Processing...' : <><IconDownload /> Export</>}
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </header>
 
                     {/* MAIN CONTENT */}
-                    <main className="flex-1 max-w-2xl mx-auto w-full p-4 space-y-6">
-                        {showInstallPrompt && (<div className="install-prompt bg-slate-900 text-white p-4 rounded-xl shadow-2xl flex items-center justify-between border border-slate-700"><div className="flex items-center gap-3"><div className="bg-red-600 p-2 rounded-lg"><IconInstall /></div><div><h4 className="font-bold text-sm">Install App</h4><p className="text-xs text-slate-400">Add to Home Screen</p></div></div><div className="flex gap-2"><button onClick={() => setShowInstallPrompt(false)} className="p-2 text-slate-400"><IconClose /></button><button onClick={handleInstallApp} className="bg-white text-slate-900 px-4 py-2 rounded-lg text-xs font-bold">Install</button></div></div>)}
-                        
-                        <div className="bg-white p-1.5 rounded-xl shadow-sm border border-slate-200 flex gap-1 overflow-x-auto no-scrollbar">
-                            {['scorecard', 'schedule', 'player', 'career', 'poll', 'milestone', 'news'].map(mode => (
-                                <button key={mode} onClick={() => setAppMode(mode)} className={`flex-1 min-w-[85px] py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${appMode === mode ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-slate-100'}`}>
-                                    {mode}
-                                </button>
-                            ))}
-                        </div>
-
-                        <div className="bg-slate-800 rounded-xl overflow-hidden shadow-2xl border border-slate-700 aspect-[1080/1200] relative group canvas-container touch-none">
-                            <canvas 
-                                ref={canvasRef} 
-                                className="w-full h-full object-contain cursor-move touch-none" 
-                                onTouchStart={handleTouchStart} 
-                                onTouchMove={handleTouchMove} 
-                                onTouchEnd={handleEnd} 
-                                onMouseDown={handleMouseDown} 
-                                onMouseMove={handleMouseMove} 
-                                onMouseUp={handleEnd} 
-                                onMouseLeave={handleEnd}
-                            ></canvas>
-                            <div className="absolute top-4 right-4 flex flex-col gap-2"><button onClick={resetImage} className="bg-black/50 text-white p-2 rounded-full backdrop-blur-sm hover:bg-black/70"><IconRefresh /></button></div>
-                            {!bgImage && <div className="absolute inset-0 pointer-events-none flex items-center justify-center"><span className="bg-white/90 text-slate-800 px-4 py-2 rounded-full text-sm font-bold shadow-lg">Loading...</span></div>}
-                        </div>
-                        
-                        {bgImage && (
-                            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-3">
-                                <div className="flex items-center gap-4">
-                                    <span className="text-[10px] uppercase font-bold text-slate-500 w-16">Img 1 <IconMove className="inline w-3 h-3"/></span>
-                                    <IconZoomIn />
-                                    <input type="range" min="0.1" max="5" step="0.05" value={img1Pos.scale} onChange={(e) => setImg1Pos(p => ({ ...p, scale: parseFloat(e.target.value) }))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+                    <main className="flex-1 w-full p-4 md:p-6">
+                        {currentView === 'home' ? (
+                            <div className="max-w-5xl mx-auto space-y-8 animation-fadeIn">
+                                {/* Dashboard Hero */}
+                                <div className="relative text-center py-12 px-4 mb-4 rounded-[2rem] border border-slate-800 bg-slate-900/50 shadow-inner overflow-hidden">
+                                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-lg h-32 bg-rose-500/20 blur-[100px] pointer-events-none"></div>
+                                    <div className="bg-rose-500/10 text-rose-500 px-4 py-1.5 rounded-full text-xs font-bold inline-flex items-center gap-2 mb-6 border border-rose-500/20"><IconStar className="w-4 h-4"/> v2.0 Premium Studio</div>
+                                    <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">Create Pro Graphics. <br className="md:hidden"/><span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-amber-500">In Seconds.</span></h2>
+                                    <p className="text-slate-400 text-sm md:text-base font-medium max-w-xl mx-auto">Select a tool from the dashboard below to instantly generate high-quality sports posters, news overlays, and match scorecards.</p>
                                 </div>
-                                {bgImage2 && (
-                                    <div className="flex items-center gap-4">
-                                        <span className="text-[10px] uppercase font-bold text-slate-500 w-16">Img 2 <IconMove className="inline w-3 h-3"/></span>
-                                        <IconZoomIn />
-                                        <input type="range" min="0.1" max="5" step="0.05" value={img2Pos.scale} onChange={(e) => setImg2Pos(p => ({ ...p, scale: parseFloat(e.target.value) }))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+
+                                {/* Tool Grid */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    {TOOLS.map(tool => (
+                                        <div key={tool.id} onClick={() => { setAppMode(tool.id); setActiveTab('match'); setCurrentView('editor'); }} className="group bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-3xl p-6 cursor-pointer hover:shadow-2xl hover:shadow-slate-900/50 transition-all hover:-translate-y-1 flex flex-col items-start text-left">
+                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-5 ${tool.bg} ${tool.color} border ${tool.border} group-hover:scale-110 transition-transform shadow-inner [&>svg]:w-7 [&>svg]:h-7`}>
+                                                <tool.icon />
+                                            </div>
+                                            <h3 className="text-lg font-bold text-white mb-1.5 group-hover:text-rose-400 transition-colors">{tool.name}</h3>
+                                            <p className="text-xs text-slate-400 font-medium leading-relaxed">{tool.desc}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="max-w-2xl mx-auto space-y-6 animation-slideUpFade">
+                                {showInstallPrompt && (<div className="install-prompt bg-slate-900 text-white p-5 rounded-2xl shadow-2xl flex items-center justify-between border border-slate-700"><div className="flex items-center gap-4"><div className="bg-rose-500/10 text-rose-500 p-3 rounded-xl border border-rose-500/20"><IconInstall /></div><div><h4 className="font-bold text-sm">Install App</h4><p className="text-xs text-slate-400 font-medium">Add to Home Screen for best experience</p></div></div><div className="flex gap-2"><button onClick={() => setShowInstallPrompt(false)} className="p-2 text-slate-500 hover:text-white transition-colors"><IconClose /></button><button onClick={handleInstallApp} className="bg-white hover:bg-slate-200 text-slate-900 px-4 py-2 rounded-xl text-sm font-bold transition-colors">Install</button></div></div>)}
+
+                                {/* CANVAS AREA */}
+                                <div className="bg-slate-900 rounded-[2rem] overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.5)] border border-slate-800 aspect-[1080/1200] relative group canvas-container touch-none ring-1 ring-white/5">
+                                    <canvas 
+                                        ref={canvasRef} 
+                                        className="w-full h-full object-contain cursor-move touch-none" 
+                                        onTouchStart={handleTouchStart} 
+                                        onTouchMove={handleTouchMove} 
+                                        onTouchEnd={handleEnd} 
+                                        onMouseDown={handleMouseDown} 
+                                        onMouseMove={handleMouseMove} 
+                                        onMouseUp={handleEnd} 
+                                        onMouseLeave={handleEnd}
+                                    ></canvas>
+                                    
+                                    <div className="absolute top-5 right-5 flex flex-col gap-3">
+                                        <button onClick={resetImage} className="bg-slate-900/60 text-white p-3 rounded-full backdrop-blur-md hover:bg-rose-600 transition-colors border border-slate-700/50 shadow-lg" title="Reset Image Positions"><IconRefresh /></button>
+                                    </div>
+                                    
+                                    {!bgImage && <div className="absolute inset-0 pointer-events-none flex items-center justify-center bg-slate-950/50 backdrop-blur-sm"><span className="bg-slate-900 border border-slate-700 text-white px-6 py-3 rounded-full text-sm font-bold shadow-2xl flex items-center gap-3"><div className="loader border-t-rose-500 border-white/20"></div> Initializing Canvas...</span></div>}
+                                </div>
+                                
+                                {/* IMAGE CONTROLS */}
+                                {bgImage && (
+                                    <div className="bg-slate-900 p-5 rounded-3xl shadow-xl border border-slate-800 flex flex-col gap-4 relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
+                                        <div className="flex items-center gap-4 relative z-10">
+                                            <span className="text-[10px] uppercase font-bold text-slate-400 w-16 flex items-center gap-1 bg-slate-950 px-2 py-1.5 rounded-lg border border-slate-800">Img 1 <IconMove className="w-3 h-3 text-rose-500"/></span>
+                                            <IconZoomIn className="text-slate-500" />
+                                            <input type="range" min="0.1" max="5" step="0.05" value={img1Pos.scale} onChange={(e) => setImg1Pos(p => ({ ...p, scale: parseFloat(e.target.value) }))} className="w-full flex-1" />
+                                        </div>
+                                        {bgImage2 && appMode !== 'statement' && (
+                                            <div className="flex items-center gap-4 relative z-10">
+                                                <span className="text-[10px] uppercase font-bold text-slate-400 w-16 flex items-center gap-1 bg-slate-950 px-2 py-1.5 rounded-lg border border-slate-800">Img 2 <IconMove className="w-3 h-3 text-blue-500"/></span>
+                                                <IconZoomIn className="text-slate-500" />
+                                                <input type="range" min="0.1" max="5" step="0.05" value={img2Pos.scale} onChange={(e) => setImg2Pos(p => ({ ...p, scale: parseFloat(e.target.value) }))} className="w-full flex-1" />
+                                            </div>
+                                        )}
+                                        {avatarImage && appMode === 'statement' && (
+                                            <div className="flex items-center gap-4 relative z-10">
+                                                <span className="text-[10px] uppercase font-bold text-slate-400 w-16 flex items-center gap-1 bg-slate-950 px-2 py-1.5 rounded-lg border border-slate-800">Avatar <IconMove className="w-3 h-3 text-amber-500"/></span>
+                                                <IconZoomIn className="text-slate-500" />
+                                                <input type="range" min="0.1" max="5" step="0.05" value={avatarPos.scale} onChange={(e) => setAvatarPos(p => ({ ...p, scale: parseFloat(e.target.value) }))} className="w-full flex-1" />
+                                            </div>
+                                        )}
                                     </div>
                                 )}
+                                
+                                {/* CONTROLS AREA */}
+                                <div className="bg-slate-900 rounded-3xl shadow-xl border border-slate-800 overflow-hidden relative">
+                                    {/* Segmented Tabs */}
+                                    <div className="p-3 bg-slate-950 border-b border-slate-800">
+                                        <div className="flex p-1 bg-slate-900 rounded-2xl border border-slate-800 shadow-inner">
+                                            <button onClick={() => setActiveTab('match')} className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'match' ? 'bg-slate-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-300'}`}>Content</button>
+                                            {appMode !== 'player' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone' && appMode !== 'news' && appMode !== 'statement' && <button onClick={() => setActiveTab('teams')} className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'teams' ? 'bg-slate-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-300'}`}>Teams</button>}
+                                            <button onClick={() => setActiveTab('style')} className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'style' ? 'bg-slate-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-300'}`}>Style</button>
+                                        </div>
+                                    </div>
+
+                                    <div className="p-6 space-y-6">
+                                        {activeTab === 'match' && (
+                                            <div className="space-y-6">
+                                                {/* Image Uploaders */}
+                                                <div className="flex gap-4">
+                                                    <div className="relative group flex-1">
+                                                        <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, false)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                                                        <div className="border-2 border-dashed border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-slate-950/50 group-hover:bg-slate-800/80 group-hover:border-rose-500/50 transition-all">
+                                                            <div className="bg-slate-800 p-3 rounded-full shadow-lg text-rose-500 group-hover:scale-110 transition-transform"><IconUpload /></div>
+                                                            <span className="text-xs font-bold text-slate-400">Photo 1</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="relative group flex-1">
+                                                        {appMode === 'statement' ? (
+                                                            avatarImage ? (
+                                                                <div className="h-full border border-amber-500/30 bg-amber-500/5 rounded-2xl flex flex-col items-center justify-center relative shadow-inner">
+                                                                    <span className="text-xs font-bold text-amber-400 mb-2">Avatar Active</span>
+                                                                    <button onClick={() => setAvatarImage(null)} className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 transition-colors z-20 relative"><IconTrash /> Remove</button>
+                                                                </div>
+                                                            ) : (
+                                                                <>
+                                                                    <input type="file" accept="image/*" onChange={(e) => handleAvatarUpload(e)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                                                                    <div className="border-2 border-dashed border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-slate-950/50 group-hover:bg-slate-800/80 group-hover:border-amber-500/50 transition-all">
+                                                                        <div className="bg-slate-800 p-3 rounded-full shadow-lg text-amber-500 group-hover:scale-110 transition-transform"><IconUser /></div>
+                                                                        <span className="text-xs font-bold text-slate-400">Avatar (Circle)</span>
+                                                                    </div>
+                                                                </>
+                                                            )
+                                                        ) : (
+                                                            bgImage2 ? (
+                                                                <div className="h-full border border-blue-500/30 bg-blue-500/5 rounded-2xl flex flex-col items-center justify-center relative shadow-inner">
+                                                                    <span className="text-xs font-bold text-blue-400 mb-2">Img 2 Active</span>
+                                                                    <button onClick={() => setBgImage2(null)} className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 transition-colors z-20 relative"><IconTrash /> Remove</button>
+                                                                </div>
+                                                            ) : (
+                                                                <>
+                                                                    <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, true)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                                                                    <div className="border-2 border-dashed border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-slate-950/50 group-hover:bg-slate-800/80 group-hover:border-blue-500/50 transition-all">
+                                                                        <div className="bg-slate-800 p-3 rounded-full shadow-lg text-blue-500 group-hover:scale-110 transition-transform"><IconUpload /></div>
+                                                                        <span className="text-xs font-bold text-slate-400">Photo 2 (Opt)</span>
+                                                                    </div>
+                                                                </>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Basic Settings */}
+                                                <div className="space-y-4">
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Badge Text</label>
+                                                            <input type="text" name="badgeText" value={formData.badgeText} onChange={handleChange} className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-sm font-medium text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Badge" />
+                                                        </div>
+                                                        {appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone' && appMode !== 'statement' && (
+                                                            <div>
+                                                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Main Title</label>
+                                                                <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-sm font-medium text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Tournament Name" />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Footer / Handle</label>
+                                                        <input type="text" name="footerHandle" value={formData.footerHandle} onChange={handleChange} className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-sm font-medium text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="e.g., @proscorecard_bot" />
+                                                    </div>
+                                                </div>
+
+                                                {/* Contextual Forms based on Mode */}
+                                                {appMode === 'poll' && (
+                                                    <div className="p-5 bg-indigo-500/10 rounded-2xl border-l-4 border-indigo-500 shadow-inner space-y-4">
+                                                        <h4 className="text-xs font-black text-indigo-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconChart /> Reaction Poll Settings</h4>
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-indigo-300 mb-1.5 block ml-1">Poll Question / Headline</label>
+                                                            <input type="text" name="pollQuestion" value={formData.pollQuestion} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-indigo-500/30 rounded-xl text-sm font-bold text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all" />
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <label className="text-[10px] uppercase font-bold text-blue-400 mb-1.5 block ml-1">👍 Left Player</label>
+                                                                <input type="text" name="pollPlayer1" value={formData.pollPlayer1} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-blue-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" />
+                                                            </div>
+                                                            <div>
+                                                                <label className="text-[10px] uppercase font-bold text-rose-400 mb-1.5 block ml-1">❤️ Right Player</label>
+                                                                <input type="text" name="pollPlayer2" value={formData.pollPlayer2} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-rose-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
+                                                            </div>
+                                                        </div>
+                                                        <button onClick={swapTeams} className="w-full py-3 mt-2 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors border border-indigo-500/30"><IconSwap /> Swap Players</button>
+                                                    </div>
+                                                )}
+
+                                                {appMode === 'milestone' && (
+                                                    <div className="p-5 bg-amber-500/10 rounded-2xl border-l-4 border-amber-500 shadow-inner space-y-4">
+                                                        <h4 className="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconStar /> Birthday & Milestone</h4>
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <label className="text-[10px] uppercase font-bold text-amber-300 mb-1.5 block ml-1">Occasion Type</label>
+                                                                <input type="text" name="milestoneOccasion" value={formData.milestoneOccasion} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-amber-500/30 rounded-xl text-sm font-bold text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all" placeholder="e.g. শুভ জন্মদিন" />
+                                                            </div>
+                                                            <div>
+                                                                <label className="text-[10px] uppercase font-bold text-amber-300 mb-1.5 block ml-1">Player Name</label>
+                                                                <input type="text" name="milestoneName" value={formData.milestoneName} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-amber-500/30 rounded-xl text-sm font-bold text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all" />
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-amber-300 mb-1.5 block ml-1">Main Highlight (Age / Record)</label>
+                                                            <input type="text" name="milestoneNumber" value={formData.milestoneNumber} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-amber-500/30 rounded-xl text-xl font-black text-white text-center tracking-wide focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all" placeholder="e.g. ১০,০০০ রান" />
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-amber-300 mb-1.5 block ml-1">Sub-Message</label>
+                                                            <textarea name="milestoneMessage" value={formData.milestoneMessage} onChange={handleChange} rows="2" className="w-full px-4 py-3 bg-slate-900 border border-amber-500/30 rounded-xl text-sm text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all" placeholder="Wishing text..."></textarea>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {appMode === 'scorecard' && (
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-slate-500 mb-1.5 block ml-1">Match Result</label>
+                                                        <textarea name="result" value={formData.result} onChange={handleChange} rows="2" className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Result Text"></textarea>
+                                                    </div>
+                                                )}
+
+                                                {appMode === 'schedule' && (
+                                                    <div className="p-5 bg-slate-800/50 rounded-2xl border border-slate-700 shadow-inner space-y-4">
+                                                        <h4 className="text-xs font-black text-slate-300 uppercase tracking-wider flex items-center gap-2 mb-2"><IconCalendar /> Match Details</h4>
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-slate-500 mb-1.5 block ml-1">Date</label>
+                                                            <input type="text" name="matchDate" value={formData.matchDate} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-sm font-bold text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Date" />
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <label className="text-[10px] uppercase font-bold text-slate-500 mb-1.5 block ml-1">Time</label>
+                                                                <input type="text" name="matchTime" value={formData.matchTime} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-sm font-bold text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Time" />
+                                                            </div>
+                                                            <div>
+                                                                <label className="text-[10px] uppercase font-bold text-slate-500 mb-1.5 block ml-1">Venue</label>
+                                                                <input type="text" name="matchVenue" value={formData.matchVenue} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-sm font-bold text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Venue" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {appMode === 'player' && (
+                                                    <div className="p-5 bg-emerald-500/10 rounded-2xl border-l-4 border-emerald-500 shadow-inner space-y-4">
+                                                        <h4 className="text-xs font-black text-emerald-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconUser /> Player Stats</h4>
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-emerald-300 mb-1.5 block ml-1">Player Name</label>
+                                                            <input type="text" name="playerName" value={formData.playerName} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" placeholder="Player Name" />
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <label className="text-[10px] uppercase font-bold text-emerald-300 mb-1.5 block ml-1">Primary Stat</label>
+                                                                <input type="text" name="playerStatMain" value={formData.playerStatMain} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-xl font-black text-center text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" placeholder="Run/Wicket" />
+                                                            </div>
+                                                            <div>
+                                                                <label className="text-[10px] uppercase font-bold text-emerald-300 mb-1.5 block ml-1">Sub Stat</label>
+                                                                <input type="text" name="playerStatSub" value={formData.playerStatSub} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-sm font-bold text-center text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" placeholder="Balls/Econ" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {appMode === 'career' && (
+                                                    <div className="p-5 bg-cyan-500/10 rounded-2xl border-l-4 border-cyan-500 shadow-inner space-y-4">
+                                                        <h4 className="text-xs font-black text-cyan-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconChart /> Career Statistics</h4>
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div><label className="text-[10px] uppercase font-bold text-cyan-300 mb-1.5 block ml-1">Player Name</label><input type="text" name="playerName" value={formData.playerName} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-cyan-500/30 rounded-xl text-sm font-bold text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" /></div>
+                                                            <div><label className="text-[10px] uppercase font-bold text-cyan-300 mb-1.5 block ml-1">Role</label><input type="text" name="playerRole" value={formData.playerRole} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-cyan-500/30 rounded-xl text-sm font-bold text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" /></div>
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-4 mt-2">
+                                                            <div><label className="text-[10px] uppercase font-bold text-cyan-300 mb-1.5 block ml-1">Matches</label><input type="text" name="careerMatches" value={formData.careerMatches} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-cyan-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" /></div>
+                                                            <div><label className="text-[10px] uppercase font-bold text-cyan-300 mb-1.5 block ml-1">Total Runs</label><input type="text" name="careerRuns" value={formData.careerRuns} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-cyan-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" /></div>
+                                                            <div><label className="text-[10px] uppercase font-bold text-cyan-300 mb-1.5 block ml-1">100s</label><input type="text" name="careerHundreds" value={formData.careerHundreds} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-cyan-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" /></div>
+                                                            <div><label className="text-[10px] uppercase font-bold text-cyan-300 mb-1.5 block ml-1">50s</label><input type="text" name="careerFifties" value={formData.careerFifties} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-cyan-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" /></div>
+                                                            <div><label className="text-[10px] uppercase font-bold text-cyan-300 mb-1.5 block ml-1">Best Score</label><input type="text" name="careerBest" value={formData.careerBest} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-cyan-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" /></div>
+                                                            <div><label className="text-[10px] uppercase font-bold text-cyan-300 mb-1.5 block ml-1">Wickets</label><input type="text" name="careerWickets" value={formData.careerWickets} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-cyan-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" /></div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                
+                                                {appMode === 'news' && (
+                                                    <div className="p-5 bg-rose-500/10 rounded-2xl border-l-4 border-rose-500 shadow-inner space-y-4">
+                                                        <h4 className="text-xs font-black text-rose-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconMegaphone /> Breaking News</h4>
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-rose-300 mb-1.5 block ml-1">News Body / Quote Text</label>
+                                                            <textarea name="quoteText" value={formData.quoteText} onChange={handleChange} rows="3" className="w-full px-4 py-3 bg-slate-900 border border-rose-500/30 rounded-xl text-sm text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Enter content..."></textarea>
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-rose-300 mb-1.5 block ml-1">Headline / Author / Source</label>
+                                                            <input type="text" name="quoteAuthor" value={formData.quoteAuthor} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-rose-500/30 rounded-xl text-sm font-bold text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Author/Source" />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {appMode === 'statement' && (
+                                                    <div className="p-5 bg-rose-500/10 rounded-2xl border-l-4 border-rose-500 shadow-inner space-y-4">
+                                                        <h4 className="text-xs font-black text-rose-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconMessage /> Statement / Quote Overlay</h4>
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-rose-300 mb-1.5 block ml-1">Statement Text</label>
+                                                            <textarea name="quoteText" value={formData.quoteText} onChange={handleChange} rows="3" className="w-full px-4 py-3 bg-slate-900 border border-rose-500/30 rounded-xl text-sm text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Enter statement..."></textarea>
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-rose-300 mb-1.5 block ml-1">Author Name / Credit</label>
+                                                            <input type="text" name="quoteAuthor" value={formData.quoteAuthor} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-rose-500/30 rounded-xl text-sm font-bold text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Author name" />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                        
+                                        {activeTab === 'teams' && appMode !== 'player' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone' && appMode !== 'news' && appMode !== 'statement' && (
+                                            <div className="space-y-6">
+                                                <button onClick={swapTeams} className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors border border-slate-700 shadow-sm"><IconSwap /> Swap Sides</button>
+                                                
+                                                <div className="bg-slate-950 p-5 rounded-2xl border-l-4 border-blue-500 shadow-inner space-y-4">
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <h3 className="text-xs font-black text-blue-400 uppercase tracking-wider">Left Team</h3>
+                                                        <input type="color" name="team1Color" value={formData.team1Color} onChange={handleChange} className="w-8 h-8 rounded-full overflow-hidden border-2 border-slate-800 cursor-pointer shadow-sm" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Name</label>
+                                                        <input type="text" name="team1" value={formData.team1} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" />
+                                                    </div>
+                                                    {appMode === 'scorecard' && (
+                                                        <div className="flex gap-4">
+                                                            <div className="flex-1">
+                                                                <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Score</label>
+                                                                <input type="text" name="team1Score" value={formData.team1Score} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" />
+                                                            </div>
+                                                            <div className="w-28">
+                                                                <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Overs</label>
+                                                                <input type="text" name="team1Overs" value={formData.team1Overs} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-center" />
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                
+                                                <div className="bg-slate-950 p-5 rounded-2xl border-l-4 border-rose-500 shadow-inner space-y-4">
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <h3 className="text-xs font-black text-rose-400 uppercase tracking-wider">Right Team</h3>
+                                                        <input type="color" name="team2Color" value={formData.team2Color} onChange={handleChange} className="w-8 h-8 rounded-full overflow-hidden border-2 border-slate-800 cursor-pointer shadow-sm" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Name</label>
+                                                        <input type="text" name="team2" value={formData.team2} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
+                                                    </div>
+                                                    {appMode === 'scorecard' && (
+                                                        <div className="flex gap-4">
+                                                            <div className="flex-1">
+                                                                <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Score</label>
+                                                                <input type="text" name="team2Score" value={formData.team2Score} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
+                                                            </div>
+                                                            <div className="w-28">
+                                                                <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Overs</label>
+                                                                <input type="text" name="team2Overs" value={formData.team2Overs} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all text-center" />
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                        
+                                        {activeTab === 'style' && (
+                                            <div className="space-y-6">
+                                                <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-inner">
+                                                    <label className="flex items-center gap-2 text-xs font-black text-slate-300 uppercase tracking-wider mb-4"><IconEye className="text-rose-500"/> Background Opacity</label>
+                                                    <div className="px-2">
+                                                        <input type="range" min="0" max="1" step="0.05" value={formData.bgOpacity} onChange={(e) => setFormData({...formData, bgOpacity: parseFloat(e.target.value)})} className="w-full" />
+                                                        <div className="flex justify-between text-[10px] font-bold text-slate-500 mt-2 uppercase"><span>Clear</span><span>Dark</span></div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-inner">
+                                                    <label className="block text-xs font-black text-slate-300 uppercase tracking-wider mb-4">Gradient Colors</label>
+                                                    <div className="flex gap-4">
+                                                        <div className="flex-1 space-y-1.5">
+                                                            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Primary Color</label>
+                                                            <input type="color" name="primaryColor" value={formData.primaryColor} onChange={handleChange} className="h-12 w-full rounded-xl cursor-pointer border-0 p-0 bg-transparent" />
+                                                        </div>
+                                                        <div className="flex-1 space-y-1.5">
+                                                            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Accent Color</label>
+                                                            <input type="color" name="secondaryColor" value={formData.secondaryColor} onChange={handleChange} className="h-12 w-full rounded-xl cursor-pointer border-0 p-0 bg-transparent" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                {appMode === 'news' && (
+                                                    <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-inner">
+                                                        <label className="flex items-center gap-2 text-xs font-black text-slate-300 uppercase tracking-wider mb-4"><IconHeight className="text-rose-500"/> News Overlay Height</label>
+                                                        <div className="px-2">
+                                                            <input type="range" min="0.2" max="0.9" step="0.05" value={formData.newsGradientHeight} onChange={(e) => setFormData({...formData, newsGradientHeight: parseFloat(e.target.value)})} className="w-full" />
+                                                            <div className="flex justify-between text-[10px] font-bold text-slate-500 mt-2 uppercase"><span>Low</span><span>High</span></div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         )}
-                        
-                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                            <div className="flex border-b bg-slate-50">
-                                <button onClick={() => setActiveTab('match')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'match' ? 'bg-white text-slate-900 border-t-2 border-slate-900' : 'text-slate-500'}`}>Edit Info</button>
-                                {appMode !== 'player' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone' && appMode !== 'news' && <button onClick={() => setActiveTab('teams')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'teams' ? 'bg-white text-slate-900 border-t-2 border-slate-900' : 'text-slate-500'}`}>Teams</button>}
-                                <button onClick={() => setActiveTab('style')} className={`flex-1 py-3 text-sm font-medium ${activeTab === 'style' ? 'bg-white text-slate-900 border-t-2 border-slate-900' : 'text-slate-500'}`}>Style</button>
-                            </div>
-                            <div className="p-5 space-y-4">
-                                {activeTab === 'match' && (
-                                    <>
-                                        <div className="flex gap-3">
-                                            <div className="relative group flex-1">
-                                                <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, false)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                                                <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 flex flex-col items-center justify-center gap-2 bg-slate-50 group-hover:bg-slate-100 transition-colors"><div className="bg-white p-2 rounded-full shadow-sm text-slate-600"><IconUpload /></div><span className="text-xs font-bold text-slate-600">Photo 1</span></div>
-                                            </div>
-                                            <div className="relative group flex-1">
-                                                {bgImage2 ? (<div className="h-full border-2 border-green-200 bg-green-50 rounded-lg flex flex-col items-center justify-center relative"><span className="text-xs font-bold text-green-700 mb-1">Added</span><button onClick={() => setBgImage2(null)} className="flex items-center gap-1 bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-bold"><IconTrash /> Remove</button></div>) : (<><input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, true)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" /><div className="border-2 border-dashed border-slate-300 rounded-lg p-4 flex flex-col items-center justify-center gap-2 bg-slate-50 group-hover:bg-slate-100 transition-colors"><div className="bg-white p-2 rounded-full shadow-sm text-slate-400"><IconUpload /></div><span className="text-xs font-bold text-slate-400">Photo 2 (Opt)</span></div></>)}
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <input type="text" name="badgeText" value={formData.badgeText} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Badge" />
-                                            {appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone' && <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Tournament" />}
-                                        </div>
-                                        
-                                        <div className="mt-3">
-                                            <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Footer Text</label>
-                                            <input type="text" name="footerHandle" value={formData.footerHandle} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Footer text (e.g., @proscorecard_bot)" />
-                                        </div>
-
-                                        {appMode === 'poll' && (
-                                            <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-100 space-y-3">
-                                                <h4 className="text-xs font-bold text-indigo-700 uppercase flex items-center gap-2"><IconChart /> Reaction Poll Settings</h4>
-                                                <div>
-                                                    <label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Poll Question / Headline</label>
-                                                    <input type="text" name="pollQuestion" value={formData.pollQuestion} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold" />
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-3">
-                                                    <div>
-                                                        <label className="text-[10px] uppercase font-bold text-blue-600 mb-1 block">👍 Left Player</label>
-                                                        <input type="text" name="pollPlayer1" value={formData.pollPlayer1} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm font-bold text-center" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="text-[10px] uppercase font-bold text-red-600 mb-1 block">❤️ Right Player</label>
-                                                        <input type="text" name="pollPlayer2" value={formData.pollPlayer2} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-red-200 rounded-lg text-sm font-bold text-center" />
-                                                    </div>
-                                                </div>
-                                                <button onClick={swapTeams} className="w-full py-2 mt-2 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2"><IconSwap /> Swap Players</button>
-                                            </div>
-                                        )}
-
-                                        {appMode === 'milestone' && (
-                                            <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200 space-y-3">
-                                                <h4 className="text-xs font-bold text-yellow-700 uppercase flex items-center gap-2"><IconStar /> Birthday & Milestone</h4>
-                                                <div className="grid grid-cols-2 gap-3">
-                                                    <div>
-                                                        <label className="text-[10px] uppercase font-bold text-yellow-600 mb-1 block">Occasion Type</label>
-                                                        <input type="text" name="milestoneOccasion" value={formData.milestoneOccasion} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-yellow-300 rounded-lg text-sm font-bold" placeholder="e.g. শুভ জন্মদিন" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="text-[10px] uppercase font-bold text-yellow-600 mb-1 block">Player Name</label>
-                                                        <input type="text" name="milestoneName" value={formData.milestoneName} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-yellow-300 rounded-lg text-sm font-bold" />
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <label className="text-[10px] uppercase font-bold text-yellow-600 mb-1 block">Main Highlight (Age / Record)</label>
-                                                    <input type="text" name="milestoneNumber" value={formData.milestoneNumber} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-yellow-300 rounded-lg text-xl font-bold text-center" placeholder="e.g. ১০,০০০ রান" />
-                                                </div>
-                                                <div>
-                                                    <label className="text-[10px] uppercase font-bold text-yellow-600 mb-1 block">Sub-Message</label>
-                                                    <textarea name="milestoneMessage" value={formData.milestoneMessage} onChange={handleChange} rows="2" className="w-full px-3 py-2 bg-white border border-yellow-300 rounded-lg text-sm" placeholder="Wishing text..."></textarea>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {appMode === 'scorecard' && <textarea name="result" value={formData.result} onChange={handleChange} rows="2" className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Result Text"></textarea>}
-                                        {appMode === 'schedule' && (<div className="p-3 bg-slate-50 rounded-lg border space-y-3"><h4 className="text-xs font-bold text-slate-500 uppercase flex items-center gap-2"><IconCalendar /> Match Details</h4><input type="text" name="matchDate" value={formData.matchDate} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Date" /><div className="grid grid-cols-2 gap-3"><input type="text" name="matchTime" value={formData.matchTime} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Time" /><input type="text" name="matchVenue" value={formData.matchVenue} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Venue" /></div></div>)}
-                                        {appMode === 'player' && (<div className="p-3 bg-amber-50 rounded-lg border border-amber-100 space-y-3"><h4 className="text-xs font-bold text-amber-700 uppercase flex items-center gap-2"><IconUser /> Player Stats</h4><input type="text" name="playerName" value={formData.playerName} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm font-bold" placeholder="Player Name" /><div className="grid grid-cols-2 gap-3"><input type="text" name="playerStatMain" value={formData.playerStatMain} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-xl font-bold text-center" placeholder="Run" /><input type="text" name="playerStatSub" value={formData.playerStatSub} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm" placeholder="Ball" /></div></div>)}
-
-                                        {appMode === 'career' && (
-                                            <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-100 space-y-3">
-                                                <h4 className="text-xs font-bold text-indigo-700 uppercase flex items-center gap-2"><IconChart /> Career Statistics</h4>
-                                                <div className="grid grid-cols-2 gap-3">
-                                                    <div><label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Player Name</label><input type="text" name="playerName" value={formData.playerName} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold" /></div>
-                                                    <div><label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Role</label><input type="text" name="playerRole" value={formData.playerRole} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold" /></div>
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-3 mt-3">
-                                                    <div><label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Matches Played</label><input type="text" name="careerMatches" value={formData.careerMatches} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold text-center" /></div>
-                                                    <div><label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Total Runs</label><input type="text" name="careerRuns" value={formData.careerRuns} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold text-center" /></div>
-                                                    <div><label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Centuries (100s)</label><input type="text" name="careerHundreds" value={formData.careerHundreds} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold text-center" /></div>
-                                                    <div><label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Fifties (50s)</label><input type="text" name="careerFifties" value={formData.careerFifties} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold text-center" /></div>
-                                                    <div><label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Best Score</label><input type="text" name="careerBest" value={formData.careerBest} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold text-center" /></div>
-                                                    <div><label className="text-[10px] uppercase font-bold text-indigo-500 mb-1 block">Total Wickets</label><input type="text" name="careerWickets" value={formData.careerWickets} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-sm font-bold text-center" /></div>
-                                                </div>
-                                            </div>
-                                        )}
-                                        
-                                        {appMode === 'news' && (<div className="p-3 bg-red-50 rounded-lg border border-red-100 space-y-3"><h4 className="text-xs font-bold text-red-700 uppercase flex items-center gap-2"><IconQuote /> Breaking News / Quote</h4><textarea name="quoteText" value={formData.quoteText} onChange={handleChange} rows="3" className="w-full px-3 py-2 bg-white border border-red-200 rounded-lg text-sm" placeholder="Quote or News Body"></textarea><input type="text" name="quoteAuthor" value={formData.quoteAuthor} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-red-200 rounded-lg text-sm font-bold" placeholder="Headline or Author" /></div>)}
-                                    </>
-                                )}
-                                {activeTab === 'teams' && appMode !== 'player' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone' && appMode !== 'news' && (<div className="space-y-5"><button onClick={swapTeams} className="w-full py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold uppercase flex items-center justify-center gap-2"><IconSwap /> Swap Sides</button><div className="bg-amber-50 p-4 rounded-xl border border-amber-100 space-y-3"><div className="flex justify-between"><h3 className="text-xs font-bold text-amber-800">Left Team</h3><input type="color" name="team1Color" value={formData.team1Color} onChange={handleChange} className="w-6 h-6 rounded-full overflow-hidden border-none" /></div><input type="text" name="team1" value={formData.team1} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm font-bold" />{appMode === 'scorecard' && <div className="flex gap-2"><input type="text" name="team1Score" value={formData.team1Score} onChange={handleChange} className="flex-1 px-3 py-2 bg-white border rounded-lg text-sm" /><input type="text" name="team1Overs" value={formData.team1Overs} onChange={handleChange} className="w-24 px-3 py-2 bg-white border rounded-lg text-sm" /></div>}</div><div className="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-3"><div className="flex justify-between"><h3 className="text-xs font-bold text-blue-800">Right Team</h3><input type="color" name="team2Color" value={formData.team2Color} onChange={handleChange} className="w-6 h-6 rounded-full overflow-hidden border-none" /></div><input type="text" name="team2" value={formData.team2} onChange={handleChange} className="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm font-bold" />{appMode === 'scorecard' && <div className="flex gap-2"><input type="text" name="team2Score" value={formData.team2Score} onChange={handleChange} className="flex-1 px-3 py-2 bg-white border rounded-lg text-sm" /><input type="text" name="team2Overs" value={formData.team2Overs} onChange={handleChange} className="w-24 px-3 py-2 bg-white border rounded-lg text-sm" /></div>}</div></div>)}
-                                {activeTab === 'style' && (<div className="space-y-5"><div><label className="block text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2"><IconEye /> Opacity</label><input type="range" min="0" max="1" step="0.05" value={formData.bgOpacity} onChange={(e) => setFormData({...formData, bgOpacity: parseFloat(e.target.value)})} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" /></div><div><label className="block text-xs font-bold text-slate-400 uppercase mb-2">Gradient Primary & Accent</label><div className="flex gap-2"><input type="color" name="primaryColor" value={formData.primaryColor} onChange={handleChange} className="h-10 w-full rounded-lg cursor-pointer" /><input type="color" name="team1Color" value={formData.team1Color} onChange={handleChange} className="h-10 w-full rounded-lg cursor-pointer" title="Accent Color (used in stats)" /></div></div>{appMode === 'news' && (<div><label className="block text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2"><IconHeight /> News Color Height</label><input type="range" min="0.2" max="0.9" step="0.05" value={formData.newsGradientHeight} onChange={(e) => setFormData({...formData, newsGradientHeight: parseFloat(e.target.value)})} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" /><div className="flex justify-between text-xs text-slate-400 mt-1"><span>Low</span><span>High</span></div></div>)}</div>)}
-                            </div>
-                        </div>
                     </main>
 
-                    <footer className="bg-[#0b1120] text-slate-400 py-8 border-t border-slate-800 mt-8">
-                        <div className="max-w-4xl mx-auto px-4 text-center space-y-3">
-                            <div className="flex justify-center mb-2"><IconLogo className="text-slate-600 w-8 h-8" /></div>
-                            <p className="text-sm font-bold text-white tracking-wide">© {new Date().getFullYear()} Poster Bot Pro. All rights reserved.</p>
-                            <p className="text-xs text-slate-500">Premium sports graphic generator for professional creators.</p>
-                            <div className="flex justify-center gap-6 pt-4 text-xs font-medium">
-                                <a href="https://t.me/Mizan0072" target="_blank" rel="noreferrer" className="hover:text-white transition-colors flex items-center gap-1"><IconTg className="w-4 h-4" /> Support & Contact</a>
+                    <footer className="bg-slate-950 text-slate-500 py-10 border-t border-slate-900 mt-auto">
+                        <div className="max-w-4xl mx-auto px-4 text-center space-y-4">
+                            <div className="flex justify-center mb-4">
+                                <div className="bg-slate-900 p-3 rounded-2xl shadow-inner border border-slate-800">
+                                    <IconLogo className="text-slate-600 w-6 h-6" />
+                                </div>
+                            </div>
+                            <p className="text-sm font-bold text-slate-300 tracking-wide">© {new Date().getFullYear()} Poster Bot Pro</p>
+                            <p className="text-xs font-medium text-slate-600 max-w-sm mx-auto">Premium sports graphic generator for professional creators.</p>
+                            <div className="flex justify-center gap-6 pt-6 text-xs font-bold uppercase tracking-wider">
+                                <a href="https://t.me/Mizan0072" target="_blank" rel="noreferrer" className="hover:text-rose-400 transition-colors flex items-center gap-2"><IconTg className="w-4 h-4" /> Support & Contact</a>
                             </div>
                         </div>
                     </footer>
