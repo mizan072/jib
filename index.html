@@ -12,7 +12,7 @@
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -32,8 +32,8 @@
         body { 
             font-family: 'Hind Siliguri', sans-serif; 
             touch-action: pan-y; 
-            background-color: #020617; /* slate-950 */
-            color: #f8fafc; /* slate-50 */
+            background-color: #020617; 
+            color: #f8fafc; 
             user-select: none; 
             -webkit-user-select: none; 
             -webkit-touch-callout: none; 
@@ -42,7 +42,6 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .canvas-container { touch-action: none; }
         
-        /* Smooth Modal Animations */
         .modal-backdrop { animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .modal-content { animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         .animation-fadeIn { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -51,16 +50,13 @@
         @keyframes fadeIn { from { opacity: 0; backdrop-filter: blur(0px); } to { opacity: 1; backdrop-filter: blur(8px); } }
         @keyframes slideUpFade { from { transform: translateY(20px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
         
-        /* Loader */
         .loader { border: 2px solid rgba(255,255,255,0.1); border-top: 2px solid #eab308; border-radius: 50%; width: 16px; height: 16px; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* Custom Range Slider */
         input[type=range] { -webkit-appearance: none; background: transparent; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #f43f5e; cursor: pointer; margin-top: -6px; box-shadow: 0 0 10px rgba(244, 63, 94, 0.5); border: 2px solid #fff; }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #334155; border-radius: 4px; }
         
-        /* Custom Scrollbar for inputs */
         textarea::-webkit-scrollbar { width: 6px; }
         textarea::-webkit-scrollbar-track { background: transparent; }
         textarea::-webkit-scrollbar-thumb { background-color: #334155; border-radius: 20px; }
@@ -72,7 +68,6 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // 🚨🚨🚨 PASTE YOUR GOOGLE SCRIPT URL BELOW 🚨🚨🚨
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztp3j5Kh1tmcMcQpXfgNp9mhYQRchm2iSB-fPAk-V5ikDcXHcJlmVJ-yb93iIiycJ7/exec"; 
         const DOWNLOAD_COST = 2; 
 
@@ -101,17 +96,23 @@
         const IconTrophy = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 1.1-.9 2-2 2H4"/><path d="M14 14.66V17c0 1.1.9 2 2 2h4"/><path d="M8 22H16"/><path d="M14 8c0 3.31-2.69 6-6 6s-6-2.69-6-6V2h12v6z"/></svg>;
         const IconMegaphone = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>;
         const IconMessage = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
+        const IconHelp = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>;
+        const IconList = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>;
+        const IconGrid = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>;
 
         // --- DASHBOARD TOOLS ---
         const TOOLS = [
             { id: 'scorecard', name: 'Match Scorecard', desc: 'Create live match score updates', icon: IconTrophy, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
-            { id: 'schedule', name: 'Match Schedule', desc: 'Upcoming fixtures and venues', icon: IconCalendar, color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/20' },
+            { id: 'multi_result', name: 'Multi Results', desc: 'List of match scores', icon: IconList, color: 'text-rose-400', bg: 'bg-rose-400/10', border: 'border-rose-400/20' },
+            { id: 'schedule', name: 'Single Schedule', desc: 'Upcoming fixture and venue', icon: IconCalendar, color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/20' },
+            { id: 'multi_schedule', name: 'All-Day Schedule', desc: 'Grid schedule of matches', icon: IconGrid, color: 'text-sky-400', bg: 'bg-sky-400/10', border: 'border-sky-400/20' },
             { id: 'player', name: 'Player Profile', desc: 'Highlight player performance', icon: IconUser, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
             { id: 'career', name: 'Career Stats', desc: 'Overall career statistics', icon: IconChart, color: 'text-cyan-400', bg: 'bg-cyan-400/10', border: 'border-cyan-400/20' },
             { id: 'poll', name: 'Reaction Poll', desc: 'Facebook-style reaction polls', icon: IconSwap, color: 'text-indigo-400', bg: 'bg-indigo-400/10', border: 'border-indigo-400/20' },
+            { id: 'discussion', name: 'Q&A / Discussion', desc: 'Text-heavy engagement posts', icon: IconHelp, color: 'text-violet-400', bg: 'bg-violet-400/10', border: 'border-violet-400/20' },
             { id: 'milestone', name: 'Milestones', desc: 'Birthdays and records', icon: IconStar, color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/20' },
             { id: 'news', name: 'Breaking News', desc: 'Urgent updates and headlines', icon: IconMegaphone, color: 'text-red-500', bg: 'bg-red-500/10', border: 'border-red-500/20' },
-            { id: 'statement', name: 'Quote Overlay', desc: 'Player quotes with avatar cutout', icon: IconMessage, color: 'text-rose-400', bg: 'bg-rose-400/10', border: 'border-rose-400/20' }
+            { id: 'statement', name: 'Quote Overlay', desc: 'Player quotes with avatar cutout', icon: IconMessage, color: 'text-fuchsia-400', bg: 'bg-fuchsia-400/10', border: 'border-fuchsia-400/20' }
         ];
 
         // --- GLOBAL HELPERS ---
@@ -159,12 +160,27 @@
             const [formData, setFormData] = useState({
                 badgeText: 'proscorecard_bot', title: 'আইসিসি টি-টোয়েন্টি বিশ্বকাপ', footerHandle: 'এই রকম পোস্টার তৈরি করুন এই টেলিগ্রাম বট দিয়েঃ  @proscorecard_bot',
                 primaryColor: '#b91c1c', secondaryColor: '#4a0000', bgOpacity: 0.9, newsGradientHeight: 0.55,
-                team1: 'ইংল্যান্ড', team1Color: '#eab308', team2: 'নেপাল', team2Color: '#ef4444', team1Score: '১৮৪/৭', team1Overs: '(২০ ওভার)', team2Score: '১৮0/৬', team2Overs: '(২০ ওভার)',
+                team1: 'ইংল্যান্ড', team1Color: '#eab308', team2: 'নেপাল', team2Color: '#10b981', team1Score: '১৮৪/৭', team1Overs: '(২০ ওভার)', team2Score: '১৮0/৬', team2Overs: '(২০ ওভার)',
                 result: 'নেপালকে ৪ রানে হারিয়েছে ইংল্যান্ড', resultColor: '#ffd700', matchDate: '২০ অক্টোবর, ২০২৫', matchTime: 'দুপুর ২:০০টা', matchVenue: 'শেরে বাংলা স্টেডিয়াম',
                 playerName: 'সাকিব আল হাসান', playerStatMain: '৮২', playerStatSub: 'রান (৪৫ বল)', stat1Label: '৪', stat1Value: '৮', stat2Label: '৬', stat2Value: '৫', stat3Label: 'S/R', stat3Value: '১৮২.২',
                 quoteText: 'ফিলিস্তিনের মাটিতে জন্ম নেওয়াটাই কি দোষ? আমাদের নিষ্পাপ শিশুরা কি দোষ করছে?', quoteAuthor: 'পেপ গার্দিওলা', playerRole: 'ব্যাটসম্যান', careerMatches: '২৫৪', careerRuns: '৭৫৬২', 
                 careerHundreds: '১৪', careerFifties: '৪২', careerBest: '১১৪*', careerWickets: '৩১২', pollQuestion: 'বর্তমান সময়ের সেরা ব্যাটার কে?', pollPlayer1: 'সাকিব আল হাসান', pollPlayer2: 'বিরাট কোহলি',
-                milestoneOccasion: 'শুভ জন্মদিন', milestoneName: 'সাকিব আল হাসান', milestoneNumber: '৩৭ তম', milestoneMessage: 'বাংলাদেশ ক্রিকেটের জান, বাংলাদেশ ক্রিকেটের প্রাণ! শুভকামনা রইলো।'
+                milestoneOccasion: 'শুভ জন্মদিন', milestoneName: 'সাকিব আল হাসান', milestoneNumber: '৩৭ তম', milestoneMessage: 'বাংলাদেশ ক্রিকেটের জান, বাংলাদেশ ক্রিকেটের প্রাণ! শুভকামনা রইলো.',
+                discTopic: 'রাজবাড়ির', discLine1: 'সেরা ব্যাটার - রোমান।', discLine2: 'সেরা বোলার কে.....?', discLine3: 'সেরা অলরাউন্ডার কে.....?',
+                multiResultTitle: 'ফুটবল ম্যাচের ফলাফল',
+                resultsList: [
+                    { id: 1, team1: 'বার্সেলোনা', team2: 'অ্যাটলেটিকো', score1: '৩', score2: '০', tourney: 'কোপা দেল রে' },
+                    { id: 2, team1: 'উলভস', team2: 'লিভারপুল', score1: '২', score2: '১', tourney: 'ইপিএল' },
+                    { id: 3, team1: 'বোর্নমাউথ', team2: 'ব্রেন্টফোর্ড', score1: '০', score2: '০', tourney: 'ইপিএল' }
+                ],
+                multiScheduleDate: '৪ মার্চ ২০২৬',
+                multiScheduleTitle: 'দিনব্যাপী খেলার সময়সূচী',
+                scheduleList: [
+                    { id: 1, sport: 'ক্রিকেট', tourney: 'টি-টোয়েন্টি বিশ্বকাপ', match: 'দ. আফ্রিকা-নিউজিল্যান্ড', time: 'সন্ধ্যা ৭-৩০ মি.' },
+                    { id: 2, sport: 'ফুটবল', tourney: 'নারী এশিয়ান কাপ', match: 'জাপান-চাইনিজ তাইপে', time: 'বেলা ১১টা' },
+                    { id: 3, sport: 'ফুটবল', tourney: 'ইংলিশ প্রিমিয়ার লিগ', match: 'ম্যান সিটি-নটিংহাম', time: 'রাত ১-৩০ মি.' },
+                    { id: 4, sport: 'ফুটবল', tourney: 'নারী এশিয়ান কাপ', match: 'ভিয়েতনাম-ভারত', time: 'বিকেল ৫টা' }
+                ]
             });
 
             useEffect(() => {
@@ -222,6 +238,32 @@
                 }
             };
 
+            const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+            const swapTeams = () => setFormData(p => ({ ...p, team1: p.team2, team1Score: p.team2Score, team1Overs: p.team2Overs, team1Color: p.team2Color, team2: p.team1, team2Score: p.team1Score, team2Overs: p.team1Overs, team2Color: p.team1Color, pollPlayer1: p.pollPlayer2, pollPlayer2: p.pollPlayer1 }));
+            const copyId = () => { navigator.clipboard.writeText(userId); alert("ID Copied: " + userId); };
+
+            // Multi-Result List Helpers
+            const handleResultChange = (id, field, value) => {
+                setFormData(p => ({ ...p, resultsList: p.resultsList.map(item => item.id === id ? { ...item, [field]: value } : item) }));
+            };
+            const addResult = () => {
+                setFormData(p => ({ ...p, resultsList: [...p.resultsList, { id: Date.now(), team1: 'দল ১', team2: 'দল ২', score1: '০', score2: '০', tourney: 'টুর্নামেন্ট' }] }));
+            };
+            const removeResult = (id) => {
+                setFormData(p => ({ ...p, resultsList: p.resultsList.filter(item => item.id !== id) }));
+            };
+
+            // Multi-Schedule List Helpers
+            const handleScheduleChange = (id, field, value) => {
+                setFormData(p => ({ ...p, scheduleList: p.scheduleList.map(item => item.id === id ? { ...item, [field]: value } : item) }));
+            };
+            const addSchedule = () => {
+                setFormData(p => ({ ...p, scheduleList: [...p.scheduleList, { id: Date.now(), sport: 'খেলা', tourney: 'টুর্নামেন্ট', match: 'দল-দল', time: 'সময়' }] }));
+            };
+            const removeSchedule = (id) => {
+                setFormData(p => ({ ...p, scheduleList: p.scheduleList.filter(item => item.id !== id) }));
+            };
+
             // --- CANVAS RENDER ---
             const drawCanvas = (isExport) => {
                 const canvas = canvasRef.current; if (!canvas) return;
@@ -253,9 +295,10 @@
                     ctx.fillStyle = gradient;
                     
                     if (appMode === 'news') { const h = H * formData.newsGradientHeight; ctx.fillRect(0, H - h, W, h); } 
+                    else if (appMode === 'discussion') { ctx.fillStyle = `rgba(15, 23, 42, ${formData.bgOpacity})`; ctx.fillRect(0, 0, W, H); }
                     else if (appMode !== 'statement') { ctx.fillRect(0, splitY, W, H - splitY); }
                     
-                    if (appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone' && appMode !== 'statement') { 
+                    if (['scorecard', 'schedule', 'player', 'career', 'poll', 'milestone'].includes(appMode)) { 
                         ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; ctx.fillRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH); 
                     }
                     ctx.fillStyle = '#020617'; ctx.fillRect(0, footerY, W, footerH); ctx.restore(); 
@@ -266,7 +309,7 @@
                     ctx.save(); ctx.shadowColor = "rgba(0, 0, 0, 0.8)"; ctx.shadowBlur = 6;
                     drawText(ctx, formData.badgeText, badgeX + 80, 40 + 48, 32, '#fff', 'left', 'bold'); ctx.restore();
 
-                    if (appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone' && appMode !== 'statement') {
+                    if (['scorecard', 'schedule', 'player', 'career', 'poll', 'milestone'].includes(appMode)) {
                         ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 2; ctx.strokeRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH);
                         drawText(ctx, formData.title, W / 2, titleBoxY + 60, 50, '#fff', 'center', 'bold');
                     } 
@@ -369,23 +412,18 @@
                         const sy = 750;
                         ctx.save();
                         ctx.globalAlpha = 1.0;
-                        
-                        // Main Bottom Box Gradient
                         const grad = ctx.createLinearGradient(0, sy, 0, H);
                         grad.addColorStop(0, formData.primaryColor);
                         grad.addColorStop(1, '#450a0a'); 
                         ctx.fillStyle = grad;
                         ctx.fillRect(0, sy, W, H - sy);
 
-                        // Yellow Divider Line
                         ctx.fillStyle = formData.team1Color;
                         ctx.fillRect(0, sy - 10, W, 10);
 
-                        // Circular Avatar Properties
                         const cx = W / 2, cy = sy;
                         const r = 160;
 
-                        // Draw Avatar Background/Clip
                         ctx.save();
                         ctx.beginPath();
                         ctx.arc(cx, cy, r, 0, Math.PI * 2);
@@ -404,13 +442,11 @@
                         }
                         ctx.restore();
 
-                        // Border for Avatar
                         ctx.lineWidth = 12;
                         ctx.strokeStyle = formData.team1Color;
                         ctx.stroke();
                         ctx.restore();
 
-                        // Render Quote Text
                         ctx.font = "bold 55px 'Hind Siliguri', sans-serif";
                         ctx.fillStyle = "#fff";
                         const quote = `“${formData.quoteText}”`;
@@ -426,7 +462,6 @@
                         const startY = sy + r + 80;
                         lines.forEach((line, i) => { ctx.textAlign = 'center'; ctx.fillText(line, W / 2, startY + (i * lh)); });
                         
-                        // Render Author & Underline
                         const authorY = startY + (lines.length * lh) + 30;
                         drawText(ctx, `— ${formData.quoteAuthor}`, W/2, authorY, 45, '#fff', 'center', 'bold');
                         
@@ -437,6 +472,172 @@
                         ctx.lineWidth = 3;
                         ctx.stroke();
                         ctx.restore();
+                    } else if (appMode === 'discussion') {
+                        const centerY = (H - footerH) / 2;
+                        let startY = centerY - 150; 
+
+                        drawText(ctx, formData.discTopic, W/2, startY, 90, formData.primaryColor, 'center', '900');
+                        
+                        ctx.save();
+                        ctx.shadowColor = formData.primaryColor;
+                        ctx.shadowBlur = 15;
+                        ctx.beginPath();
+                        ctx.moveTo(W/2 - 150, startY + 40);
+                        ctx.lineTo(W/2 + 150, startY + 40);
+                        ctx.strokeStyle = formData.primaryColor;
+                        ctx.lineWidth = 5;
+                        ctx.stroke();
+                        ctx.restore();
+
+                        startY += 150;
+                        drawText(ctx, formData.discLine1, W/2, startY, 70, formData.team2Color, 'center', 'bold');
+                        
+                        startY += 120;
+                        drawText(ctx, formData.discLine2, W/2, startY, 70, '#ffffff', 'center', 'bold');
+
+                        startY += 120;
+                        drawText(ctx, formData.discLine3, W/2, startY, 70, formData.team2Color, 'center', 'bold');
+                    } else if (appMode === 'multi_result') {
+                        const py = splitY + 40;
+                        
+                        // Main Title Pill
+                        ctx.fillStyle = formData.primaryColor;
+                        if(ctx.roundRect) {
+                            ctx.beginPath(); ctx.roundRect(W/2 - 200, py, 400, 60, 10); ctx.fill();
+                        } else {
+                            ctx.fillRect(W/2 - 200, py, 400, 60);
+                        }
+                        drawText(ctx, formData.multiResultTitle, W/2, py + 42, 35, '#fff', 'center', 'bold');
+
+                        // Dynamic List Spacing
+                        const sy = py + 100;
+                        const totalH = H - footerH - sy - 40;
+                        const numItems = formData.resultsList.length || 1;
+                        const spacing = totalH / numItems;
+                        const boxH = Math.min(130, spacing * 0.85); // Auto scale height
+
+                        formData.resultsList.forEach((res, index) => {
+                            const y = sy + (index * spacing);
+                            
+                            // Top Red Pill (Teams)
+                            ctx.fillStyle = formData.team2Color; // Using team2Color as the red top
+                            if(ctx.roundRect) {
+                                ctx.beginPath(); ctx.roundRect(W/2 - 320, y, 640, boxH/2, [15, 15, 0, 0]); ctx.fill();
+                            } else {
+                                ctx.fillRect(W/2 - 320, y, 640, boxH/2);
+                            }
+                            
+                            // Bottom Dark Pill (Scores)
+                            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                            if(ctx.roundRect) {
+                                ctx.beginPath(); ctx.roundRect(W/2 - 320, y + boxH/2, 640, boxH/2, [0, 0, 15, 15]); ctx.fill();
+                            } else {
+                                ctx.fillRect(W/2 - 320, y + boxH/2, 640, boxH/2);
+                            }
+
+                            // Team Texts
+                            drawText(ctx, res.team1, W/2 - 160, y + boxH/2 - 18, 32, '#fff', 'center', 'bold');
+                            drawText(ctx, res.team2, W/2 + 160, y + boxH/2 - 18, 32, '#fff', 'center', 'bold');
+
+                            // VS Circle Center
+                            ctx.beginPath(); ctx.arc(W/2, y + boxH/2, 28, 0, Math.PI*2); ctx.fillStyle = '#fff'; ctx.fill();
+                            drawText(ctx, "VS", W/2, y + boxH/2 + 10, 24, formData.team2Color, 'center', '900');
+
+                            // Scores
+                            drawText(ctx, res.score1, W/2 - 250, y + boxH - 18, 45, '#fff', 'center', 'bold');
+                            drawText(ctx, res.score2, W/2 + 250, y + boxH - 18, 45, '#fff', 'center', 'bold');
+
+                            // Tourney Pill Bottom Center
+                            ctx.fillStyle = formData.team1Color; // Using team1Color as the yellow pill
+                            if(ctx.roundRect) {
+                                ctx.beginPath(); ctx.roundRect(W/2 - 130, y + boxH/2 + 8, 260, boxH/2 - 16, 5); ctx.fill();
+                            } else {
+                                ctx.fillRect(W/2 - 130, y + boxH/2 + 8, 260, boxH/2 - 16);
+                            }
+                            drawText(ctx, res.tourney, W/2, y + boxH - 22, 24, '#000', 'center', 'bold');
+                        });
+                    } else if (appMode === 'multi_schedule') {
+                        const py = splitY + 40;
+                        
+                        // Date Pill
+                        ctx.fillStyle = formData.primaryColor;
+                        if(ctx.roundRect) {
+                            ctx.beginPath(); ctx.roundRect(W/2 - 180, py, 360, 45, 10); ctx.fill();
+                        } else {
+                            ctx.fillRect(W/2 - 180, py, 360, 45);
+                        }
+                        drawText(ctx, formData.multiScheduleDate, W/2, py + 32, 28, '#fff', 'center', 'bold');
+                        
+                        // Title Text
+                        drawText(ctx, formData.multiScheduleTitle, W/2, py + 100, 50, '#fff', 'center', 'bold');
+                        
+                        // Divider Line
+                        ctx.beginPath(); ctx.moveTo(40, py + 120); ctx.lineTo(W - 40, py + 120); 
+                        ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth=3; ctx.stroke();
+
+                        // Dynamic Grid Layout
+                        const sy = py + 140;
+                        const totalH = H - footerH - sy - 30;
+                        const numItems = formData.scheduleList.length || 1;
+                        const rows = Math.ceil(numItems / 2);
+                        const spacing = totalH / rows;
+                        const boxH = Math.min(140, spacing * 0.85);
+                        const colW = 460;
+
+                        formData.scheduleList.forEach((sch, index) => {
+                            const col = index % 2;
+                            const row = Math.floor(index / 2);
+                            const cx = col === 0 ? W/2 - colW - 20 : W/2 + 20;
+                            const y = sy + (row * spacing);
+
+                            // Dark Box Background
+                            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                            if(ctx.roundRect) {
+                                ctx.beginPath(); ctx.roundRect(cx, y, colW, boxH, 10); ctx.fill();
+                            } else {
+                                ctx.fillRect(cx, y, colW, boxH);
+                            }
+
+                            // Top Accent Line (Yellow)
+                            ctx.fillStyle = formData.team1Color;
+                            if(ctx.roundRect) {
+                                ctx.beginPath(); ctx.roundRect(cx, y, colW, 6, [10, 10, 0, 0]); ctx.fill();
+                            } else {
+                                ctx.fillRect(cx, y, colW, 6);
+                            }
+
+                            // Sport Type Small Pill
+                            ctx.fillStyle = formData.team1Color;
+                            if(ctx.roundRect) {
+                                ctx.beginPath(); ctx.roundRect(cx + colW/2 - 60, y + 15, 120, 24, 5); ctx.fill();
+                            } else {
+                                ctx.fillRect(cx + colW/2 - 60, y + 15, 120, 24);
+                            }
+                            drawText(ctx, sch.sport, cx + colW/2, y + 33, 16, '#000', 'center', 'bold');
+
+                            // Tournament
+                            drawText(ctx, sch.tourney, cx + colW/2, y + 65, 20, '#cbd5e1', 'center', 'normal');
+                            
+                            // Match vs Match
+                            drawText(ctx, sch.match, cx + colW/2, y + 98, 30, '#fff', 'center', 'bold');
+                            
+                            // Time Pill (Bottom)
+                            ctx.fillStyle = formData.primaryColor;
+                            if(ctx.roundRect) {
+                                ctx.beginPath(); ctx.roundRect(cx + colW/2 - 80, y + 115, 160, 26, 13); ctx.fill();
+                            } else {
+                                ctx.fillRect(cx + colW/2 - 80, y + 115, 160, 26);
+                            }
+                            drawText(ctx, sch.time, cx + colW/2, y + 134, 18, '#fff', 'center', 'bold');
+                        });
+
+                        // Center Circle Icon Overlay
+                        const centerY = sy + (rows * spacing) / 2 - (spacing - boxH)/2;
+                        ctx.beginPath(); ctx.arc(W/2, centerY, 50, 0, Math.PI*2); ctx.fillStyle = '#fff'; ctx.fill();
+                        ctx.lineWidth = 4; ctx.strokeStyle = formData.team1Color; ctx.stroke();
+                        // Inner content of circle (can be an icon, for now just text)
+                        drawText(ctx, "খেলার", W/2, centerY - 5, 20, '#0f172a', 'center', 'bold');
+                        drawText(ctx, "খবর", W/2, centerY + 18, 20, '#0f172a', 'center', 'bold');
                     }
                     
                     drawText(ctx, formData.footerHandle, W / 2, footerY + 40, 24, '#64748b', 'center', 'normal');
@@ -448,7 +649,6 @@
                 } catch(e) { console.error(e); }
             };
 
-            // Added currentView to dependency array to ensure canvas draws after switching views
             useEffect(() => { drawCanvas(false); }, [bgImage, bgImage2, formData, img1Pos, img2Pos, avatarPos, avatarImage, appMode, currentView]);
 
             const handleImageUpload = (e, isSecond = false) => {
@@ -537,6 +737,7 @@
                 const currentPos = targetImg === 'img1' ? img1Pos : (targetImg === 'img2' ? img2Pos : avatarPos);
                 gestureStart.current = { mode: 'pan', target: targetImg, x: e.clientX, y: e.clientY, imgX: currentPos.x, imgY: currentPos.y };
             };
+
             const handleMouseMove = (e) => {
                 if (gestureStart.current.mode === 'pan') {
                     const s = 1080 / e.target.getBoundingClientRect().width; const { target, imgX, x, imgY, y } = gestureStart.current;
@@ -546,9 +747,6 @@
             };
 
             const handleEnd = () => { gestureStart.current.mode = null; };
-            const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
-            const swapTeams = () => setFormData(p => ({ ...p, team1: p.team2, team1Score: p.team2Score, team1Overs: p.team2Overs, team1Color: p.team2Color, team2: p.team1, team2Score: p.team1Score, team2Overs: p.team1Overs, team2Color: p.team1Color, pollPlayer1: p.pollPlayer2, pollPlayer2: p.pollPlayer1 }));
-            const copyId = () => { navigator.clipboard.writeText(userId); alert("ID Copied: " + userId); };
 
             const handleDownloadClick = async () => {
                 if (isProcessing) return; if (points < DOWNLOAD_COST) { setShowBuyModal(true); return; }
@@ -687,6 +885,18 @@
                             <div className="max-w-2xl mx-auto space-y-6 animation-slideUpFade">
                                 {showInstallPrompt && (<div className="install-prompt bg-slate-900 text-white p-5 rounded-2xl shadow-2xl flex items-center justify-between border border-slate-700"><div className="flex items-center gap-4"><div className="bg-rose-500/10 text-rose-500 p-3 rounded-xl border border-rose-500/20"><IconInstall /></div><div><h4 className="font-bold text-sm">Install App</h4><p className="text-xs text-slate-400 font-medium">Add to Home Screen for best experience</p></div></div><div className="flex gap-2"><button onClick={() => setShowInstallPrompt(false)} className="p-2 text-slate-500 hover:text-white transition-colors"><IconClose /></button><button onClick={handleInstallApp} className="bg-white hover:bg-slate-200 text-slate-900 px-4 py-2 rounded-xl text-sm font-bold transition-colors">Install</button></div></div>)}
 
+                                {/* MODE SELECTOR (PILLS) */}
+                                <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 px-1">
+                                    {['scorecard', 'multi_result', 'schedule', 'multi_schedule', 'player', 'career', 'poll', 'discussion', 'milestone', 'news', 'statement'].map(mode => {
+                                        const toolConfig = TOOLS.find(t => t.id === mode);
+                                        return (
+                                            <button key={mode} onClick={() => setAppMode(mode)} className={`whitespace-nowrap px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 ${appMode === mode ? 'bg-gradient-to-r from-rose-500 to-red-600 text-white shadow-[0_0_15px_rgba(225,29,72,0.3)]' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-800/50'}`}>
+                                                {toolConfig ? toolConfig.name : mode}
+                                            </button>
+                                        )
+                                    })}
+                                </div>
+
                                 {/* CANVAS AREA */}
                                 <div className="bg-slate-900 rounded-[2rem] overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.5)] border border-slate-800 aspect-[1080/1200] relative group canvas-container touch-none ring-1 ring-white/5">
                                     <canvas 
@@ -740,7 +950,9 @@
                                     <div className="p-3 bg-slate-950 border-b border-slate-800">
                                         <div className="flex p-1 bg-slate-900 rounded-2xl border border-slate-800 shadow-inner">
                                             <button onClick={() => setActiveTab('match')} className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'match' ? 'bg-slate-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-300'}`}>Content</button>
-                                            {appMode !== 'player' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone' && appMode !== 'news' && appMode !== 'statement' && <button onClick={() => setActiveTab('teams')} className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'teams' ? 'bg-slate-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-300'}`}>Teams</button>}
+                                            {appMode === 'scorecard' || appMode === 'schedule' ? (
+                                                <button onClick={() => setActiveTab('teams')} className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'teams' ? 'bg-slate-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-300'}`}>Teams</button>
+                                            ) : null}
                                             <button onClick={() => setActiveTab('style')} className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'style' ? 'bg-slate-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-300'}`}>Style</button>
                                         </div>
                                     </div>
@@ -799,7 +1011,7 @@
                                                             <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Badge Text</label>
                                                             <input type="text" name="badgeText" value={formData.badgeText} onChange={handleChange} className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-sm font-medium text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Badge" />
                                                         </div>
-                                                        {appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone' && appMode !== 'statement' && (
+                                                        {appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone' && appMode !== 'statement' && appMode !== 'discussion' && appMode !== 'multi_result' && appMode !== 'multi_schedule' && (
                                                             <div>
                                                                 <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Main Title</label>
                                                                 <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-sm font-medium text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Tournament Name" />
@@ -813,6 +1025,92 @@
                                                 </div>
 
                                                 {/* Contextual Forms based on Mode */}
+                                                
+                                                {appMode === 'multi_result' && (
+                                                    <div className="p-5 bg-rose-500/10 rounded-2xl border-l-4 border-rose-500 shadow-inner space-y-4">
+                                                        <h4 className="text-xs font-black text-rose-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconList /> Match Results Builder</h4>
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-rose-300 mb-1.5 block ml-1">Main Headline</label>
+                                                            <input type="text" name="multiResultTitle" value={formData.multiResultTitle} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-rose-500/30 rounded-xl text-sm font-bold text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
+                                                        </div>
+                                                        
+                                                        <div className="space-y-4 mt-6">
+                                                            {formData.resultsList.map((res, index) => (
+                                                                <div key={res.id} className="p-4 bg-slate-950 rounded-xl border border-slate-800 relative group">
+                                                                    <div className="absolute -top-3 left-4 bg-slate-800 px-2 py-0.5 rounded text-[10px] font-bold text-slate-400">Match {index + 1}</div>
+                                                                    <button onClick={() => removeResult(res.id)} className="absolute top-2 right-2 p-1.5 bg-red-500/20 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors" title="Delete"><IconTrash /></button>
+                                                                    
+                                                                    <div className="grid grid-cols-2 gap-3 mt-2">
+                                                                        <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block">Left Team</label><input type="text" value={res.team1} onChange={(e) => handleResultChange(res.id, 'team1', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-white" /></div>
+                                                                        <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block">Right Team</label><input type="text" value={res.team2} onChange={(e) => handleResultChange(res.id, 'team2', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-white" /></div>
+                                                                        <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block">Left Score</label><input type="text" value={res.score1} onChange={(e) => handleResultChange(res.id, 'score1', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm font-bold text-white text-center" /></div>
+                                                                        <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block">Right Score</label><input type="text" value={res.score2} onChange={(e) => handleResultChange(res.id, 'score2', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm font-bold text-white text-center" /></div>
+                                                                    </div>
+                                                                    <div className="mt-3"><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block">Tournament</label><input type="text" value={res.tourney} onChange={(e) => handleResultChange(res.id, 'tourney', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-white" /></div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                        <button onClick={addResult} className="w-full py-3 mt-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border border-slate-700 transition-colors">+ Add Match Result</button>
+                                                    </div>
+                                                )}
+
+                                                {appMode === 'multi_schedule' && (
+                                                    <div className="p-5 bg-sky-500/10 rounded-2xl border-l-4 border-sky-500 shadow-inner space-y-4">
+                                                        <h4 className="text-xs font-black text-sky-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconGrid /> All-Day Schedule Builder</h4>
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <label className="text-[10px] uppercase font-bold text-sky-300 mb-1.5 block ml-1">Schedule Date</label>
+                                                                <input type="text" name="multiScheduleDate" value={formData.multiScheduleDate} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-sky-500/30 rounded-xl text-sm font-bold text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all" />
+                                                            </div>
+                                                            <div>
+                                                                <label className="text-[10px] uppercase font-bold text-sky-300 mb-1.5 block ml-1">Main Headline</label>
+                                                                <input type="text" name="multiScheduleTitle" value={formData.multiScheduleTitle} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-sky-500/30 rounded-xl text-sm font-bold text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all" />
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div className="space-y-4 mt-6">
+                                                            {formData.scheduleList.map((sch, index) => (
+                                                                <div key={sch.id} className="p-4 bg-slate-950 rounded-xl border border-slate-800 relative group">
+                                                                    <div className="absolute -top-3 left-4 bg-slate-800 px-2 py-0.5 rounded text-[10px] font-bold text-slate-400">Fixture {index + 1}</div>
+                                                                    <button onClick={() => removeSchedule(sch.id)} className="absolute top-2 right-2 p-1.5 bg-red-500/20 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors" title="Delete"><IconTrash /></button>
+                                                                    
+                                                                    <div className="grid grid-cols-2 gap-3 mt-2">
+                                                                        <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block">Sport Type</label><input type="text" value={sch.sport} onChange={(e) => handleScheduleChange(sch.id, 'sport', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-white" placeholder="e.g. ফুটবল" /></div>
+                                                                        <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block">Tournament</label><input type="text" value={sch.tourney} onChange={(e) => handleScheduleChange(sch.id, 'tourney', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-white" /></div>
+                                                                    </div>
+                                                                    <div className="grid grid-cols-[2fr_1fr] gap-3 mt-3">
+                                                                        <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block">Match / Teams</label><input type="text" value={sch.match} onChange={(e) => handleScheduleChange(sch.id, 'match', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm font-bold text-white" /></div>
+                                                                        <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block">Time</label><input type="text" value={sch.time} onChange={(e) => handleScheduleChange(sch.id, 'time', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm font-bold text-white text-center" /></div>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                        <button onClick={addSchedule} className="w-full py-3 mt-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border border-slate-700 transition-colors">+ Add Schedule Item</button>
+                                                    </div>
+                                                )}
+
+                                                {appMode === 'discussion' && (
+                                                    <div className="p-5 bg-violet-500/10 rounded-2xl border-l-4 border-violet-500 shadow-inner space-y-4">
+                                                        <h4 className="text-xs font-black text-violet-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconHelp /> Q&A / Discussion</h4>
+                                                        <div>
+                                                            <div className="flex justify-between items-center mb-1.5">
+                                                                <label className="text-[10px] uppercase font-bold text-violet-300 ml-1">Topic / Main Heading</label>
+                                                                <input type="color" name="primaryColor" value={formData.primaryColor} onChange={handleChange} className="w-5 h-5 rounded-full overflow-hidden border border-violet-500/50 cursor-pointer" title="Topic Color" />
+                                                            </div>
+                                                            <input type="text" name="discTopic" value={formData.discTopic} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-violet-500/30 rounded-xl text-sm font-bold text-white focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all" />
+                                                        </div>
+                                                        <div>
+                                                            <div className="flex justify-between items-center mb-1.5">
+                                                                <label className="text-[10px] uppercase font-bold text-violet-300 ml-1">Highlighted Lines (1 & 3)</label>
+                                                                <input type="color" name="team2Color" value={formData.team2Color} onChange={handleChange} className="w-5 h-5 rounded-full overflow-hidden border border-violet-500/50 cursor-pointer" title="Accent Color" />
+                                                            </div>
+                                                            <input type="text" name="discLine1" value={formData.discLine1} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-violet-500/30 rounded-xl text-sm font-bold text-white focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all mb-3" placeholder="Line 1 (Accent Color)" />
+                                                            <input type="text" name="discLine2" value={formData.discLine2} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-violet-500/30 rounded-xl text-sm font-bold text-white focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all mb-3" placeholder="Line 2 (White Color)" />
+                                                            <input type="text" name="discLine3" value={formData.discLine3} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-violet-500/30 rounded-xl text-sm font-bold text-white focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all" placeholder="Line 3 (Accent Color)" />
+                                                        </div>
+                                                    </div>
+                                                )}
+
                                                 {appMode === 'poll' && (
                                                     <div className="p-5 bg-indigo-500/10 rounded-2xl border-l-4 border-indigo-500 shadow-inner space-y-4">
                                                         <h4 className="text-xs font-black text-indigo-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconChart /> Reaction Poll Settings</h4>
@@ -938,22 +1236,22 @@
                                                 )}
 
                                                 {appMode === 'statement' && (
-                                                    <div className="p-5 bg-rose-500/10 rounded-2xl border-l-4 border-rose-500 shadow-inner space-y-4">
-                                                        <h4 className="text-xs font-black text-rose-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconMessage /> Statement / Quote Overlay</h4>
+                                                    <div className="p-5 bg-fuchsia-500/10 rounded-2xl border-l-4 border-fuchsia-500 shadow-inner space-y-4">
+                                                        <h4 className="text-xs font-black text-fuchsia-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconMessage /> Statement / Quote Overlay</h4>
                                                         <div>
-                                                            <label className="text-[10px] uppercase font-bold text-rose-300 mb-1.5 block ml-1">Statement Text</label>
-                                                            <textarea name="quoteText" value={formData.quoteText} onChange={handleChange} rows="3" className="w-full px-4 py-3 bg-slate-900 border border-rose-500/30 rounded-xl text-sm text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Enter statement..."></textarea>
+                                                            <label className="text-[10px] uppercase font-bold text-fuchsia-300 mb-1.5 block ml-1">Statement Text</label>
+                                                            <textarea name="quoteText" value={formData.quoteText} onChange={handleChange} rows="3" className="w-full px-4 py-3 bg-slate-900 border border-fuchsia-500/30 rounded-xl text-sm text-white focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 transition-all" placeholder="Enter statement..."></textarea>
                                                         </div>
                                                         <div>
-                                                            <label className="text-[10px] uppercase font-bold text-rose-300 mb-1.5 block ml-1">Author Name / Credit</label>
-                                                            <input type="text" name="quoteAuthor" value={formData.quoteAuthor} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-rose-500/30 rounded-xl text-sm font-bold text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Author name" />
+                                                            <label className="text-[10px] uppercase font-bold text-fuchsia-300 mb-1.5 block ml-1">Author Name / Credit</label>
+                                                            <input type="text" name="quoteAuthor" value={formData.quoteAuthor} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-fuchsia-500/30 rounded-xl text-sm font-bold text-white focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 transition-all" placeholder="Author name" />
                                                         </div>
                                                     </div>
                                                 )}
                                             </div>
                                         )}
                                         
-                                        {activeTab === 'teams' && appMode !== 'player' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone' && appMode !== 'news' && appMode !== 'statement' && (
+                                        {activeTab === 'teams' && appMode === 'scorecard' && (
                                             <div className="space-y-6">
                                                 <button onClick={swapTeams} className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors border border-slate-700 shadow-sm"><IconSwap /> Swap Sides</button>
                                                 
@@ -966,18 +1264,16 @@
                                                         <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Name</label>
                                                         <input type="text" name="team1" value={formData.team1} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" />
                                                     </div>
-                                                    {appMode === 'scorecard' && (
-                                                        <div className="flex gap-4">
-                                                            <div className="flex-1">
-                                                                <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Score</label>
-                                                                <input type="text" name="team1Score" value={formData.team1Score} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" />
-                                                            </div>
-                                                            <div className="w-28">
-                                                                <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Overs</label>
-                                                                <input type="text" name="team1Overs" value={formData.team1Overs} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-center" />
-                                                            </div>
+                                                    <div className="flex gap-4">
+                                                        <div className="flex-1">
+                                                            <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Score</label>
+                                                            <input type="text" name="team1Score" value={formData.team1Score} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" />
                                                         </div>
-                                                    )}
+                                                        <div className="w-28">
+                                                            <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Overs</label>
+                                                            <input type="text" name="team1Overs" value={formData.team1Overs} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-center" />
+                                                        </div>
+                                                    </div>
                                                 </div>
                                                 
                                                 <div className="bg-slate-950 p-5 rounded-2xl border-l-4 border-rose-500 shadow-inner space-y-4">
@@ -989,18 +1285,44 @@
                                                         <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Name</label>
                                                         <input type="text" name="team2" value={formData.team2} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
                                                     </div>
-                                                    {appMode === 'scorecard' && (
-                                                        <div className="flex gap-4">
-                                                            <div className="flex-1">
-                                                                <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Score</label>
-                                                                <input type="text" name="team2Score" value={formData.team2Score} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
-                                                            </div>
-                                                            <div className="w-28">
-                                                                <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Overs</label>
-                                                                <input type="text" name="team2Overs" value={formData.team2Overs} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all text-center" />
-                                                            </div>
+                                                    <div className="flex gap-4">
+                                                        <div className="flex-1">
+                                                            <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Score</label>
+                                                            <input type="text" name="team2Score" value={formData.team2Score} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
                                                         </div>
-                                                    )}
+                                                        <div className="w-28">
+                                                            <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Overs</label>
+                                                            <input type="text" name="team2Overs" value={formData.team2Overs} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all text-center" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {activeTab === 'teams' && appMode === 'schedule' && (
+                                            <div className="space-y-6">
+                                                <button onClick={swapTeams} className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors border border-slate-700 shadow-sm"><IconSwap /> Swap Sides</button>
+                                                
+                                                <div className="bg-slate-950 p-5 rounded-2xl border-l-4 border-blue-500 shadow-inner space-y-4">
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <h3 className="text-xs font-black text-blue-400 uppercase tracking-wider">Left Team</h3>
+                                                        <input type="color" name="team1Color" value={formData.team1Color} onChange={handleChange} className="w-8 h-8 rounded-full overflow-hidden border-2 border-slate-800 cursor-pointer shadow-sm" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Name</label>
+                                                        <input type="text" name="team1" value={formData.team1} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" />
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="bg-slate-950 p-5 rounded-2xl border-l-4 border-rose-500 shadow-inner space-y-4">
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <h3 className="text-xs font-black text-rose-400 uppercase tracking-wider">Right Team</h3>
+                                                        <input type="color" name="team2Color" value={formData.team2Color} onChange={handleChange} className="w-8 h-8 rounded-full overflow-hidden border-2 border-slate-800 cursor-pointer shadow-sm" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Name</label>
+                                                        <input type="text" name="team2" value={formData.team2} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
+                                                    </div>
                                                 </div>
                                             </div>
                                         )}
