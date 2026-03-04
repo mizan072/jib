@@ -10,6 +10,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1165/1165249.png">
 
+    <!-- Dependencies -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -17,17 +18,18 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+    <!-- Supress specific React/Firebase warnings in console -->
     <script>
         const originalError = console.error;
         console.error = function(...args) {
             if (args[0] && typeof args[0] === 'string' && (args[0].includes('CloudStorage') || args[0].includes('cache'))) return;
             originalError.apply(console, args);
         };
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => { navigator.serviceWorker.register('./service-worker.js').catch(e => console.log(e)); });
-        }
     </script>
 
+    <!-- ========================================== -->
+    <!--                 STYLES                     -->
+    <!-- ========================================== -->
     <style>
         body { 
             font-family: 'Hind Siliguri', sans-serif; 
@@ -38,25 +40,33 @@
             -webkit-user-select: none; 
             -webkit-touch-callout: none; 
         }
+        
+        /* Scrollbar hiding */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Canvas */
         .canvas-container { touch-action: none; }
         
+        /* Animations */
         .modal-backdrop { animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .modal-content { animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         .animation-fadeIn { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .animation-slideUpFade { animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .toast-enter { animation: slideUpToast 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         
         @keyframes fadeIn { from { opacity: 0; backdrop-filter: blur(0px); } to { opacity: 1; backdrop-filter: blur(8px); } }
         @keyframes slideUpFade { from { transform: translateY(20px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+        @keyframes slideUpToast { from { transform: translateX(-50%) translateY(100%); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
         
+        /* Loader Spinner */
         .loader { border: 2px solid rgba(255,255,255,0.1); border-top: 2px solid #eab308; border-radius: 50%; width: 16px; height: 16px; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
+        /* Custom Inputs */
         input[type=range] { -webkit-appearance: none; background: transparent; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #f43f5e; cursor: pointer; margin-top: -6px; box-shadow: 0 0 10px rgba(244, 63, 94, 0.5); border: 2px solid #fff; }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #334155; border-radius: 4px; }
-        
         textarea::-webkit-scrollbar { width: 6px; }
         textarea::-webkit-scrollbar-track { background: transparent; }
         textarea::-webkit-scrollbar-thumb { background-color: #334155; border-radius: 20px; }
@@ -65,13 +75,17 @@
 <body oncontextmenu="return false;">
     <div id="root"></div>
 
+    <!-- ========================================== -->
+    <!--              APP LOGIC & UI                -->
+    <!-- ========================================== -->
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
+        // --- CONFIGURATION ---
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztp3j5Kh1tmcMcQpXfgNp9mhYQRchm2iSB-fPAk-V5ikDcXHcJlmVJ-yb93iIiycJ7/exec"; 
         const DOWNLOAD_COST = 2; 
 
-        // --- ICONS ---
+        // --- SVG ICONS ---
         const IconLogo = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 Z"/></svg>;
         const IconCoin = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="gold" stroke="#b45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 18V6"></path></svg>;
         const IconDownload = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>;
@@ -109,15 +123,28 @@
             { id: 'player', name: 'Player Profile', desc: 'Highlight player performance', icon: IconUser, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
             { id: 'career', name: 'Career Stats', desc: 'Overall career statistics', icon: IconChart, color: 'text-cyan-400', bg: 'bg-cyan-400/10', border: 'border-cyan-400/20' },
             { id: 'poll', name: 'Reaction Poll', desc: 'Facebook-style reaction polls', icon: IconSwap, color: 'text-indigo-400', bg: 'bg-indigo-400/10', border: 'border-indigo-400/20' },
-            { id: 'discussion', name: 'Q&A / Discussion', desc: 'Text-heavy engagement posts', icon: IconHelp, color: 'text-violet-400', bg: 'bg-violet-400/10', border: 'border-violet-400/20' },
+            { id: 'discussion', name: 'Q&A / Discussion', desc: 'Text-heavy engagement posts', icon: IconHelp, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
             { id: 'milestone', name: 'Milestones', desc: 'Birthdays and records', icon: IconStar, color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/20' },
             { id: 'news', name: 'Breaking News', desc: 'Urgent updates and headlines', icon: IconMegaphone, color: 'text-red-500', bg: 'bg-red-500/10', border: 'border-red-500/20' },
             { id: 'statement', name: 'Quote Overlay', desc: 'Player quotes with avatar cutout', icon: IconMessage, color: 'text-fuchsia-400', bg: 'bg-fuchsia-400/10', border: 'border-fuchsia-400/20' }
         ];
 
-        // --- GLOBAL HELPERS ---
+        // --- CANVAS RENDERING HELPERS ---
         const measureText = (ctx, text, fs, fw) => { ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`; return ctx.measureText(text).width; };
         const drawText = (ctx, text, x, y, fs, color, align, fw) => { ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`; ctx.fillStyle = color; ctx.textAlign = align; ctx.fillText(text, x, y); };
+        
+        const drawResponsiveText = (ctx, text, x, y, maxW, defaultFs, color, align, fw) => {
+            let fs = defaultFs;
+            ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`;
+            while (ctx.measureText(text).width > maxW && fs > 10) {
+                fs -= 1;
+                ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`;
+            }
+            ctx.fillStyle = color;
+            ctx.textAlign = align;
+            ctx.fillText(text, x, y);
+        };
+
         const drawFBIcon = (ctx, type, cx, cy, size) => {
             ctx.save(); ctx.translate(cx, cy); ctx.beginPath(); ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
             ctx.fillStyle = type === 'like' ? '#1877F2' : '#F02849'; ctx.fill(); ctx.fillStyle = '#ffffff';
@@ -127,35 +154,43 @@
             ctx.restore();
         };
 
+        const drawRoundedRect = (ctx, x, y, width, height, radius) => {
+            if (ctx.roundRect) {
+                ctx.beginPath(); ctx.roundRect(x, y, width, height, radius); ctx.fill();
+            } else {
+                ctx.fillRect(x, y, width, height); // fallback
+            }
+        };
+
         function App() {
             const canvasRef = useRef(null);
             
-            // APP STATE
-            const [currentView, setCurrentView] = useState('home'); // 'home' or 'editor'
+            // --- STATE MANAGEMENT ---
+            const [currentView, setCurrentView] = useState('home'); 
             const [appMode, setAppMode] = useState('scorecard'); 
             const [activeTab, setActiveTab] = useState('match');
             
-            // CANVAS STATE
             const [bgImage, setBgImage] = useState(null);
             const [bgImage2, setBgImage2] = useState(null);
             const [avatarImage, setAvatarImage] = useState(null);
+            
             const [img1Pos, setImg1Pos] = useState({ x: 0, y: 0, scale: 1 });
             const [img2Pos, setImg2Pos] = useState({ x: 0, y: 0, scale: 1 });
             const [avatarPos, setAvatarPos] = useState({ x: 0, y: 0, scale: 1 });
+            
             const [showBuyModal, setShowBuyModal] = useState(false);
             const [isProcessing, setIsProcessing] = useState(false); 
             const gestureStart = useRef({ mode: null, target: null, x: 0, y: 0, dist: 0, scale: 1, imgX: 0, imgY: 0 });
             
-            // SYSTEM STATE
             const [userId, setUserId] = useState('');
             const [points, setPoints] = useState(0);
             const [isCheckingPoints, setIsCheckingPoints] = useState(true);
             const [deferredPrompt, setDeferredPrompt] = useState(null);
             const [showInstallPrompt, setShowInstallPrompt] = useState(false);
             
-            // NOTIFICATION STATE
             const [appNotification, setAppNotification] = useState(null);
             const [showAppNotification, setShowAppNotification] = useState(false);
+            const [toastMsg, setToastMsg] = useState(null);
 
             const [formData, setFormData] = useState({
                 badgeText: 'proscorecard_bot', title: 'আইসিসি টি-টোয়েন্টি বিশ্বকাপ', footerHandle: 'এই রকম পোস্টার তৈরি করুন এই টেলিগ্রাম বট দিয়েঃ  @proscorecard_bot',
@@ -183,6 +218,7 @@
                 ]
             });
 
+            // --- INITIALIZATION ---
             useEffect(() => {
                 const handler = (e) => { e.preventDefault(); setDeferredPrompt(e); setShowInstallPrompt(true); };
                 window.addEventListener('beforeinstallprompt', handler);
@@ -200,6 +236,7 @@
                 return () => window.removeEventListener('beforeinstallprompt', handler);
             }, []);
 
+            // --- USER & POINTS ---
             const fetchPoints = async (uid) => {
                 if(GOOGLE_SCRIPT_URL.includes("xxxxxxxx")) { setPoints(0); setIsCheckingPoints(false); return; }
                 setIsCheckingPoints(true);
@@ -230,6 +267,28 @@
                 setShowAppNotification(false);
             };
 
+            const showToast = (msg) => {
+                setToastMsg(msg);
+                setTimeout(() => setToastMsg(null), 3000);
+            };
+
+            const copyId = () => { 
+                navigator.clipboard.writeText(userId); 
+                showToast("Account ID copied to clipboard!"); 
+            };
+
+            // --- FORM ACTIONS ---
+            const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+            const swapTeams = () => setFormData(p => ({ ...p, team1: p.team2, team1Score: p.team2Score, team1Overs: p.team2Overs, team1Color: p.team2Color, team2: p.team1, team2Score: p.team1Score, team2Overs: p.team1Overs, team2Color: p.team1Color, pollPlayer1: p.pollPlayer2, pollPlayer2: p.pollPlayer1 }));
+            
+            const handleResultChange = (id, field, value) => { setFormData(p => ({ ...p, resultsList: p.resultsList.map(item => item.id === id ? { ...item, [field]: value } : item) })); };
+            const addResult = () => { setFormData(p => ({ ...p, resultsList: [...p.resultsList, { id: Date.now(), team1: 'দল ১', team2: 'দল ২', score1: '০', score2: '০', tourney: 'টুর্নামেন্ট' }] })); };
+            const removeResult = (id) => { setFormData(p => ({ ...p, resultsList: p.resultsList.filter(item => item.id !== id) })); };
+
+            const handleScheduleChange = (id, field, value) => { setFormData(p => ({ ...p, scheduleList: p.scheduleList.map(item => item.id === id ? { ...item, [field]: value } : item) })); };
+            const addSchedule = () => { setFormData(p => ({ ...p, scheduleList: [...p.scheduleList, { id: Date.now(), sport: 'খেলা', tourney: 'টুর্নামেন্ট', match: 'দল-দল', time: 'সময়' }] })); };
+            const removeSchedule = (id) => { setFormData(p => ({ ...p, scheduleList: p.scheduleList.filter(item => item.id !== id) })); };
+
             const handleInstallApp = async () => {
                 if (deferredPrompt) {
                     deferredPrompt.prompt();
@@ -238,82 +297,91 @@
                 }
             };
 
-            const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
-            const swapTeams = () => setFormData(p => ({ ...p, team1: p.team2, team1Score: p.team2Score, team1Overs: p.team2Overs, team1Color: p.team2Color, team2: p.team1, team2Score: p.team1Score, team2Overs: p.team1Overs, team2Color: p.team1Color, pollPlayer1: p.pollPlayer2, pollPlayer2: p.pollPlayer1 }));
-            const copyId = () => { navigator.clipboard.writeText(userId); alert("ID Copied: " + userId); };
-
-            // Multi-Result List Helpers
-            const handleResultChange = (id, field, value) => {
-                setFormData(p => ({ ...p, resultsList: p.resultsList.map(item => item.id === id ? { ...item, [field]: value } : item) }));
-            };
-            const addResult = () => {
-                setFormData(p => ({ ...p, resultsList: [...p.resultsList, { id: Date.now(), team1: 'দল ১', team2: 'দল ২', score1: '০', score2: '০', tourney: 'টুর্নামেন্ট' }] }));
-            };
-            const removeResult = (id) => {
-                setFormData(p => ({ ...p, resultsList: p.resultsList.filter(item => item.id !== id) }));
-            };
-
-            // Multi-Schedule List Helpers
-            const handleScheduleChange = (id, field, value) => {
-                setFormData(p => ({ ...p, scheduleList: p.scheduleList.map(item => item.id === id ? { ...item, [field]: value } : item) }));
-            };
-            const addSchedule = () => {
-                setFormData(p => ({ ...p, scheduleList: [...p.scheduleList, { id: Date.now(), sport: 'খেলা', tourney: 'টুর্নামেন্ট', match: 'দল-দল', time: 'সময়' }] }));
-            };
-            const removeSchedule = (id) => {
-                setFormData(p => ({ ...p, scheduleList: p.scheduleList.filter(item => item.id !== id) }));
-            };
-
-            // --- CANVAS RENDER ---
+            // --- CANVAS RENDER CORE ---
             const drawCanvas = (isExport) => {
                 const canvas = canvasRef.current; if (!canvas) return;
                 const ctx = canvas.getContext('2d');
                 const W = 1080, H = 1200, splitY = 700;
                 canvas.width = W; canvas.height = H;
 
-                ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+                // Default Dark BG
+                ctx.fillStyle = '#0f172a'; 
+                ctx.fillRect(0, 0, W, H);
 
                 try {
-                    if (bgImage && bgImage2) {
-                        ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W/2, H); ctx.clip(); ctx.translate(img1Pos.x, img1Pos.y); ctx.scale(img1Pos.scale, img1Pos.scale); ctx.drawImage(bgImage, 0, 0); ctx.restore();
-                        ctx.save(); ctx.beginPath(); ctx.rect(W/2, 0, W/2, H); ctx.clip(); ctx.translate(img2Pos.x, img2Pos.y); ctx.scale(img2Pos.scale, img2Pos.scale); ctx.drawImage(bgImage2, 0, 0); ctx.restore();
-                        ctx.beginPath(); ctx.moveTo(W/2, 0); ctx.lineTo(W/2, H); ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 4; ctx.stroke();
-                    } else if (bgImage) {
-                        ctx.save(); ctx.translate(img1Pos.x, img1Pos.y); ctx.scale(img1Pos.scale, img1Pos.scale); ctx.drawImage(bgImage, 0, 0); ctx.restore();
+                    // 1. Draw Background Images
+                    if (appMode === 'discussion') {
+                        // Discussion uses pure color background based on opacity
+                        ctx.fillStyle = formData.primaryColor;
+                        ctx.globalAlpha = formData.bgOpacity;
+                        ctx.fillRect(0, 0, W, H);
+                        ctx.globalAlpha = 1.0;
                     } else {
-                        const grd = ctx.createLinearGradient(0, 0, 0, splitY); grd.addColorStop(0, '#1e293b'); grd.addColorStop(1, '#0f172a');
-                        ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H); drawText(ctx, "Loading Image...", W/2, H/2, 50, "#94a3b8", "center", "bold");
+                        if (bgImage && bgImage2 && appMode !== 'statement') {
+                            ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W/2, H); ctx.clip(); ctx.translate(img1Pos.x, img1Pos.y); ctx.scale(img1Pos.scale, img1Pos.scale); ctx.drawImage(bgImage, 0, 0); ctx.restore();
+                            ctx.save(); ctx.beginPath(); ctx.rect(W/2, 0, W/2, H); ctx.clip(); ctx.translate(img2Pos.x, img2Pos.y); ctx.scale(img2Pos.scale, img2Pos.scale); ctx.drawImage(bgImage2, 0, 0); ctx.restore();
+                            ctx.beginPath(); ctx.moveTo(W/2, 0); ctx.lineTo(W/2, H); ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 4; ctx.stroke();
+                        } else if (bgImage) {
+                            ctx.save(); ctx.translate(img1Pos.x, img1Pos.y); ctx.scale(img1Pos.scale, img1Pos.scale); ctx.drawImage(bgImage, 0, 0); ctx.restore();
+                        } else {
+                            const grd = ctx.createLinearGradient(0, 0, 0, splitY); grd.addColorStop(0, '#1e293b'); grd.addColorStop(1, '#0f172a');
+                            ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H); drawText(ctx, "Loading Image...", W/2, H/2, 50, "#94a3b8", "center", "bold");
+                        }
                     }
 
+                    // Pre-calculate common metrics
                     const titleBoxY = splitY + 40; const titleBoxW = 800; const titleBoxH = 90; const titleBoxX = (W - titleBoxW) / 2;
                     const scoresY = titleBoxY + 160; const leftCenter = W * 0.25; const rightCenter = W * 0.75; const footerH = 60; const footerY = H - footerH;
 
+                    // 2. Draw Overlays & Gradients
                     ctx.save();
                     ctx.globalAlpha = formData.bgOpacity; 
-                    const gradient = ctx.createLinearGradient(0, splitY, 0, H);
-                    gradient.addColorStop(0, formData.primaryColor); gradient.addColorStop(1, formData.secondaryColor);
-                    ctx.fillStyle = gradient;
                     
-                    if (appMode === 'news') { const h = H * formData.newsGradientHeight; ctx.fillRect(0, H - h, W, h); } 
-                    else if (appMode === 'discussion') { ctx.fillStyle = `rgba(15, 23, 42, ${formData.bgOpacity})`; ctx.fillRect(0, 0, W, H); }
-                    else if (appMode !== 'statement') { ctx.fillRect(0, splitY, W, H - splitY); }
-                    
-                    if (['scorecard', 'schedule', 'player', 'career', 'poll', 'milestone'].includes(appMode)) { 
-                        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; ctx.fillRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH); 
+                    if (appMode === 'news') { 
+                        const h = H * formData.newsGradientHeight;
+                        const gradient = ctx.createLinearGradient(0, H - h, 0, H);
+                        gradient.addColorStop(0, formData.primaryColor); gradient.addColorStop(1, formData.secondaryColor);
+                        ctx.fillStyle = gradient;
+                        ctx.fillRect(0, H - h, W, h); 
+                    } else if (appMode === 'multi_result' || appMode === 'multi_schedule') {
+                        // Full Screen Overlay for these modes
+                        const gradient = ctx.createLinearGradient(0, 0, 0, H);
+                        gradient.addColorStop(0, formData.primaryColor); gradient.addColorStop(1, formData.secondaryColor);
+                        ctx.fillStyle = gradient;
+                        ctx.fillRect(0, 0, W, H);
+                    } else if (appMode === 'statement') {
+                        // Statement handles its own gradient below
+                    } else if (appMode !== 'discussion') { 
+                        const gradient = ctx.createLinearGradient(0, splitY, 0, H);
+                        gradient.addColorStop(0, formData.primaryColor); gradient.addColorStop(1, formData.secondaryColor);
+                        ctx.fillStyle = gradient;
+                        ctx.fillRect(0, splitY, W, H - splitY); 
                     }
-                    ctx.fillStyle = '#020617'; ctx.fillRect(0, footerY, W, footerH); ctx.restore(); 
+                    
+                    // Dark boxes for titles
+                    if (['scorecard', 'schedule', 'player', 'career', 'poll', 'milestone'].includes(appMode)) { 
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'; ctx.fillRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH); 
+                    }
+                    
+                    // Footer Dark Bar
+                    ctx.fillStyle = '#020617'; ctx.fillRect(0, footerY, W, footerH); 
+                    ctx.restore(); 
 
-                    const badgeX = W - 320 - 40;
-                    ctx.beginPath(); ctx.arc(badgeX + 45, 40 + 35, 22, 0, Math.PI * 2); ctx.fillStyle = '#1877F2'; ctx.fill();
-                    drawText(ctx, "f", badgeX + 45, 40 + 48, 35, "#fff", "center", "bold");
-                    ctx.save(); ctx.shadowColor = "rgba(0, 0, 0, 0.8)"; ctx.shadowBlur = 6;
-                    drawText(ctx, formData.badgeText, badgeX + 80, 40 + 48, 32, '#fff', 'left', 'bold'); ctx.restore();
+                    // 3. Draw Common Badge & Main Title
+                    if (appMode !== 'discussion') {
+                        const badgeX = W - 320 - 40;
+                        ctx.beginPath(); ctx.arc(badgeX + 45, 40 + 35, 22, 0, Math.PI * 2); ctx.fillStyle = '#1877F2'; ctx.fill();
+                        drawText(ctx, "f", badgeX + 45, 40 + 48, 35, "#fff", "center", "bold");
+                        ctx.save(); ctx.shadowColor = "rgba(0, 0, 0, 0.8)"; ctx.shadowBlur = 6;
+                        drawText(ctx, formData.badgeText, badgeX + 80, 40 + 48, 32, '#fff', 'left', 'bold'); ctx.restore();
+                    }
 
                     if (['scorecard', 'schedule', 'player', 'career', 'poll', 'milestone'].includes(appMode)) {
                         ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 2; ctx.strokeRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH);
                         drawText(ctx, formData.title, W / 2, titleBoxY + 60, 50, '#fff', 'center', 'bold');
                     } 
 
+                    // 4. Draw Specific Modules
                     if (appMode === 'poll') {
                         const py = splitY + 40;
                         drawText(ctx, formData.pollQuestion, W / 2, py + 20, 55, '#fff', 'center', 'bold');
@@ -322,15 +390,15 @@
                         const boxW = 440; const boxH = 140; const leftX = W/4 - boxW/2; const rightX = (3*W/4) - boxW/2; const topY = py + 80;
 
                         ctx.fillStyle = 'rgba(0,0,0,0.5)';
-                        if(ctx.roundRect) ctx.roundRect(leftX, topY, boxW, boxH, 20); else ctx.fillRect(leftX, topY, boxW, boxH);
-                        ctx.fill(); ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 3; ctx.stroke();
+                        drawRoundedRect(ctx, leftX, topY, boxW, boxH, 20);
+                        ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 3; ctx.stroke();
                         drawFBIcon(ctx, 'like', leftX + 80, topY + 70, 75);
                         drawText(ctx, "লাইক (LIKE)", leftX + boxW/2 + 20, topY + 60, 26, '#3b82f6', 'center', 'bold');
                         drawText(ctx, formData.pollPlayer1, leftX + boxW/2 + 20, topY + 105, 40, '#fff', 'center', 'bold');
 
                         ctx.beginPath(); ctx.fillStyle = 'rgba(0,0,0,0.5)';
-                        if(ctx.roundRect) ctx.roundRect(rightX, topY, boxW, boxH, 20); else ctx.fillRect(rightX, topY, boxW, boxH);
-                        ctx.fill(); ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3; ctx.stroke();
+                        drawRoundedRect(ctx, rightX, topY, boxW, boxH, 20);
+                        ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3; ctx.stroke();
                         drawFBIcon(ctx, 'love', rightX + 80, topY + 70, 75);
                         drawText(ctx, "লাভ (LOVE)", rightX + boxW/2 + 20, topY + 60, 26, '#ef4444', 'center', 'bold');
                         drawText(ctx, formData.pollPlayer2, rightX + boxW/2 + 20, topY + 105, 40, '#fff', 'center', 'bold');
@@ -342,8 +410,8 @@
                     } else if (appMode === 'milestone') {
                         const py = splitY + 40;
                         ctx.fillStyle = 'rgba(0,0,0,0.4)';
-                        if(ctx.roundRect) ctx.roundRect(100, py, W - 200, 240, 20); else ctx.fillRect(100, py, W - 200, 240);
-                        ctx.fill(); ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 3; ctx.stroke();
+                        drawRoundedRect(ctx, 100, py, W - 200, 240, 20);
+                        ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 3; ctx.stroke();
                         drawText(ctx, formData.milestoneOccasion, W/2, py + 55, 35, formData.team1Color, 'center', 'bold');
                         drawText(ctx, formData.milestoneNumber, W/2, py + 140, 90, '#fff', 'center', 'bold');
                         drawText(ctx, formData.milestoneName, W/2, py + 210, 50, '#fff', 'center', 'bold');
@@ -355,24 +423,31 @@
                         const t1x = leftCenter - ((t1w + 15 + t1o) / 2);
                         ctx.textAlign = 'left'; ctx.font = `bold 60px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#fff'; ctx.fillText(formData.team1Score, t1x, scoresY + 80);
                         ctx.font = `normal 35px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#ddd'; ctx.fillText(formData.team1Overs, t1x + t1w + 15, scoresY + 80);
+                        
                         ctx.beginPath(); ctx.moveTo(W/2, scoresY-20); ctx.lineTo(W/2, scoresY+100); ctx.lineWidth=4; ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.stroke();
+                        
                         drawText(ctx, formData.team2, rightCenter, scoresY, 65, formData.team2Color, 'center', 'bold');
                         const t2w = measureText(ctx, formData.team2Score, 60, 'bold'), t2o = measureText(ctx, formData.team2Overs, 35, 'normal');
                         const t2x = rightCenter - ((t2w + 15 + t2o) / 2);
                         ctx.textAlign = 'left'; ctx.font = `bold 60px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#fff'; ctx.fillText(formData.team2Score, t2x, scoresY + 80);
                         ctx.font = `normal 35px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#ddd'; ctx.fillText(formData.team2Overs, t2x + t2w + 15, scoresY + 80);
                         drawText(ctx, formData.result, W / 2, scoresY + 180, 48, formData.resultColor, 'center', 'bold');
+                    
                     } else if (appMode === 'schedule') {
                         drawText(ctx, formData.team1, leftCenter - 20, scoresY + 40, 80, formData.team1Color, 'center', 'bold');
                         ctx.beginPath(); ctx.arc(W/2, scoresY+30, 50, 0, Math.PI*2); ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#fff'; ctx.stroke();
                         drawText(ctx, "VS", W/2, scoresY+45, 40, '#fff', 'center', 'bold');
                         drawText(ctx, formData.team2, rightCenter + 20, scoresY + 40, 80, formData.team2Color, 'center', 'bold');
-                        const dy = scoresY + 130; ctx.fillStyle = 'rgba(0,0,0,0.3)'; if(ctx.roundRect) ctx.roundRect((W-700)/2, dy, 700, 100, 20); else ctx.fillRect((W-700)/2, dy, 700, 100); ctx.fill();
-                        drawText(ctx, formData.matchDate, W/2, dy+45, 40, '#fff', 'center', 'bold'); drawText(ctx, `${formData.matchTime} | ${formData.matchVenue}`, W/2, dy+85, 30, '#ddd', 'center', 'normal');
+                        const dy = scoresY + 130; ctx.fillStyle = 'rgba(0,0,0,0.3)'; 
+                        drawRoundedRect(ctx, (W-700)/2, dy, 700, 100, 20);
+                        drawText(ctx, formData.matchDate, W/2, dy+45, 40, '#fff', 'center', 'bold'); 
+                        drawText(ctx, `${formData.matchTime} | ${formData.matchVenue}`, W/2, dy+85, 30, '#ddd', 'center', 'normal');
+                    
                     } else if (appMode === 'player') {
                         const py = scoresY - 20; drawText(ctx, formData.playerStatMain, W/2, py + 40, 130, formData.team1Color, 'center', 'bold'); drawText(ctx, formData.playerStatSub, W/2, py + 90, 40, '#fff', 'center', 'normal');
                         ctx.beginPath(); ctx.moveTo(W/2-150, py+120); ctx.lineTo(W/2+150, py+120); ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=2; ctx.stroke();
                         drawText(ctx, formData.playerName, W/2, py + 180, 60, '#fff', 'center', 'bold');
+                    
                     } else if (appMode === 'career') {
                         const py = splitY + 40; drawText(ctx, formData.playerName, W/2, py, 60, '#fff', 'center', 'bold');
                         drawText(ctx, formData.playerRole, W/2, py + 35, 25, formData.team1Color, 'center', 'bold');
@@ -384,20 +459,24 @@
 
                         const drawStatBox = (label, val, x, y) => {
                             ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath();
-                            if(ctx.roundRect) ctx.roundRect(x, y, boxW, boxH, 15); else ctx.fillRect(x, y, boxW, boxH);
-                            ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.stroke();
+                            drawRoundedRect(ctx, x, y, boxW, boxH, 15);
+                            ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.stroke();
                             drawText(ctx, label, x + boxW/2, y + 35, 20, formData.team1Color, 'center', 'bold'); 
                             drawText(ctx, val, x + boxW/2, y + 75, 45, '#fff', 'center', 'bold');
                         };
                         drawStatBox("ম্যাচ (MATCHES)", formData.careerMatches, leftX, topY); drawStatBox("রান (RUNS)", formData.careerRuns, rightX, topY);
                         drawStatBox("সেঞ্চুরি (100s)", formData.careerHundreds, leftX, midY); drawStatBox("ফিফটি (50s)", formData.careerFifties, rightX, midY);
                         drawStatBox("সর্বোচ্চ (BEST SCORE)", formData.careerBest, leftX, botY); drawStatBox("উইকেট (WICKETS)", formData.careerWickets, rightX, botY);
+                    
                     } else if (appMode === 'news') {
                         const h = H * formData.newsGradientHeight; const nsy = H - h; const csy = nsy + 60; const nw = 880, lh = 75;
-                        ctx.fillStyle = '#dc2626'; if(ctx.roundRect) ctx.roundRect(W/2 - 150, csy - 90, 300, 55, 10); else ctx.fillRect(W/2 - 150, csy - 90, 300, 55); ctx.fill();
+                        ctx.fillStyle = formData.primaryColor; 
+                        drawRoundedRect(ctx, W/2 - 150, csy - 90, 300, 55, 10);
                         drawText(ctx, "ব্রেকিং নিউজ", W/2, csy - 52, 32, '#fff', 'center', 'bold');
-                        ctx.font = "140px serif"; ctx.fillStyle = "rgba(255,215,0,0.15)"; ctx.textAlign = "center"; ctx.fillText("❝", W/2, csy + 30);
+                        
+                        ctx.font = "140px serif"; ctx.fillStyle = "rgba(255,255,255,0.1)"; ctx.textAlign = "center"; ctx.fillText("❝", W/2, csy + 30);
                         ctx.font = "bold 55px 'Hind Siliguri', sans-serif"; ctx.fillStyle = "#fff";
+                        
                         const textToDraw = formData.quoteText || ""; const lines = []; const words = textToDraw.split(' '); let currentLine = words[0] || "";
                         for (let i = 1; i < words.length; i++) {
                             const width = ctx.measureText(currentLine + " " + words[i]).width;
@@ -405,16 +484,18 @@
                         }
                         if(currentLine) lines.push(currentLine);
                         const startY = csy + 110; lines.forEach((line, i) => { ctx.textAlign = 'center'; ctx.fillText(line, W / 2, startY + (i * lh)); });
+                        
                         const ay = startY + (lines.length * lh) + 10;
                         ctx.beginPath(); ctx.moveTo(W/2 - 120, ay); ctx.lineTo(W/2 + 120, ay); ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 5; ctx.stroke();
                         drawText(ctx, formData.quoteAuthor, W/2, ay + 60, 38, '#cbd5e1', 'center', 'bold');
+                    
                     } else if (appMode === 'statement') {
                         const sy = 750;
                         ctx.save();
                         ctx.globalAlpha = 1.0;
                         const grad = ctx.createLinearGradient(0, sy, 0, H);
                         grad.addColorStop(0, formData.primaryColor);
-                        grad.addColorStop(1, '#450a0a'); 
+                        grad.addColorStop(1, formData.secondaryColor); 
                         ctx.fillStyle = grad;
                         ctx.fillRect(0, sy, W, H - sy);
 
@@ -425,13 +506,8 @@
                         const r = 160;
 
                         ctx.save();
-                        ctx.beginPath();
-                        ctx.arc(cx, cy, r, 0, Math.PI * 2);
-                        ctx.closePath();
-                        ctx.fillStyle = '#0f172a';
-                        ctx.fill();
-
-                        ctx.save();
+                        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.closePath();
+                        ctx.fillStyle = '#0f172a'; ctx.fill();
                         ctx.clip();
                         if (avatarImage) {
                             ctx.translate(cx - r + avatarPos.x, cy - r + avatarPos.y);
@@ -442,13 +518,10 @@
                         }
                         ctx.restore();
 
-                        ctx.lineWidth = 12;
-                        ctx.strokeStyle = formData.team1Color;
-                        ctx.stroke();
-                        ctx.restore();
+                        ctx.lineWidth = 12; ctx.strokeStyle = formData.team1Color;
+                        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
 
-                        ctx.font = "bold 55px 'Hind Siliguri', sans-serif";
-                        ctx.fillStyle = "#fff";
+                        ctx.font = "bold 55px 'Hind Siliguri', sans-serif"; ctx.fillStyle = "#fff";
                         const quote = `“${formData.quoteText}”`;
                         const nw = 960, lh = 75;
                         const words = quote.split(' '); let currentLine = words[0] || "";
@@ -465,18 +538,16 @@
                         const authorY = startY + (lines.length * lh) + 30;
                         drawText(ctx, `— ${formData.quoteAuthor}`, W/2, authorY, 45, '#fff', 'center', 'bold');
                         
-                        ctx.beginPath();
-                        ctx.moveTo(W/2 - 250, authorY + 40);
-                        ctx.lineTo(W/2 + 250, authorY + 40);
-                        ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-                        ctx.lineWidth = 3;
-                        ctx.stroke();
+                        ctx.beginPath(); ctx.moveTo(W/2 - 250, authorY + 40); ctx.lineTo(W/2 + 250, authorY + 40);
+                        ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 3; ctx.stroke();
                         ctx.restore();
+                    
                     } else if (appMode === 'discussion') {
+                        // Completely Borderless, Clean Typography Focus
                         const centerY = (H - footerH) / 2;
                         let startY = centerY - 150; 
 
-                        drawText(ctx, formData.discTopic, W/2, startY, 90, formData.primaryColor, 'center', '900');
+                        drawResponsiveText(ctx, formData.discTopic, W/2, startY, 900, 90, formData.primaryColor, 'center', '900');
                         
                         ctx.save();
                         ctx.shadowColor = formData.primaryColor;
@@ -490,99 +561,79 @@
                         ctx.restore();
 
                         startY += 150;
-                        drawText(ctx, formData.discLine1, W/2, startY, 70, formData.team2Color, 'center', 'bold');
+                        drawResponsiveText(ctx, formData.discLine1, W/2, startY, 960, 70, formData.team2Color, 'center', 'bold');
                         
                         startY += 120;
-                        drawText(ctx, formData.discLine2, W/2, startY, 70, '#ffffff', 'center', 'bold');
+                        drawResponsiveText(ctx, formData.discLine2, W/2, startY, 960, 70, '#ffffff', 'center', 'bold');
 
                         startY += 120;
-                        drawText(ctx, formData.discLine3, W/2, startY, 70, formData.team2Color, 'center', 'bold');
+                        drawResponsiveText(ctx, formData.discLine3, W/2, startY, 960, 70, formData.team2Color, 'center', 'bold');
+                    
                     } else if (appMode === 'multi_result') {
-                        const py = splitY + 40;
+                        const py = 150;
                         
-                        // Main Title Pill
                         ctx.fillStyle = formData.primaryColor;
-                        if(ctx.roundRect) {
-                            ctx.beginPath(); ctx.roundRect(W/2 - 200, py, 400, 60, 10); ctx.fill();
-                        } else {
-                            ctx.fillRect(W/2 - 200, py, 400, 60);
-                        }
-                        drawText(ctx, formData.multiResultTitle, W/2, py + 42, 35, '#fff', 'center', 'bold');
+                        drawRoundedRect(ctx, W/2 - 250, py, 500, 70, 15);
+                        drawResponsiveText(ctx, formData.multiResultTitle, W/2, py + 48, 450, 40, '#fff', 'center', 'bold');
 
-                        // Dynamic List Spacing
-                        const sy = py + 100;
+                        const sy = py + 120;
                         const totalH = H - footerH - sy - 40;
                         const numItems = formData.resultsList.length || 1;
                         const spacing = totalH / numItems;
-                        const boxH = Math.min(130, spacing * 0.85); // Auto scale height
+                        const boxH = Math.min(160, spacing * 0.85); 
 
                         formData.resultsList.forEach((res, index) => {
                             const y = sy + (index * spacing);
                             
-                            // Top Red Pill (Teams)
-                            ctx.fillStyle = formData.team2Color; // Using team2Color as the red top
-                            if(ctx.roundRect) {
-                                ctx.beginPath(); ctx.roundRect(W/2 - 320, y, 640, boxH/2, [15, 15, 0, 0]); ctx.fill();
-                            } else {
-                                ctx.fillRect(W/2 - 320, y, 640, boxH/2);
-                            }
+                            // Top Pill (Red/Primary)
+                            ctx.fillStyle = formData.primaryColor; 
+                            if (ctx.roundRect) {
+                                ctx.beginPath(); ctx.roundRect(W/2 - 380, y, 760, boxH/2, [15, 15, 0, 0]); ctx.fill();
+                            } else { ctx.fillRect(W/2 - 380, y, 760, boxH/2); }
                             
-                            // Bottom Dark Pill (Scores)
-                            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                            if(ctx.roundRect) {
-                                ctx.beginPath(); ctx.roundRect(W/2 - 320, y + boxH/2, 640, boxH/2, [0, 0, 15, 15]); ctx.fill();
-                            } else {
-                                ctx.fillRect(W/2 - 320, y + boxH/2, 640, boxH/2);
-                            }
+                            // Bottom Pill (Dark Slate)
+                            ctx.fillStyle = '#0f172a';
+                            if (ctx.roundRect) {
+                                ctx.beginPath(); ctx.roundRect(W/2 - 380, y + boxH/2, 760, boxH/2, [0, 0, 15, 15]); ctx.fill();
+                            } else { ctx.fillRect(W/2 - 380, y + boxH/2, 760, boxH/2); }
 
                             // Team Texts
-                            drawText(ctx, res.team1, W/2 - 160, y + boxH/2 - 18, 32, '#fff', 'center', 'bold');
-                            drawText(ctx, res.team2, W/2 + 160, y + boxH/2 - 18, 32, '#fff', 'center', 'bold');
+                            drawResponsiveText(ctx, res.team1, W/2 - 190, y + boxH/4 + 12, 320, 36, '#fff', 'center', 'bold');
+                            drawResponsiveText(ctx, res.team2, W/2 + 190, y + boxH/4 + 12, 320, 36, '#fff', 'center', 'bold');
 
                             // VS Circle Center
-                            ctx.beginPath(); ctx.arc(W/2, y + boxH/2, 28, 0, Math.PI*2); ctx.fillStyle = '#fff'; ctx.fill();
-                            drawText(ctx, "VS", W/2, y + boxH/2 + 10, 24, formData.team2Color, 'center', '900');
+                            ctx.beginPath(); ctx.arc(W/2, y + boxH/2, 38, 0, Math.PI*2); ctx.fillStyle = '#fff'; ctx.fill();
+                            drawText(ctx, "VS", W/2, y + boxH/2 + 12, 32, formData.primaryColor, 'center', '900');
 
                             // Scores
-                            drawText(ctx, res.score1, W/2 - 250, y + boxH - 18, 45, '#fff', 'center', 'bold');
-                            drawText(ctx, res.score2, W/2 + 250, y + boxH - 18, 45, '#fff', 'center', 'bold');
+                            drawResponsiveText(ctx, res.score1, W/2 - 190, y + boxH*0.75 + 18, 150, 50, '#fff', 'center', 'bold');
+                            drawResponsiveText(ctx, res.score2, W/2 + 190, y + boxH*0.75 + 18, 150, 50, '#fff', 'center', 'bold');
 
                             // Tourney Pill Bottom Center
-                            ctx.fillStyle = formData.team1Color; // Using team1Color as the yellow pill
-                            if(ctx.roundRect) {
-                                ctx.beginPath(); ctx.roundRect(W/2 - 130, y + boxH/2 + 8, 260, boxH/2 - 16, 5); ctx.fill();
-                            } else {
-                                ctx.fillRect(W/2 - 130, y + boxH/2 + 8, 260, boxH/2 - 16);
-                            }
-                            drawText(ctx, res.tourney, W/2, y + boxH - 22, 24, '#000', 'center', 'bold');
+                            ctx.fillStyle = formData.team1Color; 
+                            drawRoundedRect(ctx, W/2 - 180, y + boxH - 22, 360, 44, 10);
+                            drawResponsiveText(ctx, res.tourney, W/2, y + boxH + 8, 330, 24, '#000', 'center', 'bold');
                         });
-                    } else if (appMode === 'multi_schedule') {
-                        const py = splitY + 40;
-                        
-                        // Date Pill
-                        ctx.fillStyle = formData.primaryColor;
-                        if(ctx.roundRect) {
-                            ctx.beginPath(); ctx.roundRect(W/2 - 180, py, 360, 45, 10); ctx.fill();
-                        } else {
-                            ctx.fillRect(W/2 - 180, py, 360, 45);
-                        }
-                        drawText(ctx, formData.multiScheduleDate, W/2, py + 32, 28, '#fff', 'center', 'bold');
-                        
-                        // Title Text
-                        drawText(ctx, formData.multiScheduleTitle, W/2, py + 100, 50, '#fff', 'center', 'bold');
-                        
-                        // Divider Line
-                        ctx.beginPath(); ctx.moveTo(40, py + 120); ctx.lineTo(W - 40, py + 120); 
-                        ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth=3; ctx.stroke();
 
-                        // Dynamic Grid Layout
-                        const sy = py + 140;
+                    } else if (appMode === 'multi_schedule') {
+                        const py = 120;
+                        
+                        ctx.fillStyle = formData.primaryColor;
+                        drawRoundedRect(ctx, W/2 - 220, py, 440, 60, 15);
+                        drawResponsiveText(ctx, formData.multiScheduleDate, W/2, py + 42, 400, 35, '#fff', 'center', 'bold');
+                        
+                        drawResponsiveText(ctx, formData.multiScheduleTitle, W/2, py + 130, 900, 65, '#fff', 'center', 'bold');
+                        
+                        ctx.beginPath(); ctx.moveTo(60, py + 160); ctx.lineTo(W - 60, py + 160); 
+                        ctx.strokeStyle = formData.primaryColor; ctx.lineWidth=4; ctx.stroke();
+
+                        const sy = py + 200;
                         const totalH = H - footerH - sy - 30;
                         const numItems = formData.scheduleList.length || 1;
                         const rows = Math.ceil(numItems / 2);
                         const spacing = totalH / rows;
-                        const boxH = Math.min(140, spacing * 0.85);
-                        const colW = 460;
+                        const boxH = Math.min(220, spacing * 0.85);
+                        const colW = 480;
 
                         formData.scheduleList.forEach((sch, index) => {
                             const col = index % 2;
@@ -591,53 +642,40 @@
                             const y = sy + (row * spacing);
 
                             // Dark Box Background
-                            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-                            if(ctx.roundRect) {
-                                ctx.beginPath(); ctx.roundRect(cx, y, colW, boxH, 10); ctx.fill();
-                            } else {
-                                ctx.fillRect(cx, y, colW, boxH);
-                            }
+                            ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+                            drawRoundedRect(ctx, cx, y, colW, boxH, 15);
 
                             // Top Accent Line (Yellow)
                             ctx.fillStyle = formData.team1Color;
-                            if(ctx.roundRect) {
-                                ctx.beginPath(); ctx.roundRect(cx, y, colW, 6, [10, 10, 0, 0]); ctx.fill();
-                            } else {
-                                ctx.fillRect(cx, y, colW, 6);
-                            }
+                            if (ctx.roundRect) {
+                                ctx.beginPath(); ctx.roundRect(cx, y, colW, 8, [15, 15, 0, 0]); ctx.fill();
+                            } else { ctx.fillRect(cx, y, colW, 8); }
 
                             // Sport Type Small Pill
                             ctx.fillStyle = formData.team1Color;
-                            if(ctx.roundRect) {
-                                ctx.beginPath(); ctx.roundRect(cx + colW/2 - 60, y + 15, 120, 24, 5); ctx.fill();
-                            } else {
-                                ctx.fillRect(cx + colW/2 - 60, y + 15, 120, 24);
-                            }
-                            drawText(ctx, sch.sport, cx + colW/2, y + 33, 16, '#000', 'center', 'bold');
+                            drawRoundedRect(ctx, cx + colW/2 - 90, y + 25, 180, 36, 8);
+                            drawResponsiveText(ctx, sch.sport, cx + colW/2, y + 50, 160, 24, '#000', 'center', 'bold');
 
                             // Tournament
-                            drawText(ctx, sch.tourney, cx + colW/2, y + 65, 20, '#cbd5e1', 'center', 'normal');
+                            drawResponsiveText(ctx, sch.tourney, cx + colW/2, y + 95, colW - 40, 26, '#cbd5e1', 'center', 'normal');
                             
-                            // Match vs Match
-                            drawText(ctx, sch.match, cx + colW/2, y + 98, 30, '#fff', 'center', 'bold');
+                            // Match
+                            drawResponsiveText(ctx, sch.match, cx + colW/2, y + 145, colW - 40, 38, '#fff', 'center', 'bold');
                             
-                            // Time Pill (Bottom)
+                            // Time Pill
                             ctx.fillStyle = formData.primaryColor;
-                            if(ctx.roundRect) {
-                                ctx.beginPath(); ctx.roundRect(cx + colW/2 - 80, y + 115, 160, 26, 13); ctx.fill();
-                            } else {
-                                ctx.fillRect(cx + colW/2 - 80, y + 115, 160, 26);
-                            }
-                            drawText(ctx, sch.time, cx + colW/2, y + 134, 18, '#fff', 'center', 'bold');
+                            drawRoundedRect(ctx, cx + colW/2 - 120, y + 170, 240, 45, 12);
+                            drawResponsiveText(ctx, sch.time, cx + colW/2, y + 202, 220, 28, '#fff', 'center', 'bold');
                         });
 
-                        // Center Circle Icon Overlay
-                        const centerY = sy + (rows * spacing) / 2 - (spacing - boxH)/2;
-                        ctx.beginPath(); ctx.arc(W/2, centerY, 50, 0, Math.PI*2); ctx.fillStyle = '#fff'; ctx.fill();
-                        ctx.lineWidth = 4; ctx.strokeStyle = formData.team1Color; ctx.stroke();
-                        // Inner content of circle (can be an icon, for now just text)
-                        drawText(ctx, "খেলার", W/2, centerY - 5, 20, '#0f172a', 'center', 'bold');
-                        drawText(ctx, "খবর", W/2, centerY + 18, 20, '#0f172a', 'center', 'bold');
+                        // Center Circle Element
+                        if (rows > 0) {
+                            const centerY = sy + (rows * spacing) / 2 - (spacing - boxH)/2;
+                            ctx.beginPath(); ctx.arc(W/2, centerY, 60, 0, Math.PI*2); ctx.fillStyle = '#fff'; ctx.fill();
+                            ctx.lineWidth = 5; ctx.strokeStyle = formData.team1Color; ctx.stroke();
+                            drawText(ctx, "খেলার", W/2, centerY - 6, 24, '#0f172a', 'center', 'bold');
+                            drawText(ctx, "খবর", W/2, centerY + 22, 24, '#0f172a', 'center', 'bold');
+                        }
                     }
                     
                     drawText(ctx, formData.footerHandle, W / 2, footerY + 40, 24, '#64748b', 'center', 'normal');
@@ -651,6 +689,7 @@
 
             useEffect(() => { drawCanvas(false); }, [bgImage, bgImage2, formData, img1Pos, img2Pos, avatarPos, avatarImage, appMode, currentView]);
 
+            // --- CANVAS INTERACTIONS ---
             const handleImageUpload = (e, isSecond = false) => {
                 const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
                 reader.onload = (ev) => {
@@ -688,17 +727,14 @@
 
             const handleTouchStart = (e) => { 
                 const t = e.touches; const rect = e.target.getBoundingClientRect(); 
-                const touchX = t[0].clientX - rect.left;
-                const touchY = t[0].clientY - rect.top;
+                const touchX = t[0].clientX - rect.left; const touchY = t[0].clientY - rect.top;
                 
                 let targetImg = 'img1'; 
                 const s = 1080 / rect.width;
-                const canvasX = touchX * s;
-                const canvasY = touchY * s;
+                const canvasX = touchX * s; const canvasY = touchY * s;
 
-                if (appMode === 'statement' && avatarImage) {
-                    const dist = Math.hypot(canvasX - 1080/2, canvasY - 750);
-                    if (dist < 160) targetImg = 'avatar';
+                if (appMode === 'statement' && avatarImage && Math.hypot(canvasX - 1080/2, canvasY - 750) < 160) {
+                    targetImg = 'avatar';
                 } else if (bgImage2 && touchX > rect.width / 2 && appMode !== 'statement') {
                     targetImg = 'img2';
                 }
@@ -719,17 +755,14 @@
 
             const handleMouseDown = (e) => {
                 const rect = e.target.getBoundingClientRect(); 
-                const touchX = e.clientX - rect.left;
-                const touchY = e.clientY - rect.top;
+                const touchX = e.clientX - rect.left; const touchY = e.clientY - rect.top;
                 
                 let targetImg = 'img1'; 
                 const s = 1080 / rect.width;
-                const canvasX = touchX * s;
-                const canvasY = touchY * s;
+                const canvasX = touchX * s; const canvasY = touchY * s;
 
-                if (appMode === 'statement' && avatarImage) {
-                    const dist = Math.hypot(canvasX - 1080/2, canvasY - 750);
-                    if (dist < 160) targetImg = 'avatar';
+                if (appMode === 'statement' && avatarImage && Math.hypot(canvasX - 1080/2, canvasY - 750) < 160) {
+                    targetImg = 'avatar';
                 } else if (bgImage2 && touchX > rect.width / 2 && appMode !== 'statement') {
                     targetImg = 'img2';
                 }
@@ -745,19 +778,19 @@
                     setPos(p => ({...p, x: imgX + (e.clientX - x) * s, y: imgY + (e.clientY - y) * s}));
                 }
             };
-
             const handleEnd = () => { gestureStart.current.mode = null; };
 
             const handleDownloadClick = async () => {
-                if (isProcessing) return; if (points < DOWNLOAD_COST) { setShowBuyModal(true); return; }
+                if (isProcessing) return; 
+                if (points < DOWNLOAD_COST) { setShowBuyModal(true); return; }
                 setIsProcessing(true);
                 if(GOOGLE_SCRIPT_URL.includes("xxxxxxxx")) { performDownload(); setPoints(prev => prev - DOWNLOAD_COST); setIsProcessing(false); return; }
                 try {
                     const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=deduct&userId=${userId}&amount=${DOWNLOAD_COST}`);
                     if (!response.ok) throw new Error("Server responded with an error");
                     const data = await response.json();
-                    if (data.status === 'success') { setPoints(data.points); performDownload(); } else { alert("Insufficient points or error."); }
-                } catch (error) { console.error("Deduction Error:", error); alert("Network Error. Check your connection or Script URL."); }
+                    if (data.status === 'success') { setPoints(data.points); performDownload(); } else { showToast("Insufficient points or error."); }
+                } catch (error) { console.error("Deduction Error:", error); showToast("Network Error."); }
                 setIsProcessing(false);
             };
 
@@ -773,6 +806,13 @@
             return (
                 <div className="flex flex-col min-h-screen text-slate-200 selection:bg-rose-500/30 selection:text-white" onContextMenu={(e) => e.preventDefault()}>
                     
+                    {/* TOAST NOTIFICATION */}
+                    {toastMsg && (
+                        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] bg-slate-800 text-white px-6 py-3 rounded-full shadow-2xl border border-slate-700 font-bold text-sm flex items-center gap-3 toast-enter">
+                            <span className="text-emerald-400">✓</span> {toastMsg}
+                        </div>
+                    )}
+
                     {/* SMART NOTIFICATION MODAL */}
                     {showAppNotification && appNotification && (
                         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md modal-backdrop">
@@ -915,11 +955,11 @@
                                         <button onClick={resetImage} className="bg-slate-900/60 text-white p-3 rounded-full backdrop-blur-md hover:bg-rose-600 transition-colors border border-slate-700/50 shadow-lg" title="Reset Image Positions"><IconRefresh /></button>
                                     </div>
                                     
-                                    {!bgImage && <div className="absolute inset-0 pointer-events-none flex items-center justify-center bg-slate-950/50 backdrop-blur-sm"><span className="bg-slate-900 border border-slate-700 text-white px-6 py-3 rounded-full text-sm font-bold shadow-2xl flex items-center gap-3"><div className="loader border-t-rose-500 border-white/20"></div> Initializing Canvas...</span></div>}
+                                    {!bgImage && appMode !== 'discussion' && <div className="absolute inset-0 pointer-events-none flex items-center justify-center bg-slate-950/50 backdrop-blur-sm"><span className="bg-slate-900 border border-slate-700 text-white px-6 py-3 rounded-full text-sm font-bold shadow-2xl flex items-center gap-3"><div className="loader border-t-rose-500 border-white/20"></div> Initializing Canvas...</span></div>}
                                 </div>
                                 
                                 {/* IMAGE CONTROLS */}
-                                {bgImage && (
+                                {bgImage && appMode !== 'discussion' && (
                                     <div className="bg-slate-900 p-5 rounded-3xl shadow-xl border border-slate-800 flex flex-col gap-4 relative overflow-hidden">
                                         <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
                                         <div className="flex items-center gap-4 relative z-10">
@@ -961,48 +1001,50 @@
                                         {activeTab === 'match' && (
                                             <div className="space-y-6">
                                                 {/* Image Uploaders */}
-                                                <div className="flex gap-4">
-                                                    <div className="relative group flex-1">
-                                                        <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, false)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                                                        <div className="border-2 border-dashed border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-slate-950/50 group-hover:bg-slate-800/80 group-hover:border-rose-500/50 transition-all">
-                                                            <div className="bg-slate-800 p-3 rounded-full shadow-lg text-rose-500 group-hover:scale-110 transition-transform"><IconUpload /></div>
-                                                            <span className="text-xs font-bold text-slate-400">Photo 1</span>
+                                                {appMode !== 'discussion' && (
+                                                    <div className="flex gap-4">
+                                                        <div className="relative group flex-1">
+                                                            <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, false)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                                                            <div className="border-2 border-dashed border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-slate-950/50 group-hover:bg-slate-800/80 group-hover:border-rose-500/50 transition-all">
+                                                                <div className="bg-slate-800 p-3 rounded-full shadow-lg text-rose-500 group-hover:scale-110 transition-transform"><IconUpload /></div>
+                                                                <span className="text-xs font-bold text-slate-400">Photo 1</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="relative group flex-1">
+                                                            {appMode === 'statement' ? (
+                                                                avatarImage ? (
+                                                                    <div className="h-full border border-amber-500/30 bg-amber-500/5 rounded-2xl flex flex-col items-center justify-center relative shadow-inner">
+                                                                        <span className="text-xs font-bold text-amber-400 mb-2">Avatar Active</span>
+                                                                        <button onClick={() => setAvatarImage(null)} className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 transition-colors z-20 relative"><IconTrash /> Remove</button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <>
+                                                                        <input type="file" accept="image/*" onChange={(e) => handleAvatarUpload(e)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                                                                        <div className="border-2 border-dashed border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-slate-950/50 group-hover:bg-slate-800/80 group-hover:border-amber-500/50 transition-all">
+                                                                            <div className="bg-slate-800 p-3 rounded-full shadow-lg text-amber-500 group-hover:scale-110 transition-transform"><IconUser /></div>
+                                                                            <span className="text-xs font-bold text-slate-400">Avatar (Circle)</span>
+                                                                        </div>
+                                                                    </>
+                                                                )
+                                                            ) : (
+                                                                bgImage2 ? (
+                                                                    <div className="h-full border border-blue-500/30 bg-blue-500/5 rounded-2xl flex flex-col items-center justify-center relative shadow-inner">
+                                                                        <span className="text-xs font-bold text-blue-400 mb-2">Img 2 Active</span>
+                                                                        <button onClick={() => setBgImage2(null)} className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 transition-colors z-20 relative"><IconTrash /> Remove</button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <>
+                                                                        <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, true)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                                                                        <div className="border-2 border-dashed border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-slate-950/50 group-hover:bg-slate-800/80 group-hover:border-blue-500/50 transition-all">
+                                                                            <div className="bg-slate-800 p-3 rounded-full shadow-lg text-blue-500 group-hover:scale-110 transition-transform"><IconUpload /></div>
+                                                                            <span className="text-xs font-bold text-slate-400">Photo 2 (Opt)</span>
+                                                                        </div>
+                                                                    </>
+                                                                )
+                                                            )}
                                                         </div>
                                                     </div>
-                                                    <div className="relative group flex-1">
-                                                        {appMode === 'statement' ? (
-                                                            avatarImage ? (
-                                                                <div className="h-full border border-amber-500/30 bg-amber-500/5 rounded-2xl flex flex-col items-center justify-center relative shadow-inner">
-                                                                    <span className="text-xs font-bold text-amber-400 mb-2">Avatar Active</span>
-                                                                    <button onClick={() => setAvatarImage(null)} className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 transition-colors z-20 relative"><IconTrash /> Remove</button>
-                                                                </div>
-                                                            ) : (
-                                                                <>
-                                                                    <input type="file" accept="image/*" onChange={(e) => handleAvatarUpload(e)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                                                                    <div className="border-2 border-dashed border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-slate-950/50 group-hover:bg-slate-800/80 group-hover:border-amber-500/50 transition-all">
-                                                                        <div className="bg-slate-800 p-3 rounded-full shadow-lg text-amber-500 group-hover:scale-110 transition-transform"><IconUser /></div>
-                                                                        <span className="text-xs font-bold text-slate-400">Avatar (Circle)</span>
-                                                                    </div>
-                                                                </>
-                                                            )
-                                                        ) : (
-                                                            bgImage2 ? (
-                                                                <div className="h-full border border-blue-500/30 bg-blue-500/5 rounded-2xl flex flex-col items-center justify-center relative shadow-inner">
-                                                                    <span className="text-xs font-bold text-blue-400 mb-2">Img 2 Active</span>
-                                                                    <button onClick={() => setBgImage2(null)} className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 transition-colors z-20 relative"><IconTrash /> Remove</button>
-                                                                </div>
-                                                            ) : (
-                                                                <>
-                                                                    <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, true)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                                                                    <div className="border-2 border-dashed border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-slate-950/50 group-hover:bg-slate-800/80 group-hover:border-blue-500/50 transition-all">
-                                                                        <div className="bg-slate-800 p-3 rounded-full shadow-lg text-blue-500 group-hover:scale-110 transition-transform"><IconUpload /></div>
-                                                                        <span className="text-xs font-bold text-slate-400">Photo 2 (Opt)</span>
-                                                                    </div>
-                                                                </>
-                                                            )
-                                                        )}
-                                                    </div>
-                                                </div>
+                                                )}
 
                                                 {/* Basic Settings */}
                                                 <div className="space-y-4">
@@ -1034,7 +1076,7 @@
                                                             <input type="text" name="multiResultTitle" value={formData.multiResultTitle} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-rose-500/30 rounded-xl text-sm font-bold text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
                                                         </div>
                                                         
-                                                        <div className="space-y-4 mt-6">
+                                                        <div className="space-y-4 mt-6 max-h-[400px] overflow-y-auto pr-2 custom-scroll">
                                                             {formData.resultsList.map((res, index) => (
                                                                 <div key={res.id} className="p-4 bg-slate-950 rounded-xl border border-slate-800 relative group">
                                                                     <div className="absolute -top-3 left-4 bg-slate-800 px-2 py-0.5 rounded text-[10px] font-bold text-slate-400">Match {index + 1}</div>
@@ -1068,7 +1110,7 @@
                                                             </div>
                                                         </div>
                                                         
-                                                        <div className="space-y-4 mt-6">
+                                                        <div className="space-y-4 mt-6 max-h-[400px] overflow-y-auto pr-2 custom-scroll">
                                                             {formData.scheduleList.map((sch, index) => (
                                                                 <div key={sch.id} className="p-4 bg-slate-950 rounded-xl border border-slate-800 relative group">
                                                                     <div className="absolute -top-3 left-4 bg-slate-800 px-2 py-0.5 rounded text-[10px] font-bold text-slate-400">Fixture {index + 1}</div>
@@ -1095,14 +1137,12 @@
                                                         <div>
                                                             <div className="flex justify-between items-center mb-1.5">
                                                                 <label className="text-[10px] uppercase font-bold text-violet-300 ml-1">Topic / Main Heading</label>
-                                                                <input type="color" name="primaryColor" value={formData.primaryColor} onChange={handleChange} className="w-5 h-5 rounded-full overflow-hidden border border-violet-500/50 cursor-pointer" title="Topic Color" />
                                                             </div>
                                                             <input type="text" name="discTopic" value={formData.discTopic} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-violet-500/30 rounded-xl text-sm font-bold text-white focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all" />
                                                         </div>
                                                         <div>
                                                             <div className="flex justify-between items-center mb-1.5">
                                                                 <label className="text-[10px] uppercase font-bold text-violet-300 ml-1">Highlighted Lines (1 & 3)</label>
-                                                                <input type="color" name="team2Color" value={formData.team2Color} onChange={handleChange} className="w-5 h-5 rounded-full overflow-hidden border border-violet-500/50 cursor-pointer" title="Accent Color" />
                                                             </div>
                                                             <input type="text" name="discLine1" value={formData.discLine1} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-violet-500/30 rounded-xl text-sm font-bold text-white focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all mb-3" placeholder="Line 1 (Accent Color)" />
                                                             <input type="text" name="discLine2" value={formData.discLine2} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-violet-500/30 rounded-xl text-sm font-bold text-white focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all mb-3" placeholder="Line 2 (White Color)" />
@@ -1251,7 +1291,7 @@
                                             </div>
                                         )}
                                         
-                                        {activeTab === 'teams' && appMode === 'scorecard' && (
+                                        {activeTab === 'teams' && (appMode === 'scorecard' || appMode === 'schedule') && (
                                             <div className="space-y-6">
                                                 <button onClick={swapTeams} className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors border border-slate-700 shadow-sm"><IconSwap /> Swap Sides</button>
                                                 
@@ -1264,16 +1304,18 @@
                                                         <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Name</label>
                                                         <input type="text" name="team1" value={formData.team1} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" />
                                                     </div>
-                                                    <div className="flex gap-4">
-                                                        <div className="flex-1">
-                                                            <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Score</label>
-                                                            <input type="text" name="team1Score" value={formData.team1Score} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" />
+                                                    {appMode === 'scorecard' && (
+                                                        <div className="flex gap-4">
+                                                            <div className="flex-1">
+                                                                <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Score</label>
+                                                                <input type="text" name="team1Score" value={formData.team1Score} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" />
+                                                            </div>
+                                                            <div className="w-28">
+                                                                <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Overs</label>
+                                                                <input type="text" name="team1Overs" value={formData.team1Overs} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-center" />
+                                                            </div>
                                                         </div>
-                                                        <div className="w-28">
-                                                            <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Overs</label>
-                                                            <input type="text" name="team1Overs" value={formData.team1Overs} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-center" />
-                                                        </div>
-                                                    </div>
+                                                    )}
                                                 </div>
                                                 
                                                 <div className="bg-slate-950 p-5 rounded-2xl border-l-4 border-rose-500 shadow-inner space-y-4">
@@ -1285,44 +1327,18 @@
                                                         <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Name</label>
                                                         <input type="text" name="team2" value={formData.team2} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
                                                     </div>
-                                                    <div className="flex gap-4">
-                                                        <div className="flex-1">
-                                                            <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Score</label>
-                                                            <input type="text" name="team2Score" value={formData.team2Score} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
+                                                    {appMode === 'scorecard' && (
+                                                        <div className="flex gap-4">
+                                                            <div className="flex-1">
+                                                                <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Score</label>
+                                                                <input type="text" name="team2Score" value={formData.team2Score} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
+                                                            </div>
+                                                            <div className="w-28">
+                                                                <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Overs</label>
+                                                                <input type="text" name="team2Overs" value={formData.team2Overs} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all text-center" />
+                                                            </div>
                                                         </div>
-                                                        <div className="w-28">
-                                                            <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Overs</label>
-                                                            <input type="text" name="team2Overs" value={formData.team2Overs} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all text-center" />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {activeTab === 'teams' && appMode === 'schedule' && (
-                                            <div className="space-y-6">
-                                                <button onClick={swapTeams} className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors border border-slate-700 shadow-sm"><IconSwap /> Swap Sides</button>
-                                                
-                                                <div className="bg-slate-950 p-5 rounded-2xl border-l-4 border-blue-500 shadow-inner space-y-4">
-                                                    <div className="flex justify-between items-center mb-2">
-                                                        <h3 className="text-xs font-black text-blue-400 uppercase tracking-wider">Left Team</h3>
-                                                        <input type="color" name="team1Color" value={formData.team1Color} onChange={handleChange} className="w-8 h-8 rounded-full overflow-hidden border-2 border-slate-800 cursor-pointer shadow-sm" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Name</label>
-                                                        <input type="text" name="team1" value={formData.team1} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" />
-                                                    </div>
-                                                </div>
-                                                
-                                                <div className="bg-slate-950 p-5 rounded-2xl border-l-4 border-rose-500 shadow-inner space-y-4">
-                                                    <div className="flex justify-between items-center mb-2">
-                                                        <h3 className="text-xs font-black text-rose-400 uppercase tracking-wider">Right Team</h3>
-                                                        <input type="color" name="team2Color" value={formData.team2Color} onChange={handleChange} className="w-8 h-8 rounded-full overflow-hidden border-2 border-slate-800 cursor-pointer shadow-sm" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Name</label>
-                                                        <input type="text" name="team2" value={formData.team2} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
-                                                    </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         )}
@@ -1338,15 +1354,25 @@
                                                 </div>
                                                 
                                                 <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-inner">
-                                                    <label className="block text-xs font-black text-slate-300 uppercase tracking-wider mb-4">Gradient Colors</label>
+                                                    <label className="block text-xs font-black text-slate-300 uppercase tracking-wider mb-4">Colors</label>
                                                     <div className="flex gap-4">
                                                         <div className="flex-1 space-y-1.5">
                                                             <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Primary Color</label>
                                                             <input type="color" name="primaryColor" value={formData.primaryColor} onChange={handleChange} className="h-12 w-full rounded-xl cursor-pointer border-0 p-0 bg-transparent" />
                                                         </div>
                                                         <div className="flex-1 space-y-1.5">
-                                                            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Accent Color</label>
+                                                            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Secondary Color</label>
                                                             <input type="color" name="secondaryColor" value={formData.secondaryColor} onChange={handleChange} className="h-12 w-full rounded-xl cursor-pointer border-0 p-0 bg-transparent" />
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex gap-4 mt-4">
+                                                        <div className="flex-1 space-y-1.5">
+                                                            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Accent / Team 1</label>
+                                                            <input type="color" name="team1Color" value={formData.team1Color} onChange={handleChange} className="h-12 w-full rounded-xl cursor-pointer border-0 p-0 bg-transparent" />
+                                                        </div>
+                                                        <div className="flex-1 space-y-1.5">
+                                                            <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Accent / Team 2</label>
+                                                            <input type="color" name="team2Color" value={formData.team2Color} onChange={handleChange} className="h-12 w-full rounded-xl cursor-pointer border-0 p-0 bg-transparent" />
                                                         </div>
                                                     </div>
                                                 </div>
