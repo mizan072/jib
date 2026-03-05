@@ -53,7 +53,7 @@
         .modal-content { animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         .animation-fadeIn { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .animation-slideUpFade { animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        .toast-enter { animation: slideUpToast 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .toast-enter { animation: slideUpToast 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         
         @keyframes fadeIn { from { opacity: 0; backdrop-filter: blur(0px); } to { opacity: 1; backdrop-filter: blur(8px); } }
         @keyframes slideUpFade { from { transform: translateY(20px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
@@ -119,7 +119,7 @@
 
         // --- DASHBOARD TOOLS ---
         const TOOLS = [
-            { id: 'scorecard', name: 'Match Scorecard', desc: 'Create live match score updates', icon: IconTrophy, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
+            { id: 'scorecard', name: 'Match Scorecard', desc: 'Classic Match score updates', icon: IconTrophy, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
             { id: 'multi_result', name: 'Multi Results', desc: 'List of match scores', icon: IconList, color: 'text-rose-400', bg: 'bg-rose-400/10', border: 'border-rose-400/20' },
             { id: 'schedule', name: 'Single Schedule', desc: 'Upcoming fixture and venue', icon: IconCalendar, color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/20' },
             { id: 'multi_schedule', name: 'All-Day Schedule', desc: 'Grid schedule of matches', icon: IconGrid, color: 'text-sky-400', bg: 'bg-sky-400/10', border: 'border-sky-400/20' },
@@ -133,6 +133,8 @@
         ];
 
         // --- CANVAS RENDERING HELPERS ---
+        const measureText = (ctx, text, fs, fw) => { ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`; return ctx.measureText(text).width; };
+        
         const drawText = (ctx, text, x, y, fs, color, align, fw) => { 
             ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`; 
             ctx.fillStyle = color; 
@@ -198,29 +200,33 @@
             const [showAppNotification, setShowAppNotification] = useState(false);
             const [toastMsg, setToastMsg] = useState(null);
 
+            // READY-MADE PROFESSIONAL DEFAULTS
             const [formData, setFormData] = useState({
-                badgeText: 'proscorecard_bot', title: 'আইসিসি টি-টোয়েন্টি বিশ্বকাপ', footerHandle: 'এই রকম পোস্টার তৈরি করুন এই টেলিগ্রাম বট দিয়েঃ  @proscorecard_bot',
-                primaryColor: '#b91c1c', secondaryColor: '#4a0000', bgOpacity: 0.9, newsGradientHeight: 0.55,
-                team1: 'ইংল্যান্ড', team1Color: '#eab308', team2: 'নেপাল', team2Color: '#10b981', team1Score: '১৮৪/৭', team1Overs: '(২০ ওভার)', team2Score: '১৮0/৬', team2Overs: '(২০ ওভার)',
-                result: 'নেপালকে ৪ রানে হারিয়েছে ইংল্যান্ড', resultColor: '#ffd700', matchDate: '২০ অক্টোবর, ২০২৫', matchTime: 'দুপুর ২:০০টা', matchVenue: 'শেরে বাংলা স্টেডিয়াম',
-                playerName: 'সাকিব আল হাসান', playerStatMain: '৮২', playerStatSub: 'রান (৪৫ বল)', stat1Label: '৪', stat1Value: '৮', stat2Label: '৬', stat2Value: '৫', stat3Label: 'S/R', stat3Value: '১৮২.২',
-                quoteText: 'ফিলিস্তিনের মাটিতে জন্ম নেওয়াটাই কি দোষ? আমাদের নিষ্পাপ শিশুরা কি দোষ করছে?', quoteAuthor: 'পেপ গার্দিওলা', playerRole: 'ব্যাটসম্যান', careerMatches: '২৫৪', careerRuns: '৭৫৬২', 
-                careerHundreds: '১৪', careerFifties: '৪২', careerBest: '১১৪*', careerWickets: '৩১২', pollQuestion: 'বর্তমান সময়ের সেরা ব্যাটার কে?', pollPlayer1: 'সাকিব আল হাসান', pollPlayer2: 'বিরাট কোহলি',
-                milestoneOccasion: 'শুভ জন্মদিন', milestoneName: 'সাকিব আল হাসান', milestoneNumber: '৩৭ তম', milestoneMessage: 'বাংলাদেশ ক্রিকেটের জান, বাংলাদেশ ক্রিকেটের প্রাণ! শুভকামনা রইলো.',
-                discTopic: 'রাজবাড়ির', discLine1: 'সেরা ব্যাটার - রোমান।', discLine2: 'সেরা বোলার কে.....?', discLine3: 'সেরা অলরাউন্ডার কে.....?',
-                multiResultTitle: 'ফুটবল ম্যাচের ফলাফল',
+                badgeText: 'ProSports', title: 'ওয়ার্ল্ড চ্যাম্পিয়নশিপ ২০২৬', footerHandle: 'Created with Poster Bot Pro',
+                primaryColor: '#dc2626', secondaryColor: '#020617', bgOpacity: 0.85, newsGradientHeight: 0.6,
+                team1: 'বাংলাদেশ', team1Color: '#facc15', team2: 'ভারত', team2Color: '#3b82f6', 
+                team1Score: '১৭৪/৪', team1Overs: '(২০ ওভার)', team2Score: '১৬০/৮', team2Overs: '(২০ ওভার)',
+                result: 'বাংলাদেশ ১৪ রানে জয়ী', resultColor: '#ffffff', 
+                matchDate: '২০ অক্টোবর, ২০২৬', matchTime: 'রাত ৮:০০টা', matchVenue: 'মিরপুর স্টেডিয়াম',
+                playerName: 'সাকিব আল হাসান', playerStatMain: '৮২*', playerStatSub: 'রান (৪৫ বল)', playerRole: 'ব্যাটসম্যান', 
+                careerMatches: '২৫৪', careerRuns: '৭৫৬২', careerHundreds: '১৪', careerFifties: '৪২', careerBest: '১১৪*', careerWickets: '৩১২', 
+                pollQuestion: 'আজকের ম্যাচের সেরা খেলোয়াড় কে?', pollPlayer1: 'সাকিব আল হাসান', pollPlayer2: 'বিরাট কোহলি',
+                milestoneOccasion: 'শুভ জন্মদিন', milestoneName: 'সাকিব আল হাসান', milestoneNumber: '৩৭ তম', milestoneMessage: 'বাংলাদেশ ক্রিকেটের জান, বাংলাদেশ ক্রিকেটের প্রাণ! শুভকামনা রইলো।',
+                discTopic: 'ম্যাচ বিশ্লেষণ', discLine1: 'পাওয়ার প্লে-তে কে বেশি রান করবে?', discLine2: 'আজকের পিচ কাদের জন্য সহায়ক?', discLine3: 'সেরা বোলার কে হতে পারে?',
+                quoteText: 'ফিলিস্তিনের মাটিতে জন্ম নেওয়াটাই কি দোষ? আমাদের নিষ্পাপ শিশুরা কি দোষ করছে?', quoteAuthor: 'পেপ গার্দিওলা',
+                multiResultTitle: 'আজকের সকল ম্যাচের ফলাফল',
                 resultsList: [
-                    { id: 1, team1: 'বার্সেলোনা', team2: 'অ্যাটলেটিকো', score1: '৩', score2: '০', tourney: 'কোপা দেল রে' },
-                    { id: 2, team1: 'উলভস', team2: 'লিভারপুল', score1: '২', score2: '১', tourney: 'ইপিএল' },
-                    { id: 3, team1: 'বোর্নমাউথ', team2: 'ব্রেন্টফোর্ড', score1: '০', score2: '০', tourney: 'ইপিএল' }
+                    { id: 1, team1: 'বার্সেলোনা', team2: 'রিয়াল মাদ্রিদ', score1: '৩', score2: '১', tourney: 'লা লিগা' },
+                    { id: 2, team1: 'আর্সেনাল', team2: 'চেলসি', score1: '২', score2: '২', tourney: 'ইপিএল' },
+                    { id: 3, team1: 'বায়ার্ন', team2: 'ডর্টমুন্ড', score1: '১', score2: '০', tourney: 'বুন্দেসলিগা' }
                 ],
-                multiScheduleDate: '৪ মার্চ ২০২৬',
-                multiScheduleTitle: 'দিনব্যাপী খেলার সময়সূচী',
+                multiScheduleDate: '১৫ নভেম্বর ২০২৬',
+                multiScheduleTitle: 'আজকের খেলার সময়সূচী',
                 scheduleList: [
-                    { id: 1, sport: 'ক্রিকেট', tourney: 'টি-টোয়েন্টি বিশ্বকাপ', match: 'দ. আফ্রিকা-নিউজিল্যান্ড', time: 'সন্ধ্যা ৭-৩০ মি.' },
-                    { id: 2, sport: 'ফুটবল', tourney: 'নারী এশিয়ান কাপ', match: 'জাপান-চাইনিজ তাইপে', time: 'বেলা ১১টা' },
-                    { id: 3, sport: 'ফুটবল', tourney: 'ইংলিশ প্রিমিয়ার লিগ', match: 'ম্যান সিটি-নটিংহাম', time: 'রাত ১-৩০ মি.' },
-                    { id: 4, sport: 'ফুটবল', tourney: 'নারী এশিয়ান কাপ', match: 'ভিয়েতনাম-ভারত', time: 'বিকেল ৫টা' }
+                    { id: 1, sport: 'ক্রিকেট', tourney: 'টি-টোয়েন্টি বিশ্বকাপ', match: 'বাংলাদেশ বনাম ভারত', time: 'রাত ৮:০০ টা' },
+                    { id: 2, sport: 'ফুটবল', tourney: 'চ্যাম্পিয়ন্স লিগ', match: 'পিএসজি বনাম জুভেন্টাস', time: 'রাত ১:৪5 মি.' },
+                    { id: 3, sport: 'ফুটবল', tourney: 'ইংলিশ প্রিমিয়ার লিগ', match: 'ম্যান সিটি বনাম আর্সেনাল', time: 'রাত ১০:৩০ মি.' },
+                    { id: 4, sport: 'ক্রিকেট', tourney: 'টি-টোয়েন্টি বিশ্বকাপ', match: 'অস্ট্রেলিয়া বনাম ইংল্যান্ড', time: 'বিকেল ৪:০০ টা' }
                 ]
             });
 
@@ -292,7 +298,7 @@
             const removeResult = (id) => { setFormData(p => ({ ...p, resultsList: p.resultsList.filter(item => item.id !== id) })); };
 
             const handleScheduleChange = (id, field, value) => { setFormData(p => ({ ...p, scheduleList: p.scheduleList.map(item => item.id === id ? { ...item, [field]: value } : item) })); };
-            const addSchedule = () => { setFormData(p => ({ ...p, scheduleList: [...p.scheduleList, { id: Date.now(), sport: 'খেলা', tourney: 'টুর্নামেন্ট', match: 'দল-দল', time: 'সময়' }] })); };
+            const addSchedule = () => { setFormData(p => ({ ...p, scheduleList: [...p.scheduleList, { id: Date.now(), sport: 'খেলা', tourney: 'টুর্নামেন্ট', match: 'দল বনাম দল', time: 'সময়' }] })); };
             const removeSchedule = (id) => { setFormData(p => ({ ...p, scheduleList: p.scheduleList.filter(item => item.id !== id) })); };
 
             const handleInstallApp = async () => {
@@ -364,8 +370,9 @@
                     
                     // Dark boxes for titles
                     if (['scorecard', 'schedule', 'player', 'career', 'poll', 'milestone'].includes(appMode)) { 
-                        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'; ctx.fillRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH); 
-                        ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 2; ctx.strokeRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH);
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.4)'; 
+                        drawRoundedRect(ctx, titleBoxX, titleBoxY, titleBoxW, titleBoxH, 20);
+                        ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 2; ctx.strokeRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH);
                         drawResponsiveText(ctx, formData.title, W / 2, titleBoxY + 60, titleBoxW - 40, 50, '#fff', 'center', 'bold');
                     }
                     ctx.restore(); 
@@ -378,68 +385,85 @@
 
                         const boxW = 440; const boxH = 140; const leftX = W/4 - boxW/2; const rightX = (3*W/4) - boxW/2; const topY = py + 80;
 
-                        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
                         drawRoundedRect(ctx, leftX, topY, boxW, boxH, 20);
-                        ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 3; ctx.stroke();
+                        ctx.strokeStyle = formData.team2Color; ctx.lineWidth = 3; ctx.stroke();
                         drawFBIcon(ctx, leftX + 80, topY + 70, 75);
-                        drawText(ctx, "লাইক (LIKE)", leftX + boxW/2 + 20, topY + 60, 26, '#3b82f6', 'center', 'bold');
+                        drawText(ctx, "লাইক (LIKE)", leftX + boxW/2 + 20, topY + 60, 26, formData.team2Color, 'center', 'bold');
                         drawResponsiveText(ctx, formData.pollPlayer1, leftX + boxW/2 + 20, topY + 105, 300, 40, '#fff', 'center', 'bold');
 
-                        ctx.beginPath(); ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                        ctx.beginPath(); ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
                         drawRoundedRect(ctx, rightX, topY, boxW, boxH, 20);
-                        ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3; ctx.stroke();
+                        ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 3; ctx.stroke();
                         // love icon fallback (red circle with heart path)
                         ctx.save(); ctx.translate(rightX + 80, topY + 70); ctx.beginPath(); ctx.arc(0, 0, 75 / 2, 0, Math.PI * 2);
-                        ctx.fillStyle = '#F02849'; ctx.fill(); ctx.fillStyle = '#ffffff';
+                        ctx.fillStyle = formData.team1Color; ctx.fill(); ctx.fillStyle = '#ffffff';
                         const scale = 75 / 40; ctx.scale(scale, scale); ctx.translate(-12, -12);
                         ctx.fill(new Path2D('M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'));
                         ctx.restore();
 
-                        drawText(ctx, "লাভ (LOVE)", rightX + boxW/2 + 20, topY + 60, 26, '#ef4444', 'center', 'bold');
+                        drawText(ctx, "লাভ (LOVE)", rightX + boxW/2 + 20, topY + 60, 26, formData.team1Color, 'center', 'bold');
                         drawResponsiveText(ctx, formData.pollPlayer2, rightX + boxW/2 + 20, topY + 105, 300, 40, '#fff', 'center', 'bold');
 
-                        ctx.beginPath(); ctx.arc(W/2, topY + boxH/2, 45, 0, Math.PI*2); ctx.fillStyle = '#0f172a'; ctx.fill();
-                        ctx.lineWidth = 3; ctx.strokeStyle = formData.team1Color; ctx.stroke();
-                        drawText(ctx, "VS", W/2, topY + boxH/2 + 15, 38, formData.team1Color, 'center', 'bold');
+                        ctx.beginPath(); ctx.arc(W/2, topY + boxH/2, 40, 0, Math.PI*2); ctx.fillStyle = '#0f172a'; ctx.fill();
+                        ctx.lineWidth = 4; ctx.strokeStyle = '#fff'; ctx.stroke();
+                        drawText(ctx, "VS", W/2, topY + boxH/2 + 12, 32, '#fff', 'center', '900');
 
                     } else if (appMode === 'milestone') {
                         const py = splitY + 40;
-                        ctx.fillStyle = 'rgba(0,0,0,0.4)';
-                        drawRoundedRect(ctx, 100, py, W - 200, 240, 20);
-                        ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 3; ctx.stroke();
+                        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+                        drawRoundedRect(ctx, 100, py, W - 200, 240, 24);
+                        ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 4; ctx.stroke();
                         drawResponsiveText(ctx, formData.milestoneOccasion, W/2, py + 55, W-250, 35, formData.team1Color, 'center', 'bold');
                         drawResponsiveText(ctx, formData.milestoneNumber, W/2, py + 140, W-250, 90, '#fff', 'center', 'bold');
                         drawResponsiveText(ctx, formData.milestoneName, W/2, py + 210, W-250, 50, '#fff', 'center', 'bold');
-                        ctx.fillStyle = '#ddd'; drawText(ctx, formData.milestoneMessage, W/2, py + 300, 28, '#ddd', 'center', 'normal');
+                        ctx.fillStyle = '#ddd'; drawText(ctx, formData.milestoneMessage, W/2, py + 300, 28, '#cbd5e1', 'center', 'normal');
 
                     } else if (appMode === 'scorecard') {
+                        // CLASSIC SCORECARD LOGIC
                         drawResponsiveText(ctx, formData.team1, leftCenter, scoresY, 400, 65, formData.team1Color, 'center', 'bold');
+                        
                         const t1w = measureText(ctx, formData.team1Score, 60, 'bold'), t1o = measureText(ctx, formData.team1Overs, 35, 'normal');
                         const t1x = leftCenter - ((t1w + 15 + t1o) / 2);
-                        ctx.textAlign = 'left'; ctx.font = `bold 60px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#fff'; ctx.fillText(formData.team1Score, t1x, scoresY + 80);
-                        ctx.font = `normal 35px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#ddd'; ctx.fillText(formData.team1Overs, t1x + t1w + 15, scoresY + 80);
+                        
+                        ctx.textAlign = 'left'; 
+                        ctx.font = `bold 60px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#fff'; 
+                        ctx.fillText(formData.team1Score, t1x, scoresY + 80);
+                        ctx.font = `normal 35px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#cbd5e1'; 
+                        ctx.fillText(formData.team1Overs, t1x + t1w + 15, scoresY + 80);
                         
                         ctx.beginPath(); ctx.moveTo(W/2, scoresY-20); ctx.lineTo(W/2, scoresY+100); ctx.lineWidth=4; ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.stroke();
                         
                         drawResponsiveText(ctx, formData.team2, rightCenter, scoresY, 400, 65, formData.team2Color, 'center', 'bold');
+                        
                         const t2w = measureText(ctx, formData.team2Score, 60, 'bold'), t2o = measureText(ctx, formData.team2Overs, 35, 'normal');
                         const t2x = rightCenter - ((t2w + 15 + t2o) / 2);
-                        ctx.textAlign = 'left'; ctx.font = `bold 60px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#fff'; ctx.fillText(formData.team2Score, t2x, scoresY + 80);
-                        ctx.font = `normal 35px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#ddd'; ctx.fillText(formData.team2Overs, t2x + t2w + 15, scoresY + 80);
-                        drawResponsiveText(ctx, formData.result, W / 2, scoresY + 180, 900, 48, formData.resultColor, 'center', 'bold');
+                        
+                        ctx.textAlign = 'left'; 
+                        ctx.font = `bold 60px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#fff'; 
+                        ctx.fillText(formData.team2Score, t2x, scoresY + 80);
+                        ctx.font = `normal 35px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#cbd5e1'; 
+                        ctx.fillText(formData.team2Overs, t2x + t2w + 15, scoresY + 80);
+                        
+                        drawResponsiveText(ctx, formData.result, W / 2, scoresY + 180, 900, 45, formData.resultColor, 'center', 'bold');
                     
                     } else if (appMode === 'schedule') {
+                        // CLASSIC SCHEDULE LOGIC
                         drawResponsiveText(ctx, formData.team1, leftCenter - 20, scoresY + 40, 380, 80, formData.team1Color, 'center', 'bold');
                         ctx.beginPath(); ctx.arc(W/2, scoresY+30, 50, 0, Math.PI*2); ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#fff'; ctx.stroke();
                         drawText(ctx, "VS", W/2, scoresY+45, 40, '#fff', 'center', 'bold');
                         drawResponsiveText(ctx, formData.team2, rightCenter + 20, scoresY + 40, 380, 80, formData.team2Color, 'center', 'bold');
-                        const dy = scoresY + 130; ctx.fillStyle = 'rgba(0,0,0,0.3)'; 
-                        drawRoundedRect(ctx, (W-700)/2, dy, 700, 100, 20);
-                        drawText(ctx, formData.matchDate, W/2, dy+45, 40, '#fff', 'center', 'bold'); 
-                        drawResponsiveText(ctx, `${formData.matchTime} | ${formData.matchVenue}`, W/2, dy+85, 660, 30, '#ddd', 'center', 'normal');
+                        
+                        const dy = scoresY + 130; 
+                        ctx.fillStyle = 'rgba(0,0,0,0.3)'; drawRoundedRect(ctx, (W-700)/2, dy, 700, 100, 20);
+                        drawResponsiveText(ctx, formData.matchDate, W/2, dy+45, 650, 40, '#fff', 'center', 'bold'); 
+                        drawResponsiveText(ctx, `${formData.matchTime} | ${formData.matchVenue}`, W/2, dy+85, 650, 30, '#cbd5e1', 'center', 'normal');
                     
                     } else if (appMode === 'player') {
-                        const py = scoresY - 20; drawText(ctx, formData.playerStatMain, W/2, py + 40, 130, formData.team1Color, 'center', 'bold'); drawText(ctx, formData.playerStatSub, W/2, py + 90, 40, '#fff', 'center', 'normal');
+                        // CLASSIC PLAYER LOGIC
+                        const py = scoresY - 20; 
+                        drawText(ctx, formData.playerStatMain, W/2, py + 40, 130, formData.team1Color, 'center', 'bold'); 
+                        drawText(ctx, formData.playerStatSub, W/2, py + 90, 40, '#cbd5e1', 'center', 'normal');
                         ctx.beginPath(); ctx.moveTo(W/2-150, py+120); ctx.lineTo(W/2+150, py+120); ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=2; ctx.stroke();
                         drawResponsiveText(ctx, formData.playerName, W/2, py + 180, 800, 60, '#fff', 'center', 'bold');
                     
@@ -453,9 +477,9 @@
                         const topY = py + 75; const midY = topY + boxH + gap; const botY = midY + boxH + gap;
 
                         const drawStatBox = (label, val, x, y) => {
-                            ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath();
+                            ctx.fillStyle = 'rgba(15, 23, 42, 0.85)'; ctx.beginPath();
                             drawRoundedRect(ctx, x, y, boxW, boxH, 15);
-                            ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.stroke();
+                            ctx.strokeStyle = formData.team1Color; ctx.stroke();
                             drawText(ctx, label, x + boxW/2, y + 35, 20, formData.team1Color, 'center', 'bold'); 
                             drawResponsiveText(ctx, val, x + boxW/2, y + 75, 380, 45, '#fff', 'center', 'bold');
                         };
@@ -467,7 +491,7 @@
                         const h = H * formData.newsGradientHeight; const nsy = H - h; const csy = nsy + 60; const nw = 880, lh = 75;
                         ctx.fillStyle = formData.primaryColor; 
                         drawRoundedRect(ctx, W/2 - 150, csy - 90, 300, 55, 10);
-                        drawText(ctx, "ব্রেকিং নিউজ", W/2, csy - 52, 32, '#fff', 'center', 'bold');
+                        drawText(ctx, "ব্রেকিং নিউজ", W/2, csy - 48, 36, '#fff', 'center', 'bold');
                         
                         ctx.font = "140px serif"; ctx.fillStyle = "rgba(255,255,255,0.1)"; ctx.textAlign = "center"; ctx.fillText("❝", W/2, csy + 30);
                         ctx.font = "bold 55px 'Hind Siliguri', sans-serif"; ctx.fillStyle = "#fff";
@@ -516,7 +540,8 @@
                         ctx.lineWidth = 12; ctx.strokeStyle = formData.team1Color;
                         ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
 
-                        ctx.font = "bold 55px 'Hind Siliguri', sans-serif"; ctx.fillStyle = "#fff";
+                        ctx.font = "bold 55px 'Hind Siliguri', sans-serif";
+                        ctx.fillStyle = "#fff";
                         const quote = `“${formData.quoteText}”`;
                         const nw = 960, lh = 75;
                         const words = quote.split(' '); let currentLine = words[0] || "";
@@ -539,75 +564,72 @@
                     
                     } else if (appMode === 'discussion') {
                         // Completely Borderless, Clean Typography Focus
-                        const centerY = (H - footerH) / 2;
-                        let startY = centerY - 150; 
+                        const centerY = splitY + (H - splitY - footerH) / 2;
+                        let startY = centerY - 140; 
 
-                        drawResponsiveText(ctx, formData.discTopic, W/2, startY, 900, 90, formData.primaryColor, 'center', '900');
+                        drawResponsiveText(ctx, formData.discTopic, W/2, startY, 900, 80, '#fff', 'center', '900');
                         
-                        ctx.save();
-                        ctx.shadowColor = formData.primaryColor;
-                        ctx.shadowBlur = 15;
-                        ctx.beginPath();
-                        ctx.moveTo(W/2 - 150, startY + 40);
-                        ctx.lineTo(W/2 + 150, startY + 40);
-                        ctx.strokeStyle = formData.primaryColor;
-                        ctx.lineWidth = 5;
-                        ctx.stroke();
-                        ctx.restore();
-
-                        startY += 150;
-                        drawResponsiveText(ctx, formData.discLine1, W/2, startY, 960, 70, formData.team2Color, 'center', 'bold');
-                        
-                        startY += 120;
-                        drawResponsiveText(ctx, formData.discLine2, W/2, startY, 960, 70, '#ffffff', 'center', 'bold');
+                        ctx.beginPath(); ctx.moveTo(W/2 - 100, startY + 30); ctx.lineTo(W/2 + 100, startY + 30);
+                        ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 6; ctx.stroke();
 
                         startY += 120;
-                        drawResponsiveText(ctx, formData.discLine3, W/2, startY, 960, 70, formData.team2Color, 'center', 'bold');
+                        drawResponsiveText(ctx, formData.discLine1, W/2, startY, 960, 60, formData.team1Color, 'center', 'bold');
+                        
+                        startY += 90;
+                        drawResponsiveText(ctx, formData.discLine2, W/2, startY, 960, 60, '#ffffff', 'center', 'bold');
+
+                        startY += 90;
+                        drawResponsiveText(ctx, formData.discLine3, W/2, startY, 960, 60, formData.team1Color, 'center', 'bold');
                     
                     } else if (appMode === 'multi_result') {
                         const py = 150;
                         
                         ctx.fillStyle = formData.primaryColor;
-                        drawRoundedRect(ctx, W/2 - 250, py, 500, 70, 15);
+                        drawRoundedRect(ctx, W/2 - 250, py, 500, 70, 35);
                         drawResponsiveText(ctx, formData.multiResultTitle, W/2, py + 48, 450, 40, '#fff', 'center', 'bold');
 
-                        const sy = py + 120;
+                        const sy = py + 100;
                         const totalH = H - footerH - sy - 40;
                         const numItems = formData.resultsList.length || 1;
                         const spacing = totalH / numItems;
-                        const boxH = Math.min(160, spacing * 0.85); 
+                        const boxH = Math.min(150, spacing * 0.85); 
+
+                        // Dynamic Font Sizing strictly tied to Box Height
+                        const fsTeam = Math.min(36, boxH * 0.25);
+                        const fsScore = Math.min(42, boxH * 0.3);
+                        const fsTourney = Math.min(22, boxH * 0.15);
 
                         formData.resultsList.forEach((res, index) => {
                             const y = sy + (index * spacing);
                             
                             // Top Pill (Red/Primary)
-                            ctx.fillStyle = formData.primaryColor; 
+                            ctx.fillStyle = formData.team2Color; 
                             if (ctx.roundRect) {
                                 ctx.beginPath(); ctx.roundRect(W/2 - 380, y, 760, boxH/2, [15, 15, 0, 0]); ctx.fill();
                             } else { ctx.fillRect(W/2 - 380, y, 760, boxH/2); }
                             
                             // Bottom Pill (Dark Slate)
-                            ctx.fillStyle = '#0f172a';
+                            ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
                             if (ctx.roundRect) {
                                 ctx.beginPath(); ctx.roundRect(W/2 - 380, y + boxH/2, 760, boxH/2, [0, 0, 15, 15]); ctx.fill();
                             } else { ctx.fillRect(W/2 - 380, y + boxH/2, 760, boxH/2); }
 
                             // Team Texts
-                            drawResponsiveText(ctx, res.team1, W/2 - 190, y + boxH/4 + 12, 320, 36, '#fff', 'center', 'bold');
-                            drawResponsiveText(ctx, res.team2, W/2 + 190, y + boxH/4 + 12, 320, 36, '#fff', 'center', 'bold');
+                            drawResponsiveText(ctx, res.team1, W/2 - 190, y + boxH/4 + (fsTeam/3), 320, fsTeam, '#fff', 'center', 'bold');
+                            drawResponsiveText(ctx, res.team2, W/2 + 190, y + boxH/4 + (fsTeam/3), 320, fsTeam, '#fff', 'center', 'bold');
 
                             // VS Circle Center
-                            ctx.beginPath(); ctx.arc(W/2, y + boxH/2, 38, 0, Math.PI*2); ctx.fillStyle = '#fff'; ctx.fill();
-                            drawText(ctx, "VS", W/2, y + boxH/2 + 12, 32, formData.primaryColor, 'center', '900');
+                            ctx.beginPath(); ctx.arc(W/2, y + boxH/2, boxH * 0.25, 0, Math.PI*2); ctx.fillStyle = '#fff'; ctx.fill();
+                            drawText(ctx, "VS", W/2, y + boxH/2 + (fsTeam/3), fsTeam * 0.8, formData.team2Color, 'center', '900');
 
                             // Scores
-                            drawResponsiveText(ctx, res.score1, W/2 - 190, y + boxH*0.75 + 18, 150, 50, '#fff', 'center', 'bold');
-                            drawResponsiveText(ctx, res.score2, W/2 + 190, y + boxH*0.75 + 18, 150, 50, '#fff', 'center', 'bold');
+                            drawResponsiveText(ctx, res.score1, W/2 - 190, y + boxH*0.75 + (fsScore/3), 150, fsScore, '#fff', 'center', 'bold');
+                            drawResponsiveText(ctx, res.score2, W/2 + 190, y + boxH*0.75 + (fsScore/3), 150, fsScore, '#fff', 'center', 'bold');
 
                             // Tourney Pill Bottom Center
                             ctx.fillStyle = formData.team1Color; 
-                            drawRoundedRect(ctx, W/2 - 180, y + boxH - 22, 360, 44, 10);
-                            drawResponsiveText(ctx, res.tourney, W/2, y + boxH + 8, 330, 24, '#000', 'center', 'bold');
+                            drawRoundedRect(ctx, W/2 - 150, y + boxH - (boxH*0.15), 300, boxH*0.3, boxH*0.15);
+                            drawResponsiveText(ctx, res.tourney, W/2, y + boxH + (fsTourney/3), 280, fsTourney, '#000', 'center', 'bold');
                         });
 
                     } else if (appMode === 'multi_schedule') {
@@ -630,6 +652,12 @@
                         const boxH = Math.min(220, spacing * 0.85);
                         const colW = 480;
 
+                        // Dynamic Font Scaling
+                        const fsSport = Math.min(24, boxH * 0.12);
+                        const fsTourney = Math.min(26, boxH * 0.13);
+                        const fsMatch = Math.min(38, boxH * 0.18);
+                        const fsTime = Math.min(28, boxH * 0.14);
+
                         formData.scheduleList.forEach((sch, index) => {
                             const col = index % 2;
                             const row = Math.floor(index / 2);
@@ -648,19 +676,19 @@
 
                             // Sport Type Small Pill
                             ctx.fillStyle = formData.team1Color;
-                            drawRoundedRect(ctx, cx + colW/2 - 90, y + 25, 180, 36, 8);
-                            drawResponsiveText(ctx, sch.sport, cx + colW/2, y + 50, 160, 24, '#000', 'center', 'bold');
+                            drawRoundedRect(ctx, cx + colW/2 - 90, y + (boxH * 0.1), 180, boxH * 0.18, 8);
+                            drawResponsiveText(ctx, sch.sport, cx + colW/2, y + (boxH * 0.22), 160, fsSport, '#000', 'center', 'bold');
 
                             // Tournament
-                            drawResponsiveText(ctx, sch.tourney, cx + colW/2, y + 95, colW - 40, 26, '#cbd5e1', 'center', 'normal');
+                            drawResponsiveText(ctx, sch.tourney, cx + colW/2, y + (boxH * 0.45), colW - 40, fsTourney, '#cbd5e1', 'center', 'normal');
                             
                             // Match
-                            drawResponsiveText(ctx, sch.match, cx + colW/2, y + 145, colW - 40, 38, '#fff', 'center', 'bold');
+                            drawResponsiveText(ctx, sch.match, cx + colW/2, y + (boxH * 0.68), colW - 40, fsMatch, '#fff', 'center', 'bold');
                             
                             // Time Pill
                             ctx.fillStyle = formData.primaryColor;
-                            drawRoundedRect(ctx, cx + colW/2 - 120, y + 170, 240, 45, 12);
-                            drawResponsiveText(ctx, sch.time, cx + colW/2, y + 202, 220, 28, '#fff', 'center', 'bold');
+                            drawRoundedRect(ctx, cx + colW/2 - 120, y + (boxH * 0.78), 240, boxH * 0.2, 12);
+                            drawResponsiveText(ctx, sch.time, cx + colW/2, y + (boxH * 0.92), 220, fsTime, '#fff', 'center', 'bold');
                         });
 
                         // Center Circle Element
@@ -685,17 +713,20 @@
                     const pillX = W - pillW - 40;
                     const pillY = 40;
                     
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
                     drawRoundedRect(ctx, pillX, pillY, pillW, 60, 30);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
                     
-                    // Draw FB icon tightly packed
                     drawFBIcon(ctx, pillX + 30, pillY + 30, 40);
                     drawText(ctx, formData.badgeText, pillX + 65, pillY + 41, 30, '#fff', 'left', 'bold');
                     ctx.restore();
 
+                    // Display Preview Watermark if not exporting
                     if (!isExport) {
                         ctx.save(); ctx.translate(W/2, H/2); ctx.rotate(-Math.PI / 6);
-                        ctx.font = "bold 150px sans-serif"; ctx.fillStyle = "rgba(255, 255, 255, 0.08)"; ctx.textAlign = "center"; ctx.fillText("PREVIEW", 0, 0); ctx.restore();
+                        ctx.font = "bold 150px sans-serif"; ctx.fillStyle = "rgba(255, 255, 255, 0.05)"; ctx.textAlign = "center"; ctx.fillText("PREVIEW", 0, 0); ctx.restore();
                     }
                 } catch(e) { console.error(e); }
             };
@@ -947,7 +978,7 @@
                                 {/* LEFT COLUMN: Canvas & Image Controls */}
                                 <div className="lg:col-span-5 xl:col-span-5 space-y-6">
                                     {/* MODE SELECTOR (PILLS) */}
-                                    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 px-1">
+                                    <div className="flex gap-2 overflow-x-auto custom-scroll pb-2 px-1">
                                         {TOOLS.map(toolConfig => (
                                             <button key={toolConfig.id} onClick={() => setAppMode(toolConfig.id)} className={`whitespace-nowrap px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 ${appMode === toolConfig.id ? 'bg-gradient-to-r from-rose-500 to-red-600 text-white shadow-[0_0_15px_rgba(225,29,72,0.3)]' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-800/50'}`}>
                                                 {toolConfig.name}
@@ -1415,8 +1446,8 @@
                         )}
                     </main>
 
-                    <footer className="bg-slate-950 text-slate-500 py-10 border-t border-slate-900 mt-auto">
-                        <div className="max-w-4xl mx-auto px-4 text-center space-y-4">
+                    <footer className="bg-slate-950 text-slate-500 py-10 border-t border-slate-900 mt-auto z-10">
+                        <div className="max-w-7xl mx-auto px-4 text-center space-y-4">
                             <div className="flex justify-center mb-4">
                                 <div className="bg-slate-900 p-3 rounded-2xl shadow-inner border border-slate-800">
                                     <IconLogo className="text-slate-600 w-6 h-6" />
