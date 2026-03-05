@@ -403,16 +403,14 @@ function App() {
                 ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke();
 
                 // Draw Title Text (responsive)
-                drawSmartText(ctx, formData.squadTitle, W/2, topH + titleBarH/2 - 20, W-120, titleBarH - 20, 55, 20, '#fff', 'center', 'bold');
+                // FIX APPLIED: Lower minFs to 12px for super long titles
+                drawSmartText(ctx, formData.squadTitle, W/2, topH + titleBarH/2 - 20, W-120, titleBarH - 20, 55, 12, '#fff', 'center', 'bold');
 
                 // Draw Grid
                 const gridY = topH + titleBarH + 20; 
                 const gridH = H - footerH - gridY - 20;
                 const gridW = W - 60;
                 const gridX = 30;
-
-                // Container for list
-                // ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.strokeRect(gridX, gridY, gridW, gridH);
 
                 const players = formData.squadList.split('\n').filter(line => line.trim() !== '');
                 const colCount = 2;
@@ -444,7 +442,6 @@ function App() {
                     specialTags.forEach(tag => {
                         if (pText.includes(tag)) {
                             isSpecial = true;
-                            // pText = pText.replace(tag, ''); // Optional: remove tag or keep it
                         }
                     });
 
@@ -571,11 +568,17 @@ function App() {
                 
                 ctx.font = "140px serif"; ctx.fillStyle = "rgba(255,255,255,0.1)"; ctx.textAlign = "center"; ctx.fillText("❝", W/2, csy + 30);
                 
-                // Use smart text for news body
-                const newsBoxH = H - csy - 120;
-                drawSmartText(ctx, formData.quoteText, W/2, csy + 130, nw, newsBoxH, 55, 20, '#fff', 'center', 'bold');
+                // FIX APPLIED: Calculate specific remaining height for news body to avoid footer overlap
+                // Space available from Text Start (csy + 110) to Footer Top (footerY). 
+                // We leave 120px buffer for Author Name.
+                const authorZoneH = 120;
+                const safeBottomY = footerY - authorZoneH;
+                const textStartY = csy + 110;
+                const newsBoxH = Math.max(100, safeBottomY - textStartY); // Ensure at least 100px
+
+                drawSmartText(ctx, formData.quoteText, W/2, textStartY + (newsBoxH/2), nw, newsBoxH, 55, 20, '#fff', 'center', 'bold');
                 
-                const ay = H - footerH - 90; // Pin author near bottom
+                const ay = footerY - 90; // Pin author just above footer
                 ctx.beginPath(); ctx.moveTo(W/2 - 120, ay); ctx.lineTo(W/2 + 120, ay); ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 5; ctx.stroke();
                 drawResponsiveText(ctx, formData.quoteAuthor, W/2, ay + 60, 900, 38, '#cbd5e1', 'center', 'bold');
             
