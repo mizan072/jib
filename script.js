@@ -32,10 +32,12 @@ const IconMessage = ({className}) => <svg className={className || "w-6 h-6"} xml
 const IconHelp = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>;
 const IconList = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>;
 const IconGrid = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>;
+const IconUsers = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
 
 // --- DASHBOARD TOOLS ---
 const TOOLS = [
     { id: 'scorecard', name: 'Match Scorecard', desc: 'Classic Match score updates', icon: IconTrophy, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
+    { id: 'squad', name: 'Squad List', desc: 'Two-column team player list', icon: IconUsers, color: 'text-green-400', bg: 'bg-green-400/10', border: 'border-green-400/20' },
     { id: 'multi_result', name: 'Multi Results', desc: 'List of match scores', icon: IconList, color: 'text-rose-400', bg: 'bg-rose-400/10', border: 'border-rose-400/20' },
     { id: 'schedule', name: 'Single Schedule', desc: 'Upcoming fixture and venue', icon: IconCalendar, color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/20' },
     { id: 'multi_schedule', name: 'All-Day Schedule', desc: 'Grid schedule of matches', icon: IconGrid, color: 'text-sky-400', bg: 'bg-sky-400/10', border: 'border-sky-400/20' },
@@ -94,6 +96,40 @@ const drawResponsiveText = (ctx, text, x, y, maxW, defaultFs, color, align, fw) 
         ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 6;
     }
     ctx.fillText(text, x, y);
+    ctx.shadowBlur = 0;
+};
+
+// --- NEW SMART TEXT SCALER ---
+// Calculates font size to fit BOTH width and height of a bounding box
+const drawSmartText = (ctx, text, x, y, boxW, boxH, maxFs, minFs, color, align, fw, lhRatio = 1.3) => {
+    let fs = maxFs;
+    let lines = [];
+    let textHeight = 0;
+
+    // Binary search approach for better performance could be used, but loop is safer for context matching
+    while (fs >= minFs) {
+        ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`;
+        lines = wrapText(ctx, text, boxW);
+        textHeight = lines.length * (fs * lhRatio);
+        
+        if (textHeight <= boxH) break;
+        fs -= 2;
+    }
+
+    // Centering vertically
+    let currentY = y - (textHeight / 2) + (fs * lhRatio * 0.7) / 2; // Approximate text baseline
+    if(align === 'top') currentY = y + fs;
+
+    ctx.fillStyle = color;
+    ctx.textAlign = align === 'top' ? 'center' : align;
+    if(color === '#fff' || color === '#ffffff') {
+        ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 6;
+    }
+
+    lines.forEach(line => {
+        ctx.fillText(line, x, currentY);
+        currentY += (fs * lhRatio);
+    });
     ctx.shadowBlur = 0;
 };
 
@@ -157,6 +193,11 @@ function App() {
         milestoneOccasion: 'শুভ জন্মদিন', milestoneName: 'সাকিব আল হাসান', milestoneNumber: '৩৭ তম', milestoneMessage: 'বাংলাদেশ ক্রিকেটের জান, বাংলাদেশ ক্রিকেটের প্রাণ! শুভকামনা রইলো।',
         discTopic: 'ম্যাচ বিশ্লেষণ', discLine1: 'পাওয়ার প্লে-তে কে বেশি রান করবে?', discLine2: 'আজকের পিচ কাদের জন্য সহায়ক?', discLine3: 'সেরা বোলার কে হতে পারে?',
         quoteText: 'ফিলিস্তিনের মাটিতে জন্ম নেওয়াটাই কি দোষ? আমাদের নিষ্পাপ শিশুরা কি দোষ করছে?', quoteAuthor: 'পেপ গার্দিওলা',
+        
+        // New SQUAD Tool Data
+        squadTitle: 'বাংলাদেশের বিপক্ষে ওয়ানডে সিরিজের জন্য পাকিস্তানের স্কোয়াড',
+        squadList: 'শাহিন শাহ আফ্রিদি (অধিনায়ক)\nমোহাম্মদ ওয়াসিম জুনিয়র\nসাহিবজাদা ফারহান\nমোহাম্মদ গাজী ঘুরি\nআবরার আহমেদ\nশাদ মাসুদ\nফাহিম আশরাফ\nআব্দুল সামাদ\nফাইসাল আকরাম\nসালমান আলী আগা\nহারিস রউফ\nশামিল হুসেন\nহুসাইন তালাত\nমাআজ সাদাকাত\nমোহাম্মদ রিজওয়ান (উইকেটকিপার)',
+
         multiResultTitle: 'আজকের সকল ম্যাচের ফলাফল',
         resultsList: [
             { id: 1, team1: 'বার্সেলোনা', team2: 'রিয়াল মাদ্রিদ', score1: '৩', score2: '১', tourney: 'লা লিগা' },
@@ -279,6 +320,24 @@ function App() {
                 ctx.fillStyle = "rgba(255,255,255,0.03)";
                 ctx.textAlign = "center";
                 ctx.fillText("❝", W/2, H/2 + 100);
+            } else if (appMode === 'squad') {
+                // SQUAD specific background logic
+                // Top part (35%) for Image
+                const topH = H * 0.35;
+                if (bgImage) {
+                    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, topH); ctx.clip();
+                    ctx.translate(img1Pos.x, img1Pos.y); ctx.scale(img1Pos.scale, img1Pos.scale); 
+                    ctx.drawImage(bgImage, 0, 0); ctx.restore();
+                } else {
+                    ctx.fillStyle = '#1e293b'; ctx.fillRect(0, 0, W, topH);
+                    drawText(ctx, "Team Photo Area", W/2, topH/2, 40, "#475569", "center", "bold");
+                }
+                
+                // Bottom part (65%) Dark BG
+                const grad = ctx.createLinearGradient(0, topH, 0, H);
+                grad.addColorStop(0, '#111'); grad.addColorStop(1, '#000');
+                ctx.fillStyle = grad; ctx.fillRect(0, topH, W, H - topH);
+
             } else {
                 if (bgImage && bgImage2 && appMode !== 'statement') {
                     ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W/2, H); ctx.clip(); ctx.translate(img1Pos.x, img1Pos.y); ctx.scale(img1Pos.scale, img1Pos.scale); ctx.drawImage(bgImage, 0, 0); ctx.restore();
@@ -311,8 +370,8 @@ function App() {
                 gradient.addColorStop(0, formData.primaryColor); gradient.addColorStop(1, formData.secondaryColor);
                 ctx.fillStyle = gradient;
                 ctx.fillRect(0, 0, W, H);
-            } else if (appMode === 'statement') {
-                // Statement handles its own gradient below
+            } else if (appMode === 'statement' || appMode === 'squad') {
+                // Handled separately
             } else if (appMode !== 'discussion') { 
                 const gradient = ctx.createLinearGradient(0, splitY, 0, H);
                 gradient.addColorStop(0, formData.primaryColor); gradient.addColorStop(1, formData.secondaryColor);
@@ -330,7 +389,75 @@ function App() {
             ctx.restore(); 
 
             // 3. Draw Specific Modules
-            if (appMode === 'poll') {
+            if (appMode === 'squad') {
+                const topH = H * 0.35; // 420px
+                const titleBarH = 140; 
+                
+                // Red Gradient Title Bar
+                const tGrad = ctx.createLinearGradient(0, topH, W, topH); // Horizontal gradient looks better
+                tGrad.addColorStop(0, formData.primaryColor); tGrad.addColorStop(1, '#ef4444'); // Red to lighter red
+                ctx.fillStyle = tGrad; 
+                
+                // Draw title bar with slight curve at top
+                ctx.beginPath(); ctx.roundRect(40, topH - 20, W - 80, titleBarH, 20); ctx.fill();
+                ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke();
+
+                // Draw Title Text (responsive)
+                drawSmartText(ctx, formData.squadTitle, W/2, topH + titleBarH/2 - 20, W-120, titleBarH - 20, 55, 20, '#fff', 'center', 'bold');
+
+                // Draw Grid
+                const gridY = topH + titleBarH + 20; 
+                const gridH = H - footerH - gridY - 20;
+                const gridW = W - 60;
+                const gridX = 30;
+
+                // Container for list
+                // ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.strokeRect(gridX, gridY, gridW, gridH);
+
+                const players = formData.squadList.split('\n').filter(line => line.trim() !== '');
+                const colCount = 2;
+                const rowCount = Math.ceil(players.length / colCount);
+                const colW = gridW / colCount;
+                const rowH = gridH / rowCount;
+                
+                // Dynamic font size based on row height
+                const fontSize = Math.min(42, rowH * 0.55); 
+
+                players.forEach((player, i) => {
+                    const col = i % colCount; // 0 or 1
+                    const row = Math.floor(i / colCount); 
+                    
+                    const itemX = gridX + (col * colW);
+                    const itemY = gridY + (row * rowH);
+
+                    // Green Arrow Bullet
+                    const bx = itemX + 30; 
+                    const by = itemY + rowH/2;
+                    ctx.beginPath(); ctx.moveTo(bx, by-8); ctx.lineTo(bx+12, by); ctx.lineTo(bx, by+8); ctx.closePath();
+                    ctx.fillStyle = '#4ade80'; ctx.fill();
+
+                    // Parse text for special styling
+                    let pText = player.trim();
+                    let isSpecial = false;
+                    const specialTags = ['(c)', '(C)', '(wk)', '(WK)', '(অধিনায়ক)', '(উইকেটকিপার)', '(captain)'];
+                    
+                    specialTags.forEach(tag => {
+                        if (pText.includes(tag)) {
+                            isSpecial = true;
+                            // pText = pText.replace(tag, ''); // Optional: remove tag or keep it
+                        }
+                    });
+
+                    const pColor = isSpecial ? '#facc15' : '#fff'; // Yellow if special, else white
+                    const pWeight = isSpecial ? '900' : 'bold';
+
+                    ctx.font = `${pWeight} ${fontSize}px "Hind Siliguri", sans-serif`;
+                    ctx.fillStyle = pColor;
+                    ctx.textAlign = 'left';
+                    ctx.fillText(pText, bx + 25, by + (fontSize*0.35));
+                });
+
+            } else if (appMode === 'poll') {
                 const py = splitY + 40;
                 drawResponsiveText(ctx, formData.pollQuestion, W / 2, py + 20, 900, 55, '#fff', 'center', 'bold');
                 ctx.beginPath(); ctx.moveTo(W/2-250, py+40); ctx.lineTo(W/2+250, py+40); ctx.strokeStyle='rgba(255,255,255,0.2)'; ctx.lineWidth=2; ctx.stroke();
@@ -444,12 +571,11 @@ function App() {
                 
                 ctx.font = "140px serif"; ctx.fillStyle = "rgba(255,255,255,0.1)"; ctx.textAlign = "center"; ctx.fillText("❝", W/2, csy + 30);
                 
-                const lines = wrapText(ctx, formData.quoteText, nw);
-                ctx.font = "bold 55px 'Hind Siliguri', sans-serif"; ctx.fillStyle = "#fff";
-                const startY = csy + 110; 
-                lines.forEach((line, i) => { ctx.textAlign = 'center'; ctx.fillText(line, W / 2, startY + (i * lh)); });
+                // Use smart text for news body
+                const newsBoxH = H - csy - 120;
+                drawSmartText(ctx, formData.quoteText, W/2, csy + 130, nw, newsBoxH, 55, 20, '#fff', 'center', 'bold');
                 
-                const ay = startY + (lines.length * lh) + 10;
+                const ay = H - footerH - 90; // Pin author near bottom
                 ctx.beginPath(); ctx.moveTo(W/2 - 120, ay); ctx.lineTo(W/2 + 120, ay); ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 5; ctx.stroke();
                 drawResponsiveText(ctx, formData.quoteAuthor, W/2, ay + 60, 900, 38, '#cbd5e1', 'center', 'bold');
             
@@ -485,15 +611,11 @@ function App() {
                 ctx.lineWidth = 12; ctx.strokeStyle = formData.team1Color;
                 ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
 
-                ctx.font = "bold 55px 'Hind Siliguri', sans-serif";
-                const lines = wrapText(ctx, `“${formData.quoteText}”`, 960);
-                ctx.fillStyle = "#fff";
+                // Smart Text for Statement to prevent overlap
+                const quoteBoxH = 250;
+                drawSmartText(ctx, `“${formData.quoteText}”`, W/2, sy + r + 130, 960, quoteBoxH, 55, 24, '#fff', 'center', 'bold');
                 
-                const lh = 75;
-                const startY = sy + r + 80;
-                lines.forEach((line, i) => { ctx.textAlign = 'center'; ctx.fillText(line, W / 2, startY + (i * lh)); });
-                
-                const authorY = startY + (lines.length * lh) + 30;
+                const authorY = sy + r + quoteBoxH + 60;
                 drawResponsiveText(ctx, `— ${formData.quoteAuthor}`, W/2, authorY, 900, 45, '#fff', 'center', 'bold');
                 
                 ctx.beginPath(); ctx.moveTo(W/2 - 250, authorY + 40); ctx.lineTo(W/2 + 250, authorY + 40);
@@ -501,85 +623,36 @@ function App() {
                 ctx.restore();
             
             } else if (appMode === 'discussion') {
-                // PROFESSIONAL FACEBOOK TEXT-HEAVY LAYOUT
-                const topicFs = 130;
-                const lineFs = 80;
-                const maxWidth = 950;
+                // REDESIGNED TO PREVENT OVERLAP
+                const totalAvailableH = H - footerH - 120; // 120px padding top/bottom
+                const centerY = H / 2;
                 
-                ctx.font = `900 ${topicFs}px "Hind Siliguri", sans-serif`;
-                const topicLines = wrapText(ctx, formData.discTopic || "", maxWidth);
+                // 1. Draw Topic (Dynamic)
+                const topicBoxH = totalAvailableH * 0.3; // 30% for topic
+                const topicY = centerY - (totalAvailableH/2) + (topicBoxH/2);
                 
-                ctx.font = `bold ${lineFs}px "Hind Siliguri", sans-serif`;
-                const l1 = wrapText(ctx, formData.discLine1 || "", maxWidth);
-                const l2 = wrapText(ctx, formData.discLine2 || "", maxWidth);
-                const l3 = wrapText(ctx, formData.discLine3 || "", maxWidth);
-
-                const topicLineHeight = topicFs * 1.2;
-                const normalLineHeight = lineFs * 1.3;
-                const blockSpacing = 60; 
-                const dividerSpacing = 80; 
-                
-                let totalHeight = 0;
-                if (topicLines.length > 0) totalHeight += topicLines.length * topicLineHeight;
-                if (topicLines.length > 0 && (l1.length || l2.length || l3.length)) totalHeight += dividerSpacing * 2; 
-                if (l1.length > 0) totalHeight += l1.length * normalLineHeight + blockSpacing;
-                if (l2.length > 0) totalHeight += l2.length * normalLineHeight + blockSpacing;
-                if (l3.length > 0) totalHeight += l3.length * normalLineHeight;
-
-                let currentY = (H - footerH) / 2 - totalHeight / 2;
-                currentY += topicFs * 0.8; 
-
-                // Top Label
-                drawText(ctx, "DISCUSSION", W/2, currentY - topicLineHeight - 20, 26, formData.team1Color, 'center', 'bold');
-                ctx.beginPath(); ctx.moveTo(W/2 - 40, currentY - topicLineHeight + 5); ctx.lineTo(W/2 + 40, currentY - topicLineHeight + 5); 
+                drawText(ctx, "DISCUSSION", W/2, topicY - (topicBoxH/2), 26, formData.team1Color, 'center', 'bold');
+                ctx.beginPath(); ctx.moveTo(W/2 - 40, topicY - (topicBoxH/2) + 25); ctx.lineTo(W/2 + 40, topicY - (topicBoxH/2) + 25); 
                 ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 4; ctx.stroke();
 
-                if (topicLines.length > 0) {
-                    ctx.font = `900 ${topicFs}px "Hind Siliguri", sans-serif`;
-                    ctx.fillStyle = '#ffffff';
-                    ctx.textAlign = 'center';
-                    ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 20;
-                    topicLines.forEach(line => {
-                        ctx.fillText(line, W/2, currentY);
-                        currentY += topicLineHeight;
-                    });
-                    ctx.shadowBlur = 0;
-                    
-                    if (l1.length || l2.length || l3.length) {
-                        currentY -= topicLineHeight; 
-                        currentY += dividerSpacing;
-                        
-                        ctx.beginPath();
-                        ctx.moveTo(W/2 - 150, currentY);
-                        ctx.lineTo(W/2 + 150, currentY);
-                        ctx.strokeStyle = formData.team1Color;
-                        ctx.lineWidth = 8;
-                        ctx.stroke();
-                        
-                        ctx.shadowColor = formData.team1Color; ctx.shadowBlur = 15;
-                        ctx.stroke(); ctx.shadowBlur = 0;
-                        currentY += dividerSpacing;
-                    }
-                }
+                drawSmartText(ctx, formData.discTopic, W/2, topicY + 20, 950, topicBoxH - 40, 130, 40, '#fff', 'center', '900');
 
-                ctx.font = `bold ${lineFs}px "Hind Siliguri", sans-serif`;
-                ctx.textAlign = 'center';
+                // Divider
+                const divY = topicY + (topicBoxH/2) + 20;
+                ctx.beginPath(); ctx.moveTo(W/2 - 150, divY); ctx.lineTo(W/2 + 150, divY);
+                ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 8; ctx.stroke();
+                ctx.shadowColor = formData.team1Color; ctx.shadowBlur = 15; ctx.stroke(); ctx.shadowBlur = 0;
+
+                // 2. Draw Lines (Dynamic)
+                const linesBoxH = totalAvailableH * 0.55; // 55% for lines
+                const linesY = divY + 40 + (linesBoxH/2); // Center of lines box
                 
-                const drawLines = (linesArr, color) => {
-                    if (linesArr.length === 0) return;
-                    ctx.fillStyle = color;
-                    ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 8;
-                    linesArr.forEach(line => {
-                        ctx.fillText(line, W/2, currentY);
-                        currentY += normalLineHeight;
-                    });
-                    ctx.shadowBlur = 0;
-                    currentY += blockSpacing - normalLineHeight;
-                };
-
-                drawLines(l1, formData.team1Color);
-                drawLines(l2, '#ffffff');
-                drawLines(l3, formData.team2Color);
+                // Combine lines to treat as one block for spacing? Or space them out
+                const gap = linesBoxH / 3;
+                
+                drawSmartText(ctx, formData.discLine1, W/2, divY + 40 + (gap*0.5), 950, gap-20, 80, 24, formData.team1Color, 'center', 'bold');
+                drawSmartText(ctx, formData.discLine2, W/2, divY + 40 + (gap*1.5), 950, gap-20, 80, 24, '#fff', 'center', 'bold');
+                drawSmartText(ctx, formData.discLine3, W/2, divY + 40 + (gap*2.5), 950, gap-20, 80, 24, formData.team2Color, 'center', 'bold');
             
             } else if (appMode === 'multi_result') {
                 const py = 120;
@@ -1007,7 +1080,7 @@ function App() {
                                     <button onClick={resetImage} className="bg-slate-900/60 text-white p-3 rounded-full backdrop-blur-md hover:bg-rose-600 transition-colors border border-slate-700/50 shadow-lg" title="Reset Image Positions"><IconRefresh /></button>
                                 </div>
                                 
-                                {!bgImage && appMode !== 'discussion' && <div className="absolute inset-0 pointer-events-none flex items-center justify-center bg-slate-950/50 backdrop-blur-sm"><span className="bg-slate-900 border border-slate-700 text-white px-6 py-3 rounded-full text-sm font-bold shadow-2xl flex items-center gap-3"><div className="loader border-t-rose-500 border-white/20"></div> Initializing Canvas...</span></div>}
+                                {!bgImage && appMode !== 'discussion' && appMode !== 'squad' && <div className="absolute inset-0 pointer-events-none flex items-center justify-center bg-slate-950/50 backdrop-blur-sm"><span className="bg-slate-900 border border-slate-700 text-white px-6 py-3 rounded-full text-sm font-bold shadow-2xl flex items-center gap-3"><div className="loader border-t-rose-500 border-white/20"></div> Initializing Canvas...</span></div>}
                             </div>
                             
                             {/* IMAGE SCALERS */}
@@ -1019,7 +1092,7 @@ function App() {
                                         <IconZoomIn className="text-slate-500" />
                                         <input type="range" min="0.1" max="5" step="0.05" value={img1Pos.scale} onChange={(e) => setImg1Pos(p => ({ ...p, scale: parseFloat(e.target.value) }))} className="w-full flex-1" />
                                     </div>
-                                    {bgImage2 && appMode !== 'statement' && (
+                                    {bgImage2 && appMode !== 'statement' && appMode !== 'squad' && (
                                         <div className="flex items-center gap-4 relative z-10">
                                             <span className="text-[10px] uppercase font-bold text-slate-400 w-16 flex items-center gap-1 bg-slate-950 px-2 py-1.5 rounded-lg border border-slate-800">Img 2 <IconMove className="w-3 h-3 text-blue-500"/></span>
                                             <IconZoomIn className="text-slate-500" />
@@ -1081,19 +1154,21 @@ function App() {
                                                                 </>
                                                             )
                                                         ) : (
-                                                            bgImage2 ? (
+                                                            (appMode !== 'squad' && bgImage2) ? (
                                                                 <div className="h-full border border-blue-500/30 bg-blue-500/5 rounded-2xl flex flex-col items-center justify-center relative shadow-inner p-4">
                                                                     <span className="text-xs font-bold text-blue-400 mb-2">Img 2 Active</span>
                                                                     <button onClick={() => setBgImage2(null)} className="flex items-center justify-center w-full gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 px-3 py-2 rounded-lg text-xs font-bold border border-slate-700 transition-colors z-20 relative"><IconTrash /> Remove</button>
                                                                 </div>
                                                             ) : (
-                                                                <>
-                                                                    <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, true)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                                                                    <div className="border-2 border-dashed border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-slate-950/50 group-hover:bg-slate-800/80 group-hover:border-blue-500/50 transition-all">
-                                                                        <div className="bg-slate-800 p-3 rounded-full shadow-lg text-blue-500 group-hover:scale-110 transition-transform"><IconUpload /></div>
-                                                                        <span className="text-xs font-bold text-slate-400">Photo 2 (Opt)</span>
-                                                                    </div>
-                                                                </>
+                                                                appMode !== 'squad' && (
+                                                                    <>
+                                                                        <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, true)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                                                                        <div className="border-2 border-dashed border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-slate-950/50 group-hover:bg-slate-800/80 group-hover:border-blue-500/50 transition-all">
+                                                                            <div className="bg-slate-800 p-3 rounded-full shadow-lg text-blue-500 group-hover:scale-110 transition-transform"><IconUpload /></div>
+                                                                            <span className="text-xs font-bold text-slate-400">Photo 2 (Opt)</span>
+                                                                        </div>
+                                                                    </>
+                                                                )
                                                             )
                                                         )}
                                                     </div>
@@ -1105,23 +1180,38 @@ function App() {
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
                                                         <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Badge Text</label>
-                                                        <input type="text" name="badgeText" value={formData.badgeText} onChange={handleChange} className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-sm font-medium text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Badge" />
+                                                        <input type="text" name="badgeText" value={formData.badgeText} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-medium text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Badge" />
                                                     </div>
-                                                    {appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone' && appMode !== 'statement' && appMode !== 'discussion' && appMode !== 'multi_result' && appMode !== 'multi_schedule' && (
+                                                    {appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone' && appMode !== 'statement' && appMode !== 'discussion' && appMode !== 'multi_result' && appMode !== 'multi_schedule' && appMode !== 'squad' && (
                                                         <div>
                                                             <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Main Title</label>
-                                                            <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-sm font-medium text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Tournament Name" />
+                                                            <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-medium text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Tournament Name" />
                                                         </div>
                                                     )}
                                                 </div>
                                                 <div>
                                                     <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Footer / Handle</label>
-                                                    <input type="text" name="footerHandle" value={formData.footerHandle} onChange={handleChange} className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-sm font-medium text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="e.g., @proscorecard_bot" />
+                                                    <input type="text" name="footerHandle" value={formData.footerHandle} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-medium text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="e.g., @proscorecard_bot" />
                                                 </div>
                                             </div>
 
                                             {/* Contextual Forms based on Mode */}
                                             
+                                            {appMode === 'squad' && (
+                                                <div className="p-5 bg-green-500/10 rounded-2xl border-l-4 border-green-500 shadow-inner space-y-4">
+                                                    <h4 className="text-xs font-black text-green-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconUsers /> Squad Builder</h4>
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-green-300 mb-1.5 block ml-1">Series Title (Red Box)</label>
+                                                        <input type="text" name="squadTitle" value={formData.squadTitle} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-green-500/30 rounded-xl text-sm font-bold text-white focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-green-300 mb-1.5 block ml-1">Player List (Enter names on new lines)</label>
+                                                        <textarea name="squadList" value={formData.squadList} onChange={handleChange} rows="10" className="w-full px-4 py-3 bg-slate-900 border border-green-500/30 rounded-xl text-sm font-medium text-white focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all leading-relaxed whitespace-pre" placeholder="List players here..."></textarea>
+                                                        <p className="text-[10px] text-slate-500 mt-2">💡 Tip: Use <b>(c)</b>, <b>(wk)</b>, or <b>(captain)</b> next to a name to highlight it in yellow.</p>
+                                                    </div>
+                                                </div>
+                                            )}
+
                                             {appMode === 'multi_result' && (
                                                 <div className="p-5 bg-rose-500/5 rounded-2xl border border-rose-500/20 shadow-inner space-y-4">
                                                     <h4 className="text-sm font-black text-rose-400 uppercase tracking-wider flex items-center gap-2 mb-4"><IconList /> Results Builder</h4>
@@ -1253,7 +1343,7 @@ function App() {
                                             {appMode === 'scorecard' && (
                                                 <div>
                                                     <label className="text-[10px] uppercase font-bold text-slate-500 mb-1.5 block ml-1">Match Result Headline</label>
-                                                    <textarea name="result" value={formData.result} onChange={handleChange} rows="2" className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Result Text"></textarea>
+                                                    <textarea name="result" value={formData.result} onChange={handleChange} rows="2" className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Result Text"></textarea>
                                                 </div>
                                             )}
 
