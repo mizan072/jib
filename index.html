@@ -145,13 +145,17 @@
         const drawResponsiveText = (ctx, text, x, y, maxW, defaultFs, color, align, fw) => {
             let fs = defaultFs;
             ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`;
-            while (ctx.measureText(text).width > maxW && fs > 14) {
+            while (ctx.measureText(text).width > maxW && fs > 10) {
                 fs -= 1;
                 ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`;
             }
             ctx.fillStyle = color;
             ctx.textAlign = align;
+            if(color === '#fff' || color === '#ffffff') {
+                ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 6;
+            }
             ctx.fillText(text, x, y);
+            ctx.shadowBlur = 0;
         };
         
         const drawFBIcon = (ctx, cx, cy, size) => {
@@ -368,8 +372,8 @@
                         ctx.fillRect(0, splitY, W, H - splitY); 
                     }
                     
-                    // Dark boxes for titles
-                    if (['scorecard', 'schedule', 'player', 'career', 'poll', 'milestone'].includes(appMode)) { 
+                    // Dark boxes for titles (Only show on specific layouts)
+                    if (['scorecard', 'schedule', 'player'].includes(appMode)) { 
                         ctx.fillStyle = 'rgba(0, 0, 0, 0.4)'; 
                         drawRoundedRect(ctx, titleBoxX, titleBoxY, titleBoxW, titleBoxH, 20);
                         ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 2; ctx.strokeRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH);
@@ -462,8 +466,8 @@
                     } else if (appMode === 'player') {
                         // CLASSIC PLAYER LOGIC
                         const py = scoresY - 20; 
-                        drawText(ctx, formData.playerStatMain, W/2, py + 40, 130, formData.team1Color, 'center', 'bold'); 
-                        drawText(ctx, formData.playerStatSub, W/2, py + 90, 40, '#cbd5e1', 'center', 'normal');
+                        drawResponsiveText(ctx, formData.playerStatMain, W/2, py + 40, 800, 130, formData.team1Color, 'center', 'bold'); 
+                        drawResponsiveText(ctx, formData.playerStatSub, W/2, py + 90, 800, 40, '#cbd5e1', 'center', 'normal');
                         ctx.beginPath(); ctx.moveTo(W/2-150, py+120); ctx.lineTo(W/2+150, py+120); ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=2; ctx.stroke();
                         drawResponsiveText(ctx, formData.playerName, W/2, py + 180, 800, 60, '#fff', 'center', 'bold');
                     
@@ -690,15 +694,6 @@
                             drawRoundedRect(ctx, cx + colW/2 - 120, y + (boxH * 0.78), 240, boxH * 0.2, 12);
                             drawResponsiveText(ctx, sch.time, cx + colW/2, y + (boxH * 0.92), 220, fsTime, '#fff', 'center', 'bold');
                         });
-
-                        // Center Circle Element
-                        if (rows > 0) {
-                            const centerY = sy + (rows * spacing) / 2 - (spacing - boxH)/2;
-                            ctx.beginPath(); ctx.arc(W/2, centerY, 60, 0, Math.PI*2); ctx.fillStyle = '#fff'; ctx.fill();
-                            ctx.lineWidth = 5; ctx.strokeStyle = formData.team1Color; ctx.stroke();
-                            drawText(ctx, "খেলার", W/2, centerY - 6, 24, '#0f172a', 'center', 'bold');
-                            drawText(ctx, "খবর", W/2, centerY + 22, 24, '#0f172a', 'center', 'bold');
-                        }
                     }
                     
                     // 4. Draw Branding & Footer (ALWAYS ON TOP)
