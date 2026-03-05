@@ -139,7 +139,30 @@
             ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`; 
             ctx.fillStyle = color; 
             ctx.textAlign = align; 
+            if(color === '#fff' || color === '#ffffff') {
+                ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 6;
+            }
             ctx.fillText(text, x, y); 
+            ctx.shadowBlur = 0;
+        };
+
+        const wrapText = (ctx, text, maxWidth) => {
+            if (!text) return [];
+            const words = text.toString().split(' ');
+            let lines = [];
+            let currentLine = words[0] || '';
+            for (let i = 1; i < words.length; i++) {
+                const word = words[i];
+                const width = ctx.measureText(currentLine + " " + word).width;
+                if (width < maxWidth) {
+                    currentLine += " " + word;
+                } else {
+                    lines.push(currentLine);
+                    currentLine = word;
+                }
+            }
+            if (currentLine) lines.push(currentLine);
+            return lines;
         };
         
         const drawResponsiveText = (ctx, text, x, y, maxW, defaultFs, color, align, fw) => {
@@ -327,10 +350,16 @@
                 try {
                     // 1. Draw Background Images
                     if (appMode === 'discussion') {
-                        ctx.fillStyle = formData.primaryColor;
-                        ctx.globalAlpha = formData.bgOpacity;
+                        const grad = ctx.createLinearGradient(0, 0, 0, H);
+                        grad.addColorStop(0, '#020617');
+                        grad.addColorStop(1, formData.primaryColor);
+                        ctx.fillStyle = grad;
                         ctx.fillRect(0, 0, W, H);
-                        ctx.globalAlpha = 1.0;
+                        
+                        ctx.font = "bold 600px serif";
+                        ctx.fillStyle = "rgba(255,255,255,0.03)";
+                        ctx.textAlign = "center";
+                        ctx.fillText("❝", W/2, H/2 + 100);
                     } else {
                         if (bgImage && bgImage2 && appMode !== 'statement') {
                             ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W/2, H); ctx.clip(); ctx.translate(img1Pos.x, img1Pos.y); ctx.scale(img1Pos.scale, img1Pos.scale); ctx.drawImage(bgImage, 0, 0); ctx.restore();
@@ -567,23 +596,54 @@
                         ctx.restore();
                     
                     } else if (appMode === 'discussion') {
-                        // Completely Borderless, Clean Typography Focus
-                        const centerY = splitY + (H - splitY - footerH) / 2;
-                        let startY = centerY - 140; 
-
-                        drawResponsiveText(ctx, formData.discTopic, W/2, startY, 900, 80, '#fff', 'center', '900');
+                        // Magazine-Style Text Wrapping Layout
+                        let startY = 220; 
                         
-                        ctx.beginPath(); ctx.moveTo(W/2 - 100, startY + 30); ctx.lineTo(W/2 + 100, startY + 30);
-                        ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 6; ctx.stroke();
+                        // Top Label
+                        drawText(ctx, "DISCUSSION", W/2, 110, 26, formData.team1Color, 'center', 'bold');
+                        ctx.beginPath(); ctx.moveTo(W/2 - 40, 135); ctx.lineTo(W/2 + 40, 135); 
+                        ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 4; ctx.stroke();
+
+                        // Main Topic (Wrapped)
+                        ctx.font = `900 80px "Hind Siliguri", sans-serif`;
+                        const topicLines = wrapText(ctx, formData.discTopic, 900);
+                        ctx.fillStyle = '#ffffff';
+                        ctx.textAlign = 'center';
+                        ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 15;
+                        topicLines.forEach(line => {
+                            ctx.fillText(line, W/2, startY);
+                            startY += 100;
+                        });
+                        ctx.shadowBlur = 0;
+
+                        // Gradient Divider
+                        startY += 40;
+                        const lineGrad = ctx.createLinearGradient(W/2 - 200, 0, W/2 + 200, 0);
+                        lineGrad.addColorStop(0, 'rgba(255,255,255,0)');
+                        lineGrad.addColorStop(0.5, formData.team1Color);
+                        lineGrad.addColorStop(1, 'rgba(255,255,255,0)');
+                        ctx.fillStyle = lineGrad;
+                        ctx.fillRect(W/2 - 200, startY, 400, 5);
 
                         startY += 120;
-                        drawResponsiveText(ctx, formData.discLine1, W/2, startY, 960, 60, formData.team1Color, 'center', 'bold');
-                        
-                        startY += 90;
-                        drawResponsiveText(ctx, formData.discLine2, W/2, startY, 960, 60, '#ffffff', 'center', 'bold');
 
-                        startY += 90;
-                        drawResponsiveText(ctx, formData.discLine3, W/2, startY, 960, 60, formData.team1Color, 'center', 'bold');
+                        // Discussion Lines (Wrapped)
+                        const drawDiscussionPoint = (text, color, yPos) => {
+                            if (!text) return yPos;
+                            ctx.font = `bold 48px "Hind Siliguri", sans-serif`;
+                            const lines = wrapText(ctx, text, 900);
+                            ctx.fillStyle = color;
+                            ctx.textAlign = 'center';
+                            lines.forEach(l => {
+                                ctx.fillText(l, W/2, yPos);
+                                yPos += 70;
+                            });
+                            return yPos + 40; // extra spacing between points
+                        };
+
+                        startY = drawDiscussionPoint(formData.discLine1, formData.team1Color, startY);
+                        startY = drawDiscussionPoint(formData.discLine2, '#ffffff', startY);
+                        startY = drawDiscussionPoint(formData.discLine3, formData.team2Color, startY);
                     
                     } else if (appMode === 'multi_result') {
                         const py = 150;
