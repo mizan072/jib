@@ -22,11 +22,15 @@
     <script>
         const originalError = console.error;
         console.error = function(...args) {
+            // Suppress specific internal errors often seen in web-app environments
             if (args[0] && typeof args[0] === 'string' && (args[0].includes('CloudStorage') || args[0].includes('cache'))) return;
             originalError.apply(console, args);
         };
+        // Register Service Worker if available (for PWA support)
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => { navigator.serviceWorker.register('./service-worker.js').catch(e => console.log(e)); });
+            window.addEventListener('load', () => { 
+                navigator.serviceWorker.register('./service-worker.js').catch(e => console.log(e)); 
+            });
         }
     </script>
 </head>
