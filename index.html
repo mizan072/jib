@@ -168,7 +168,7 @@
         const drawResponsiveText = (ctx, text, x, y, maxW, defaultFs, color, align, fw) => {
             let fs = defaultFs;
             ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`;
-            while (ctx.measureText(text).width > maxW && fs > 10) {
+            while (ctx.measureText(text).width > maxW && fs > 14) {
                 fs -= 1;
                 ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`;
             }
@@ -251,7 +251,7 @@
                 multiScheduleTitle: 'আজকের খেলার সময়সূচী',
                 scheduleList: [
                     { id: 1, sport: 'ক্রিকেট', tourney: 'টি-টোয়েন্টি বিশ্বকাপ', match: 'বাংলাদেশ বনাম ভারত', time: 'রাত ৮:০০ টা' },
-                    { id: 2, sport: 'ফুটবল', tourney: 'চ্যাম্পিয়ন্স লিগ', match: 'পিএসজি বনাম জুভেন্টাস', time: 'রাত ১:৪5 মি.' },
+                    { id: 2, sport: 'ফুটবল', tourney: 'চ্যাম্পিয়ন্স লিগ', match: 'পিএসজি বনাম জুভেন্টাস', time: 'রাত ১:৪৫ মি.' },
                     { id: 3, sport: 'ফুটবল', tourney: 'ইংলিশ প্রিমিয়ার লিগ', match: 'ম্যান সিটি বনাম আর্সেনাল', time: 'রাত ১০:৩০ মি.' },
                     { id: 4, sport: 'ক্রিকেট', tourney: 'টি-টোয়েন্টি বিশ্বকাপ', match: 'অস্ট্রেলিয়া বনাম ইংল্যান্ড', time: 'বিকেল ৪:০০ টা' }
                 ]
@@ -354,8 +354,11 @@
                         grad.addColorStop(0, '#020617');
                         grad.addColorStop(1, formData.primaryColor);
                         ctx.fillStyle = grad;
+                        ctx.globalAlpha = formData.bgOpacity;
                         ctx.fillRect(0, 0, W, H);
+                        ctx.globalAlpha = 1.0;
                         
+                        // Subtle Watermark
                         ctx.font = "bold 600px serif";
                         ctx.fillStyle = "rgba(255,255,255,0.03)";
                         ctx.textAlign = "center";
@@ -401,7 +404,7 @@
                         ctx.fillRect(0, splitY, W, H - splitY); 
                     }
                     
-                    // Dark boxes for titles (Only show on specific layouts)
+                    // Dark boxes for titles
                     if (['scorecard', 'schedule', 'player'].includes(appMode)) { 
                         ctx.fillStyle = 'rgba(0, 0, 0, 0.4)'; 
                         drawRoundedRect(ctx, titleBoxX, titleBoxY, titleBoxW, titleBoxH, 20);
@@ -529,7 +532,9 @@
                         ctx.font = "140px serif"; ctx.fillStyle = "rgba(255,255,255,0.1)"; ctx.textAlign = "center"; ctx.fillText("❝", W/2, csy + 30);
                         ctx.font = "bold 55px 'Hind Siliguri', sans-serif"; ctx.fillStyle = "#fff";
                         
-                        const textToDraw = formData.quoteText || ""; const lines = []; const words = textToDraw.split(' '); let currentLine = words[0] || "";
+                        const textToDraw = formData.quoteText || ""; 
+                        const words = textToDraw.split(' '); let currentLine = words[0] || "";
+                        const lines = [];
                         for (let i = 1; i < words.length; i++) {
                             const width = ctx.measureText(currentLine + " " + words[i]).width;
                             if (width < nw) { currentLine += " " + words[i]; } else { lines.push(currentLine); currentLine = words[i]; }
@@ -596,109 +601,102 @@
                         ctx.restore();
                     
                     } else if (appMode === 'discussion') {
-                        // Magazine-Style Text Wrapping Layout
-                        let startY = 220; 
+                        // Completely Borderless, Clean Typography Focus
+                        const centerY = splitY + (H - splitY - footerH) / 2;
+                        let startY = centerY - 140; 
+
+                        drawResponsiveText(ctx, formData.discTopic, W/2, startY, 900, 80, '#fff', 'center', '900');
                         
-                        // Top Label
-                        drawText(ctx, "DISCUSSION", W/2, 110, 26, formData.team1Color, 'center', 'bold');
-                        ctx.beginPath(); ctx.moveTo(W/2 - 40, 135); ctx.lineTo(W/2 + 40, 135); 
-                        ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 4; ctx.stroke();
-
-                        // Main Topic (Wrapped)
-                        ctx.font = `900 80px "Hind Siliguri", sans-serif`;
-                        const topicLines = wrapText(ctx, formData.discTopic, 900);
-                        ctx.fillStyle = '#ffffff';
-                        ctx.textAlign = 'center';
-                        ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 15;
-                        topicLines.forEach(line => {
-                            ctx.fillText(line, W/2, startY);
-                            startY += 100;
-                        });
-                        ctx.shadowBlur = 0;
-
-                        // Gradient Divider
-                        startY += 40;
-                        const lineGrad = ctx.createLinearGradient(W/2 - 200, 0, W/2 + 200, 0);
-                        lineGrad.addColorStop(0, 'rgba(255,255,255,0)');
-                        lineGrad.addColorStop(0.5, formData.team1Color);
-                        lineGrad.addColorStop(1, 'rgba(255,255,255,0)');
-                        ctx.fillStyle = lineGrad;
-                        ctx.fillRect(W/2 - 200, startY, 400, 5);
+                        ctx.beginPath(); ctx.moveTo(W/2 - 100, startY + 30); ctx.lineTo(W/2 + 100, startY + 30);
+                        ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 6; ctx.stroke();
 
                         startY += 120;
+                        drawResponsiveText(ctx, formData.discLine1, W/2, startY, 960, 60, formData.team1Color, 'center', 'bold');
+                        
+                        startY += 90;
+                        drawResponsiveText(ctx, formData.discLine2, W/2, startY, 960, 60, '#ffffff', 'center', 'bold');
 
-                        // Discussion Lines (Wrapped)
-                        const drawDiscussionPoint = (text, color, yPos) => {
-                            if (!text) return yPos;
-                            ctx.font = `bold 48px "Hind Siliguri", sans-serif`;
-                            const lines = wrapText(ctx, text, 900);
-                            ctx.fillStyle = color;
-                            ctx.textAlign = 'center';
-                            lines.forEach(l => {
-                                ctx.fillText(l, W/2, yPos);
-                                yPos += 70;
-                            });
-                            return yPos + 40; // extra spacing between points
-                        };
-
-                        startY = drawDiscussionPoint(formData.discLine1, formData.team1Color, startY);
-                        startY = drawDiscussionPoint(formData.discLine2, '#ffffff', startY);
-                        startY = drawDiscussionPoint(formData.discLine3, formData.team2Color, startY);
+                        startY += 90;
+                        drawResponsiveText(ctx, formData.discLine3, W/2, startY, 960, 60, formData.team1Color, 'center', 'bold');
                     
                     } else if (appMode === 'multi_result') {
-                        const py = 150;
+                        const py = 120;
                         
-                        ctx.fillStyle = formData.primaryColor;
-                        drawRoundedRect(ctx, W/2 - 250, py, 500, 70, 35);
-                        drawResponsiveText(ctx, formData.multiResultTitle, W/2, py + 48, 450, 40, '#fff', 'center', 'bold');
+                        // Premium Title Box
+                        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+                        if(ctx.roundRect) {
+                            ctx.beginPath(); ctx.roundRect(W/2 - 350, py, 700, 80, 40); ctx.fill();
+                            ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 2; ctx.stroke();
+                        } else {
+                            ctx.fillRect(W/2 - 350, py, 700, 80);
+                        }
+                        drawResponsiveText(ctx, formData.multiResultTitle, W/2, py + 55, 600, 45, '#fff', 'center', '900');
 
-                        const sy = py + 100;
+                        const sy = py + 140;
                         const totalH = H - footerH - sy - 40;
                         const numItems = formData.resultsList.length || 1;
                         const spacing = totalH / numItems;
                         const boxH = Math.min(150, spacing * 0.85); 
 
-                        // Dynamic Font Sizing strictly tied to Box Height
-                        const fsTeam = Math.min(36, boxH * 0.25);
-                        const fsScore = Math.min(42, boxH * 0.3);
-                        const fsTourney = Math.min(22, boxH * 0.15);
+                        // Dynamic Font Scaling strictly tied to Box Height
+                        const fsTeam = Math.min(42, boxH * 0.28);
+                        const fsScore = Math.min(55, boxH * 0.4);
+                        const fsTourney = Math.min(22, boxH * 0.16);
 
                         formData.resultsList.forEach((res, index) => {
                             const y = sy + (index * spacing);
+                            const cardW = 880;
+                            const cardX = W/2 - cardW/2;
                             
-                            // Top Pill (Red/Primary)
-                            ctx.fillStyle = formData.team2Color; 
+                            // Main Card
+                            ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
                             if (ctx.roundRect) {
-                                ctx.beginPath(); ctx.roundRect(W/2 - 380, y, 760, boxH/2, [15, 15, 0, 0]); ctx.fill();
-                            } else { ctx.fillRect(W/2 - 380, y, 760, boxH/2); }
-                            
-                            // Bottom Pill (Dark Slate)
-                            ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+                                ctx.beginPath(); ctx.roundRect(cardX, y, cardW, boxH, 20); ctx.fill();
+                                ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+                                ctx.lineWidth = 2;
+                                ctx.stroke();
+                            } else { ctx.fillRect(cardX, y, cardW, boxH); }
+
+                            // Left Accent
+                            ctx.fillStyle = formData.team1Color;
                             if (ctx.roundRect) {
-                                ctx.beginPath(); ctx.roundRect(W/2 - 380, y + boxH/2, 760, boxH/2, [0, 0, 15, 15]); ctx.fill();
-                            } else { ctx.fillRect(W/2 - 380, y + boxH/2, 760, boxH/2); }
+                                ctx.beginPath(); ctx.roundRect(cardX, y, 12, boxH, [20, 0, 0, 20]); ctx.fill();
+                            } else { ctx.fillRect(cardX, y, 12, boxH); }
 
-                            // Team Texts
-                            drawResponsiveText(ctx, res.team1, W/2 - 190, y + boxH/4 + (fsTeam/3), 320, fsTeam, '#fff', 'center', 'bold');
-                            drawResponsiveText(ctx, res.team2, W/2 + 190, y + boxH/4 + (fsTeam/3), 320, fsTeam, '#fff', 'center', 'bold');
+                            // Right Accent
+                            ctx.fillStyle = formData.team2Color;
+                            if (ctx.roundRect) {
+                                ctx.beginPath(); ctx.roundRect(cardX + cardW - 12, y, 12, boxH, [0, 20, 20, 0]); ctx.fill();
+                            } else { ctx.fillRect(cardX + cardW - 12, y, 12, boxH); }
 
-                            // VS Circle Center
-                            ctx.beginPath(); ctx.arc(W/2, y + boxH/2, boxH * 0.25, 0, Math.PI*2); ctx.fillStyle = '#fff'; ctx.fill();
-                            drawText(ctx, "VS", W/2, y + boxH/2 + (fsTeam/3), fsTeam * 0.8, formData.team2Color, 'center', '900');
+                            // Center Score Pill
+                            const scorePillW = 220;
+                            ctx.fillStyle = formData.primaryColor;
+                            if (ctx.roundRect) {
+                                ctx.beginPath(); ctx.roundRect(W/2 - scorePillW/2, y + 15, scorePillW, boxH - 30, 15); ctx.fill();
+                            } else { ctx.fillRect(W/2 - scorePillW/2, y + 15, scorePillW, boxH - 30); }
 
-                            // Scores
-                            drawResponsiveText(ctx, res.score1, W/2 - 190, y + boxH*0.75 + (fsScore/3), 150, fsScore, '#fff', 'center', 'bold');
-                            drawResponsiveText(ctx, res.score2, W/2 + 190, y + boxH*0.75 + (fsScore/3), 150, fsScore, '#fff', 'center', 'bold');
+                            // Scores in Center Pill
+                            drawResponsiveText(ctx, res.score1, W/2 - 50, y + boxH/2 + fsScore*0.35, 60, fsScore, '#fff', 'center', '900');
+                            drawText(ctx, "-", W/2, y + boxH/2 + fsScore*0.3, fsScore*0.8, 'rgba(255,255,255,0.5)', 'center', '900');
+                            drawResponsiveText(ctx, res.score2, W/2 + 50, y + boxH/2 + fsScore*0.35, 60, fsScore, '#fff', 'center', '900');
 
-                            // Tourney Pill Bottom Center
-                            ctx.fillStyle = formData.team1Color; 
-                            drawRoundedRect(ctx, W/2 - 150, y + boxH - (boxH*0.15), 300, boxH*0.3, boxH*0.15);
-                            drawResponsiveText(ctx, res.tourney, W/2, y + boxH + (fsTourney/3), 280, fsTourney, '#000', 'center', 'bold');
+                            // Teams (Left and Right of Center Pill)
+                            drawResponsiveText(ctx, res.team1, W/2 - scorePillW/2 - 30, y + boxH/2 + fsTeam*0.35, 260, fsTeam, '#fff', 'right', 'bold');
+                            drawResponsiveText(ctx, res.team2, W/2 + scorePillW/2 + 30, y + boxH/2 + fsTeam*0.35, 260, fsTeam, '#fff', 'left', 'bold');
+
+                            // Tourney Pill Top Center (overlapping)
+                            ctx.fillStyle = '#ffffff';
+                            ctx.font = `bold ${fsTourney}px "Hind Siliguri", sans-serif`;
+                            const tw = ctx.measureText(res.tourney).width + 60;
+                            if (ctx.roundRect) {
+                                ctx.beginPath(); ctx.roundRect(W/2 - tw/2, y - 14, tw, 28, 14); ctx.fill();
+                            } else { ctx.fillRect(W/2 - tw/2, y - 14, tw, 28); }
+                            drawResponsiveText(ctx, res.tourney, W/2, y + 6, tw - 20, fsTourney, '#000', 'center', 'bold');
                         });
 
                     } else if (appMode === 'multi_schedule') {
                         const py = 120;
-                        
                         ctx.fillStyle = formData.primaryColor;
                         drawRoundedRect(ctx, W/2 - 220, py, 440, 60, 15);
                         drawResponsiveText(ctx, formData.multiScheduleDate, W/2, py + 42, 400, 35, '#fff', 'center', 'bold');
@@ -716,7 +714,7 @@
                         const boxH = Math.min(220, spacing * 0.85);
                         const colW = 480;
 
-                        // Dynamic Font Scaling
+                        // Dynamic Font Scaling bound to row height
                         const fsSport = Math.min(24, boxH * 0.12);
                         const fsTourney = Math.min(26, boxH * 0.13);
                         const fsMatch = Math.min(38, boxH * 0.18);
@@ -728,28 +726,21 @@
                             const cx = col === 0 ? W/2 - colW - 20 : W/2 + 20;
                             const y = sy + (row * spacing);
 
-                            // Dark Box Background
                             ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
                             drawRoundedRect(ctx, cx, y, colW, boxH, 15);
 
-                            // Top Accent Line (Yellow)
                             ctx.fillStyle = formData.team1Color;
                             if (ctx.roundRect) {
                                 ctx.beginPath(); ctx.roundRect(cx, y, colW, 8, [15, 15, 0, 0]); ctx.fill();
                             } else { ctx.fillRect(cx, y, colW, 8); }
 
-                            // Sport Type Small Pill
                             ctx.fillStyle = formData.team1Color;
                             drawRoundedRect(ctx, cx + colW/2 - 90, y + (boxH * 0.1), 180, boxH * 0.18, 8);
                             drawResponsiveText(ctx, sch.sport, cx + colW/2, y + (boxH * 0.22), 160, fsSport, '#000', 'center', 'bold');
 
-                            // Tournament
                             drawResponsiveText(ctx, sch.tourney, cx + colW/2, y + (boxH * 0.45), colW - 40, fsTourney, '#cbd5e1', 'center', 'normal');
-                            
-                            // Match
                             drawResponsiveText(ctx, sch.match, cx + colW/2, y + (boxH * 0.68), colW - 40, fsMatch, '#fff', 'center', 'bold');
                             
-                            // Time Pill
                             ctx.fillStyle = formData.primaryColor;
                             drawRoundedRect(ctx, cx + colW/2 - 120, y + (boxH * 0.78), 240, boxH * 0.2, 12);
                             drawResponsiveText(ctx, sch.time, cx + colW/2, y + (boxH * 0.92), 220, fsTime, '#fff', 'center', 'bold');
@@ -1238,21 +1229,21 @@
                                                     )}
 
                                                     {appMode === 'discussion' && (
-                                                        <div className="p-5 bg-emerald-500/5 rounded-2xl border border-emerald-500/20 shadow-inner space-y-4">
-                                                            <h4 className="text-sm font-black text-emerald-400 uppercase tracking-wider flex items-center gap-2 mb-4"><IconHelp /> Q&A / Discussion</h4>
+                                                        <div className="p-5 bg-violet-500/5 rounded-2xl border border-violet-500/20 shadow-inner space-y-4">
+                                                            <h4 className="text-sm font-black text-violet-400 uppercase tracking-wider flex items-center gap-2 mb-4"><IconHelp /> Q&A / Discussion</h4>
                                                             <div>
                                                                 <div className="flex justify-between items-center mb-1.5">
-                                                                    <label className="text-[10px] uppercase font-bold text-emerald-300 ml-1">Topic / Main Heading</label>
+                                                                    <label className="text-[10px] uppercase font-bold text-violet-300 ml-1">Topic / Main Heading</label>
                                                                 </div>
-                                                                <input type="text" name="discTopic" value={formData.discTopic} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
+                                                                <input type="text" name="discTopic" value={formData.discTopic} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-violet-500/30 rounded-xl text-sm font-bold text-white focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all" />
                                                             </div>
                                                             <div className="pt-2">
                                                                 <div className="flex justify-between items-center mb-1.5">
-                                                                    <label className="text-[10px] uppercase font-bold text-emerald-300 ml-1">Discussion Lines</label>
+                                                                    <label className="text-[10px] uppercase font-bold text-violet-300 ml-1">Discussion Lines (Auto Wraps)</label>
                                                                 </div>
-                                                                <input type="text" name="discLine1" value={formData.discLine1} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all mb-3" placeholder="Line 1 (Accent Color)" />
-                                                                <input type="text" name="discLine2" value={formData.discLine2} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all mb-3" placeholder="Line 2 (White Color)" />
-                                                                <input type="text" name="discLine3" value={formData.discLine3} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" placeholder="Line 3 (Accent Color)" />
+                                                                <textarea name="discLine1" value={formData.discLine1} onChange={handleChange} rows="2" className="w-full px-4 py-3 bg-slate-900 border border-violet-500/30 rounded-xl text-sm font-bold text-white focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all mb-3" placeholder="Line 1 (Accent Color)"></textarea>
+                                                                <textarea name="discLine2" value={formData.discLine2} onChange={handleChange} rows="2" className="w-full px-4 py-3 bg-slate-900 border border-violet-500/30 rounded-xl text-sm font-bold text-white focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all mb-3" placeholder="Line 2 (White Color)"></textarea>
+                                                                <textarea name="discLine3" value={formData.discLine3} onChange={handleChange} rows="2" className="w-full px-4 py-3 bg-slate-900 border border-violet-500/30 rounded-xl text-sm font-bold text-white focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all" placeholder="Line 3 (Accent Color)"></textarea>
                                                             </div>
                                                         </div>
                                                     )}
@@ -1304,7 +1295,7 @@
 
                                                     {appMode === 'scorecard' && (
                                                         <div>
-                                                            <label className="text-[10px] uppercase font-bold text-slate-500 mb-1.5 block ml-1">Match Result</label>
+                                                            <label className="text-[10px] uppercase font-bold text-slate-500 mb-1.5 block ml-1">Match Result Headline</label>
                                                             <textarea name="result" value={formData.result} onChange={handleChange} rows="2" className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Result Text"></textarea>
                                                         </div>
                                                     )}
@@ -1501,7 +1492,7 @@
                         )}
                     </main>
 
-                    <footer className="bg-slate-950 text-slate-500 py-10 border-t border-slate-900 mt-auto z-10">
+                    <footer className="bg-slate-950 text-slate-500 py-10 border-t border-slate-900 mt-auto z-10 relative">
                         <div className="max-w-7xl mx-auto px-4 text-center space-y-4">
                             <div className="flex justify-center mb-4">
                                 <div className="bg-slate-900 p-3 rounded-2xl shadow-inner border border-slate-800">
