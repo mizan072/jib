@@ -16,7 +16,6 @@ const IconZoomIn = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" heig
 const IconEye = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>;
 const IconCalendar = ({className}) => <svg className={className || ""} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>;
 const IconUser = ({className}) => <svg className={className || ""} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
-const IconQuote = ({className}) => <svg className={className || ""} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/></svg>;
 const IconClose = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
 const IconInstall = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>;
 const IconTrash = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>;
@@ -33,22 +32,46 @@ const IconHelp = ({className}) => <svg className={className || "w-6 h-6"} xmlns=
 const IconList = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>;
 const IconGrid = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>;
 const IconUsers = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
+const IconLayout = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>;
 
-// --- DASHBOARD TOOLS ---
-const TOOLS = [
-    { id: 'scorecard', name: 'Match Scorecard', desc: 'Classic Match score updates', icon: IconTrophy, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
-    { id: 'squad', name: 'Squad List', desc: 'Two-column team player list', icon: IconUsers, color: 'text-green-400', bg: 'bg-green-400/10', border: 'border-green-400/20' },
-    { id: 'multi_result', name: 'Multi Results', desc: 'List of match scores', icon: IconList, color: 'text-rose-400', bg: 'bg-rose-400/10', border: 'border-rose-400/20' },
-    { id: 'schedule', name: 'Single Schedule', desc: 'Upcoming fixture and venue', icon: IconCalendar, color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/20' },
-    { id: 'multi_schedule', name: 'All-Day Schedule', desc: 'Grid schedule of matches', icon: IconGrid, color: 'text-sky-400', bg: 'bg-sky-400/10', border: 'border-sky-400/20' },
-    { id: 'player', name: 'Player Profile', desc: 'Highlight player performance', icon: IconUser, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
-    { id: 'career', name: 'Career Stats', desc: 'Overall career statistics', icon: IconChart, color: 'text-cyan-400', bg: 'bg-cyan-400/10', border: 'border-cyan-400/20' },
-    { id: 'poll', name: 'Reaction Poll', desc: 'Facebook-style reaction polls', icon: IconSwap, color: 'text-indigo-400', bg: 'bg-indigo-400/10', border: 'border-indigo-400/20' },
-    { id: 'discussion', name: 'Q&A / Discussion', desc: 'Text-heavy engagement posts', icon: IconHelp, color: 'text-violet-400', bg: 'bg-violet-400/10', border: 'border-violet-400/20' },
-    { id: 'milestone', name: 'Milestones', desc: 'Birthdays and records', icon: IconStar, color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/20' },
-    { id: 'news', name: 'Breaking News', desc: 'Urgent updates and headlines', icon: IconMegaphone, color: 'text-red-500', bg: 'bg-red-500/10', border: 'border-red-500/20' },
-    { id: 'statement', name: 'Quote Overlay', desc: 'Player quotes with avatar cutout', icon: IconMessage, color: 'text-fuchsia-400', bg: 'bg-fuchsia-400/10', border: 'border-fuchsia-400/20' }
+// --- TOOL CATEGORIES ---
+const TOOL_CATEGORIES = [
+    {
+        name: "Pre-Match & Fixtures",
+        tools: [
+            { id: 't_fixture', name: 'Tournament Fixture', desc: 'Knockout/Round match list', icon: IconLayout, color: 'text-orange-400', bg: 'bg-orange-400/10', border: 'border-orange-400/20' },
+            { id: 'schedule', name: 'Single Schedule', desc: 'Upcoming fixture and venue', icon: IconCalendar, color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/20' },
+            { id: 'multi_schedule', name: 'All-Day Schedule', desc: 'Grid schedule of matches', icon: IconGrid, color: 'text-sky-400', bg: 'bg-sky-400/10', border: 'border-sky-400/20' },
+            { id: 'squad', name: 'Squad List', desc: 'Two-column team player list', icon: IconUsers, color: 'text-green-400', bg: 'bg-green-400/10', border: 'border-green-400/20' }
+        ]
+    },
+    {
+        name: "Live & Match Results",
+        tools: [
+            { id: 'scorecard', name: 'Match Scorecard', desc: 'Classic Match score updates', icon: IconTrophy, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
+            { id: 'multi_result', name: 'Multi Results', desc: 'List of match scores', icon: IconList, color: 'text-rose-400', bg: 'bg-rose-400/10', border: 'border-rose-400/20' },
+            { id: 'poll', name: 'Reaction Poll', desc: 'Facebook-style reaction polls', icon: IconSwap, color: 'text-indigo-400', bg: 'bg-indigo-400/10', border: 'border-indigo-400/20' }
+        ]
+    },
+    {
+        name: "Player & Milestones",
+        tools: [
+            { id: 'player', name: 'Player Profile', desc: 'Highlight player performance', icon: IconUser, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
+            { id: 'career', name: 'Career Stats', desc: 'Overall career statistics', icon: IconChart, color: 'text-cyan-400', bg: 'bg-cyan-400/10', border: 'border-cyan-400/20' },
+            { id: 'milestone', name: 'Milestones', desc: 'Birthdays and records', icon: IconStar, color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/20' }
+        ]
+    },
+    {
+        name: "Media & Engagement",
+        tools: [
+            { id: 'news', name: 'Breaking News', desc: 'Urgent updates and headlines', icon: IconMegaphone, color: 'text-red-500', bg: 'bg-red-500/10', border: 'border-red-500/20' },
+            { id: 'discussion', name: 'Q&A / Discussion', desc: 'Text-heavy engagement posts', icon: IconHelp, color: 'text-violet-400', bg: 'bg-violet-400/10', border: 'border-violet-400/20' },
+            { id: 'statement', name: 'Quote Overlay', desc: 'Player quotes with avatar cutout', icon: IconMessage, color: 'text-fuchsia-400', bg: 'bg-fuchsia-400/10', border: 'border-fuchsia-400/20' }
+        ]
+    }
 ];
+
+const TOOLS = TOOL_CATEGORIES.flatMap(cat => cat.tools);
 
 // --- CANVAS RENDERING HELPERS ---
 const measureText = (ctx, text, fs, fw) => { ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`; return ctx.measureText(text).width; };
@@ -99,14 +122,11 @@ const drawResponsiveText = (ctx, text, x, y, maxW, defaultFs, color, align, fw) 
     ctx.shadowBlur = 0;
 };
 
-// --- NEW SMART TEXT SCALER ---
-// Calculates font size to fit BOTH width and height of a bounding box
 const drawSmartText = (ctx, text, x, y, boxW, boxH, maxFs, minFs, color, align, fw, lhRatio = 1.3) => {
     let fs = maxFs;
     let lines = [];
     let textHeight = 0;
 
-    // Binary search approach for better performance could be used, but loop is safer for context matching
     while (fs >= minFs) {
         ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`;
         lines = wrapText(ctx, text, boxW);
@@ -116,8 +136,7 @@ const drawSmartText = (ctx, text, x, y, boxW, boxH, maxFs, minFs, color, align, 
         fs -= 2;
     }
 
-    // Centering vertically
-    let currentY = y - (textHeight / 2) + (fs * lhRatio * 0.7) / 2; // Approximate text baseline
+    let currentY = y - (textHeight / 2) + (fs * lhRatio * 0.7) / 2;
     if(align === 'top') currentY = y + fs;
 
     ctx.fillStyle = color;
@@ -143,7 +162,9 @@ const drawFBIcon = (ctx, cx, cy, size) => {
 
 const drawRoundedRect = (ctx, x, y, width, height, radius) => {
     if (ctx.roundRect) {
-        ctx.beginPath(); ctx.roundRect(x, y, width, height, radius); ctx.fill();
+        let r = radius;
+        if (Array.isArray(radius)) r = radius;
+        ctx.beginPath(); ctx.roundRect(x, y, width, height, r); ctx.fill();
     } else {
         ctx.fillRect(x, y, width, height); 
     }
@@ -154,7 +175,7 @@ function App() {
     
     // --- STATE MANAGEMENT ---
     const [currentView, setCurrentView] = useState('home'); 
-    const [appMode, setAppMode] = useState('scorecard'); 
+    const [appMode, setAppMode] = useState('t_fixture'); 
     const [activeTab, setActiveTab] = useState('match');
     
     const [bgImage, setBgImage] = useState(null);
@@ -194,8 +215,7 @@ function App() {
         discTopic: 'ম্যাচ বিশ্লেষণ', discLine1: 'পাওয়ার প্লে-তে কে বেশি রান করবে?', discLine2: 'আজকের পিচ কাদের জন্য সহায়ক?', discLine3: 'সেরা বোলার কে হতে পারে?',
         quoteText: 'ফিলিস্তিনের মাটিতে জন্ম নেওয়াটাই কি দোষ? আমাদের নিষ্পাপ শিশুরা কি দোষ করছে?', quoteAuthor: 'পেপ গার্দিওলা',
         
-        // New SQUAD Tool Data
-        squadTitle: 'বাংলাদেশের বিপক্ষে ওয়ানডে সিরিজের জন্য পাকিস্তানের স্কোয়াড',
+        squadTitle: 'বাংলাদেশের বিপক্ষে ওয়ানডে সিরিজের জন্য পাকিস্তানের স্কোয়াড',
         squadList: 'শাহিন শাহ আফ্রিদি (অধিনায়ক)\nমোহাম্মদ ওয়াসিম জুনিয়র\nসাহিবজাদা ফারহান\nমোহাম্মদ গাজী ঘুরি\nআবরার আহমেদ\nশাদ মাসুদ\nফাহিম আশরাফ\nআব্দুল সামাদ\nফাইসাল আকরাম\nসালমান আলী আগা\nহারিস রউফ\nশামিল হুসেন\nহুসাইন তালাত\nমাআজ সাদাকাত\nমোহাম্মদ রিজওয়ান (উইকেটকিপার)',
 
         multiResultTitle: 'আজকের সকল ম্যাচের ফলাফল',
@@ -211,6 +231,22 @@ function App() {
             { id: 2, sport: 'ফুটবল', tourney: 'চ্যাম্পিয়ন্স লিগ', match: 'পিএসজি বনাম জুভেন্টাস', time: 'রাত ১:৪৫ মি.' },
             { id: 3, sport: 'ফুটবল', tourney: 'ইংলিশ প্রিমিয়ার লিগ', match: 'ম্যান সিটি বনাম আর্সেনাল', time: 'রাত ১০:৩০ মি.' },
             { id: 4, sport: 'ক্রিকেট', tourney: 'টি-টোয়েন্টি বিশ্বকাপ', match: 'অস্ট্রেলিয়া বনাম ইংল্যান্ড', time: 'বিকেল ৪:০০ টা' }
+        ],
+
+        // NEW TOURNAMENT FIXTURE DATA
+        fixtureTitle: 'গোপালনগর ক্রিকেট\nটুর্নামেন্ট ২০২৫',
+        fixtureSubtitle: 'সিজন - ৪ | ১ম রাউন্ড',
+        fixtureDateFooter: 'উদ্বোধনী ম্যাচ: ঈদের ৩য় দিন',
+        fixtureOrganizerFooter: 'আয়োজনে: গোপালনগর ইয়ং বয়েজ',
+        matchupList: [
+            { id: 1, t1: 'আদমপুর', t1Sub: '১নং ওয়ার্ড', t2: 'মণিরামপুর', t2Sub: '১নং ওয়ার্ড' },
+            { id: 2, t1: 'ফতেপুর', t1Sub: 'মমিন ট্রের্ডাস', t2: 'বাউবাডিয়া', t2Sub: 'একাদশ' },
+            { id: 3, t1: 'শোলমারী', t1Sub: 'কাউন্সিল বয়েজ', t2: 'চেংগারা', t2Sub: 'একাদশ, গাংনী' },
+            { id: 4, t1: 'বারাদি', t1Sub: '৩নং ওয়ার্ড', t2: 'গৌরিনাথপুর', t2Sub: 'একাদশ, মেহেরপুর' },
+            { id: 5, t1: 'শিবপুর', t1Sub: 'সমাজকল্যাণ ক্লাব', t2: 'শুভরাজপুর', t2Sub: 'বর্ডার বয়েজ' },
+            { id: 6, t1: 'গোপালনগর', t1Sub: 'ইয়ং বয়েজ', t2: 'রামনগর', t2Sub: 'একাদশ' },
+            { id: 7, t1: 'বিশ্বনাথপুর', t1Sub: 'একাদশ', t2: 'ভবানীপুর', t2Sub: 'একাদশ' },
+            { id: 8, t1: 'শিবপুর', t1Sub: 'স্টারস', t2: 'গোপালনগর', t2Sub: 'জুনিয়র টাইগার্স' }
         ]
     });
 
@@ -285,6 +321,11 @@ function App() {
     const addSchedule = () => { setFormData(p => ({ ...p, scheduleList: [...p.scheduleList, { id: Date.now(), sport: 'খেলা', tourney: 'টুর্নামেন্ট', match: 'দল বনাম দল', time: 'সময়' }] })); };
     const removeSchedule = (id) => { setFormData(p => ({ ...p, scheduleList: p.scheduleList.filter(item => item.id !== id) })); };
 
+    // Fixture List Handlers
+    const handleMatchupChange = (id, field, value) => { setFormData(p => ({ ...p, matchupList: p.matchupList.map(item => item.id === id ? { ...item, [field]: value } : item) })); };
+    const addMatchup = () => { setFormData(p => ({ ...p, matchupList: [...p.matchupList, { id: Date.now(), t1: 'দল ১', t1Sub: 'স্থান', t2: 'দল ২', t2Sub: 'স্থান' }] })); };
+    const removeMatchup = (id) => { setFormData(p => ({ ...p, matchupList: p.matchupList.filter(item => item.id !== id) })); };
+
     const handleInstallApp = async () => {
         if (deferredPrompt) {
             deferredPrompt.prompt();
@@ -320,9 +361,25 @@ function App() {
                 ctx.fillStyle = "rgba(255,255,255,0.03)";
                 ctx.textAlign = "center";
                 ctx.fillText("❝", W/2, H/2 + 100);
+
+            } else if (appMode === 't_fixture') {
+                // Fixture Deep Blue Background with subtle image overlay
+                const grad = ctx.createLinearGradient(0, 0, 0, H);
+                grad.addColorStop(0, '#1e3a8a'); // Deep dark blue
+                grad.addColorStop(1, '#020617'); // Almost black
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+
+                if (bgImage) {
+                    ctx.save(); 
+                    ctx.globalAlpha = formData.bgOpacity * 0.4; // Keep it subtle
+                    ctx.translate(img1Pos.x, img1Pos.y); 
+                    ctx.scale(img1Pos.scale, img1Pos.scale); 
+                    ctx.drawImage(bgImage, 0, 0); 
+                    ctx.restore();
+                }
+
             } else if (appMode === 'squad') {
-                // SQUAD specific background logic
-                // Top part (35%) for Image
                 const topH = H * 0.35;
                 if (bgImage) {
                     ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, topH); ctx.clip();
@@ -332,8 +389,6 @@ function App() {
                     ctx.fillStyle = '#1e293b'; ctx.fillRect(0, 0, W, topH);
                     drawText(ctx, "Team Photo Area", W/2, topH/2, 40, "#475569", "center", "bold");
                 }
-                
-                // Bottom part (65%) Dark BG
                 const grad = ctx.createLinearGradient(0, topH, 0, H);
                 grad.addColorStop(0, '#111'); grad.addColorStop(1, '#000');
                 ctx.fillStyle = grad; ctx.fillRect(0, topH, W, H - topH);
@@ -370,7 +425,7 @@ function App() {
                 gradient.addColorStop(0, formData.primaryColor); gradient.addColorStop(1, formData.secondaryColor);
                 ctx.fillStyle = gradient;
                 ctx.fillRect(0, 0, W, H);
-            } else if (appMode === 'statement' || appMode === 'squad') {
+            } else if (appMode === 'statement' || appMode === 'squad' || appMode === 't_fixture') {
                 // Handled separately
             } else if (appMode !== 'discussion') { 
                 const gradient = ctx.createLinearGradient(0, splitY, 0, H);
@@ -389,7 +444,100 @@ function App() {
             ctx.restore(); 
 
             // 3. Draw Specific Modules
-            if (appMode === 'squad') {
+            if (appMode === 't_fixture') {
+                const topY = 100;
+                
+                // HEADER AREA
+                const titleLines = formData.fixtureTitle.split('\n');
+                let currentY = topY;
+                titleLines.forEach(line => {
+                    drawResponsiveText(ctx, line.trim(), W/2, currentY + 40, 960, 65, '#ffffff', 'center', '900');
+                    currentY += 75;
+                });
+
+                // Subtitle
+                drawResponsiveText(ctx, formData.fixtureSubtitle, W/2, currentY + 30, 800, 40, '#cbd5e1', 'center', 'bold');
+                currentY += 70;
+
+                // Center Divider
+                ctx.beginPath(); ctx.moveTo(W/2 - 250, currentY); ctx.lineTo(W/2 + 250, currentY); 
+                ctx.strokeStyle = formData.team1Color || '#d4af37'; ctx.lineWidth = 3; ctx.stroke();
+                currentY += 40;
+
+                // MATCHUP GRID
+                const list = formData.matchupList;
+                const numItems = list.length || 1;
+                const colCount = 2;
+                const rowCount = Math.ceil(numItems / colCount);
+
+                const footerAreaH = 260; // Space for the two large footers
+                const availableH = (H - footerH - footerAreaH - currentY);
+                const spacingY = availableH / rowCount;
+                const boxH = Math.min(110, spacingY * 0.85); // Cap height to match visual density
+                const boxW = 460;
+                const startX = (W - (boxW * 2 + 20)) / 2; // Center the grid horizontally
+
+                list.forEach((match, i) => {
+                    const col = i % colCount;
+                    const row = Math.floor(i / colCount);
+                    const x = startX + (col * (boxW + 20)); // 20px gap between columns
+                    const y = currentY + (row * spacingY);
+
+                    // Main Match Box (White)
+                    ctx.fillStyle = '#ffffff';
+                    drawRoundedRect(ctx, x, y, boxW, boxH, 16);
+
+                    // Number Badge (Left Dark Pillar)
+                    ctx.fillStyle = '#0f172a';
+                    if (ctx.roundRect) {
+                        ctx.beginPath(); ctx.roundRect(x, y, 70, boxH, [16, 0, 0, 16]); ctx.fill();
+                    } else {
+                        ctx.fillRect(x, y, 70, boxH);
+                    }
+                    drawText(ctx, (i+1).toString(), x + 35, y + boxH/2 + 15, 40, '#ffffff', 'center', '900');
+
+                    // VS Circle in Center
+                    const vsX = x + boxW/2 + 25; // Shifted slightly right to balance with the number badge
+                    
+                    // The VS Gold Badge
+                    ctx.beginPath(); ctx.arc(vsX, y + boxH/2, 26, 0, Math.PI*2); 
+                    ctx.fillStyle = formData.team1Color || '#d4af37'; ctx.fill();
+                    ctx.lineWidth = 4; ctx.strokeStyle = '#0f172a'; ctx.stroke();
+                    drawText(ctx, "VS", vsX, y + boxH/2 + 8, 22, '#0f172a', 'center', '900');
+
+                    // Team 1 (Left of VS)
+                    const t1W = (boxW - 70) / 2 - 35; // Available width left of VS
+                    const t1X = x + 70 + t1W/2;
+                    drawResponsiveText(ctx, match.t1, t1X, y + boxH/2 - 2, t1W, 26, '#0f172a', 'center', '900');
+                    drawResponsiveText(ctx, match.t1Sub, t1X, y + boxH/2 + 22, t1W, 18, '#475569', 'center', 'bold');
+
+                    // Team 2 (Right of VS)
+                    const t2W = boxW - (vsX - x) - 35; // Available width right of VS
+                    const t2X = vsX + 26 + t2W/2;
+                    drawResponsiveText(ctx, match.t2, t2X, y + boxH/2 - 2, t2W, 26, '#0f172a', 'center', '900');
+                    drawResponsiveText(ctx, match.t2Sub, t2X, y + boxH/2 + 22, t2W, 18, '#475569', 'center', 'bold');
+                });
+
+                // FOOTER AREA
+                const footY1 = H - footerH - 220;
+                
+                // Date Footer Box
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.7)';
+                ctx.strokeStyle = formData.team1Color || '#d4af37'; 
+                ctx.lineWidth = 3;
+                drawRoundedRect(ctx, W/2 - 280, footY1, 560, 70, 35);
+                ctx.stroke();
+                drawText(ctx, "📅 " + formData.fixtureDateFooter, W/2, footY1 + 46, 30, '#ffffff', 'center', 'bold');
+
+                // Organizer Footer Box
+                const footY2 = footY1 + 95;
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+                ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                drawRoundedRect(ctx, W/2 - 320, footY2, 640, 60, 30);
+                ctx.stroke();
+                drawText(ctx, "🛡️ " + formData.fixtureOrganizerFooter, W/2, footY2 + 40, 26, '#cbd5e1', 'center', 'bold');
+
+            } else if (appMode === 'squad') {
                 const topH = H * 0.35; // 420px
                 const titleBarH = 140; 
                 
@@ -402,8 +550,6 @@ function App() {
                 ctx.beginPath(); ctx.roundRect(40, topH - 20, W - 80, titleBarH, 20); ctx.fill();
                 ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke();
 
-                // Draw Title Text (responsive)
-                // FIX APPLIED: Lower minFs to 12px for super long titles
                 drawSmartText(ctx, formData.squadTitle, W/2, topH + titleBarH/2 - 20, W-120, titleBarH - 20, 55, 12, '#fff', 'center', 'bold');
 
                 // Draw Grid
@@ -418,7 +564,6 @@ function App() {
                 const colW = gridW / colCount;
                 const rowH = gridH / rowCount;
                 
-                // Dynamic font size based on row height
                 const fontSize = Math.min(42, rowH * 0.55); 
 
                 players.forEach((player, i) => {
@@ -561,24 +706,21 @@ function App() {
                 drawStatBox("সর্বোচ্চ (BEST SCORE)", formData.careerBest, leftX, botY); drawStatBox("উইকেট (WICKETS)", formData.careerWickets, rightX, botY);
             
             } else if (appMode === 'news') {
-                const h = H * formData.newsGradientHeight; const nsy = H - h; const csy = nsy + 60; const nw = 880, lh = 75;
+                const h = H * formData.newsGradientHeight; const nsy = H - h; const csy = nsy + 60; const nw = 880;
                 ctx.fillStyle = formData.primaryColor; 
                 drawRoundedRect(ctx, W/2 - 150, csy - 90, 300, 55, 10);
                 drawText(ctx, "ব্রেকিং নিউজ", W/2, csy - 48, 36, '#fff', 'center', 'bold');
                 
                 ctx.font = "140px serif"; ctx.fillStyle = "rgba(255,255,255,0.1)"; ctx.textAlign = "center"; ctx.fillText("❝", W/2, csy + 30);
                 
-                // FIX APPLIED: Calculate specific remaining height for news body to avoid footer overlap
-                // Space available from Text Start (csy + 110) to Footer Top (footerY). 
-                // We leave 120px buffer for Author Name.
                 const authorZoneH = 120;
                 const safeBottomY = footerY - authorZoneH;
                 const textStartY = csy + 110;
-                const newsBoxH = Math.max(100, safeBottomY - textStartY); // Ensure at least 100px
+                const newsBoxH = Math.max(100, safeBottomY - textStartY); 
 
                 drawSmartText(ctx, formData.quoteText, W/2, textStartY + (newsBoxH/2), nw, newsBoxH, 55, 20, '#fff', 'center', 'bold');
                 
-                const ay = footerY - 90; // Pin author just above footer
+                const ay = footerY - 90; 
                 ctx.beginPath(); ctx.moveTo(W/2 - 120, ay); ctx.lineTo(W/2 + 120, ay); ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 5; ctx.stroke();
                 drawResponsiveText(ctx, formData.quoteAuthor, W/2, ay + 60, 900, 38, '#cbd5e1', 'center', 'bold');
             
@@ -614,7 +756,6 @@ function App() {
                 ctx.lineWidth = 12; ctx.strokeStyle = formData.team1Color;
                 ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
 
-                // Smart Text for Statement to prevent overlap
                 const quoteBoxH = 250;
                 drawSmartText(ctx, `“${formData.quoteText}”`, W/2, sy + r + 130, 960, quoteBoxH, 55, 24, '#fff', 'center', 'bold');
                 
@@ -626,12 +767,10 @@ function App() {
                 ctx.restore();
             
             } else if (appMode === 'discussion') {
-                // REDESIGNED TO PREVENT OVERLAP
-                const totalAvailableH = H - footerH - 120; // 120px padding top/bottom
+                const totalAvailableH = H - footerH - 120; 
                 const centerY = H / 2;
                 
-                // 1. Draw Topic (Dynamic)
-                const topicBoxH = totalAvailableH * 0.3; // 30% for topic
+                const topicBoxH = totalAvailableH * 0.3;
                 const topicY = centerY - (totalAvailableH/2) + (topicBoxH/2);
                 
                 drawText(ctx, "DISCUSSION", W/2, topicY - (topicBoxH/2), 26, formData.team1Color, 'center', 'bold');
@@ -640,17 +779,12 @@ function App() {
 
                 drawSmartText(ctx, formData.discTopic, W/2, topicY + 20, 950, topicBoxH - 40, 130, 40, '#fff', 'center', '900');
 
-                // Divider
                 const divY = topicY + (topicBoxH/2) + 20;
                 ctx.beginPath(); ctx.moveTo(W/2 - 150, divY); ctx.lineTo(W/2 + 150, divY);
                 ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 8; ctx.stroke();
                 ctx.shadowColor = formData.team1Color; ctx.shadowBlur = 15; ctx.stroke(); ctx.shadowBlur = 0;
 
-                // 2. Draw Lines (Dynamic)
-                const linesBoxH = totalAvailableH * 0.55; // 55% for lines
-                const linesY = divY + 40 + (linesBoxH/2); // Center of lines box
-                
-                // Combine lines to treat as one block for spacing? Or space them out
+                const linesBoxH = totalAvailableH * 0.55; 
                 const gap = linesBoxH / 3;
                 
                 drawSmartText(ctx, formData.discLine1, W/2, divY + 40 + (gap*0.5), 950, gap-20, 80, 24, formData.team1Color, 'center', 'bold');
@@ -781,8 +915,10 @@ function App() {
             }
             
             // 4. Draw Branding & Footer (ALWAYS ON TOP)
-            ctx.fillStyle = '#020617'; ctx.fillRect(0, footerY, W, footerH); 
-            drawText(ctx, formData.footerHandle, W / 2, footerY + 40, 24, '#94a3b8', 'center', 'normal');
+            if (appMode !== 't_fixture') {
+                ctx.fillStyle = '#020617'; ctx.fillRect(0, footerY, W, footerH); 
+                drawText(ctx, formData.footerHandle, W / 2, footerY + 40, 24, '#94a3b8', 'center', 'normal');
+            }
 
             // Glassmorphism Badge Pill ensuring it's visible on any background
             ctx.save();
@@ -849,6 +985,7 @@ function App() {
     };
 
     const handleTouchStart = (e) => { 
+        if (appMode === 't_fixture') return; // Prevent panning on fully structured modes
         const t = e.touches; const rect = e.target.getBoundingClientRect(); 
         const touchX = t[0].clientX - rect.left; const touchY = t[0].clientY - rect.top;
         
@@ -877,6 +1014,7 @@ function App() {
     };
 
     const handleMouseDown = (e) => {
+        if (appMode === 't_fixture') return;
         const rect = e.target.getBoundingClientRect(); 
         const touchX = e.clientX - rect.left; const touchY = e.clientY - rect.top;
         
@@ -910,7 +1048,7 @@ function App() {
         if(GOOGLE_SCRIPT_URL.includes("xxxxxxxx")) { performDownload(); setPoints(prev => prev - DOWNLOAD_COST); setIsProcessing(false); return; }
         try {
             const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=deduct&userId=${userId}&amount=${DOWNLOAD_COST}`);
-            if (!response.ok) throw new Error("Server responded with an error");
+            if (!response.ok) throw new Error("Server error");
             const data = await response.json();
             if (data.status === 'success') { 
                 setPoints(data.points); 
@@ -934,14 +1072,12 @@ function App() {
     return (
         <div className="flex flex-col min-h-screen text-slate-200 selection:bg-rose-500/30 selection:text-white" onContextMenu={(e) => e.preventDefault()}>
             
-            {/* TOAST NOTIFICATION */}
             {toastMsg && (
                 <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] bg-slate-800 text-white px-6 py-3 rounded-full shadow-2xl border border-slate-700 font-bold text-sm flex items-center gap-3 toast-enter">
                     <span className="text-emerald-400">✓</span> {toastMsg}
                 </div>
             )}
 
-            {/* SMART NOTIFICATION MODAL */}
             {showAppNotification && appNotification && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md modal-backdrop">
                     <div className="bg-slate-900 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] w-full max-w-sm p-8 text-center modal-content border border-slate-800 relative overflow-hidden">
@@ -955,7 +1091,6 @@ function App() {
                 </div>
             )}
 
-            {/* BUY MODAL */}
             {showBuyModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md modal-backdrop">
                     <div className="bg-slate-900 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] w-full max-w-sm p-8 text-center modal-content border border-slate-800">
@@ -988,7 +1123,6 @@ function App() {
                 </div>
             )}
 
-            {/* HEADER */}
             <header className="bg-slate-950/80 backdrop-blur-xl border-b border-slate-800 sticky top-0 z-30 px-4 py-3 shadow-lg shadow-black/20">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -1024,39 +1158,42 @@ function App() {
                 </div>
             </header>
 
-            {/* MAIN CONTENT */}
             <main className="flex-1 w-full p-4 md:p-6 max-w-7xl mx-auto">
                 {currentView === 'home' ? (
-                    <div className="space-y-8 animation-fadeIn">
-                        {/* Dashboard Hero */}
+                    <div className="space-y-12 animation-fadeIn">
                         <div className="relative text-center py-12 px-4 mb-4 rounded-[2rem] border border-slate-800 bg-slate-900/50 shadow-inner overflow-hidden">
                             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-lg h-32 bg-rose-500/20 blur-[100px] pointer-events-none"></div>
-                            <div className="bg-rose-500/10 text-rose-500 px-4 py-1.5 rounded-full text-xs font-bold inline-flex items-center gap-2 mb-6 border border-rose-500/20"><IconStar className="w-4 h-4"/> v2.0 Premium Studio</div>
+                            <div className="bg-rose-500/10 text-rose-500 px-4 py-1.5 rounded-full text-xs font-bold inline-flex items-center gap-2 mb-6 border border-rose-500/20"><IconStar className="w-4 h-4"/> v2.5 Categorized Studio</div>
                             <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">Create Pro Graphics. <br className="md:hidden"/><span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-amber-500">In Seconds.</span></h2>
                             <p className="text-slate-400 text-sm md:text-base font-medium max-w-xl mx-auto">Select a tool from the dashboard below to instantly generate high-quality sports posters, news overlays, and match scorecards.</p>
                         </div>
 
-                        {/* Tool Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                            {TOOLS.map(tool => (
-                                <div key={tool.id} onClick={() => { setAppMode(tool.id); setActiveTab('match'); setCurrentView('editor'); window.scrollTo(0,0); }} className="group bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-3xl p-6 cursor-pointer hover:shadow-2xl hover:shadow-slate-900/50 transition-all hover:-translate-y-1 flex flex-col items-start text-left relative overflow-hidden">
-                                    <div className={`absolute -right-10 -bottom-10 w-32 h-32 ${tool.bg} rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity`}></div>
-                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-5 ${tool.bg} ${tool.color} border ${tool.border} group-hover:scale-110 transition-transform shadow-inner [&>svg]:w-7 [&>svg]:h-7 relative z-10`}>
-                                        <tool.icon />
-                                    </div>
-                                    <h3 className="text-lg font-bold text-white mb-1.5 group-hover:text-rose-400 transition-colors relative z-10">{tool.name}</h3>
-                                    <p className="text-xs text-slate-400 font-medium leading-relaxed relative z-10">{tool.desc}</p>
+                        {/* CATEGORIZED TOOL GRID */}
+                        {TOOL_CATEGORIES.map(category => (
+                            <div key={category.name} className="mb-10">
+                                <h3 className="text-xl font-black text-slate-300 mb-5 flex items-center gap-2 border-l-4 border-rose-500 pl-3">
+                                    {category.name}
+                                </h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                                    {category.tools.map(tool => (
+                                        <div key={tool.id} onClick={() => { setAppMode(tool.id); setActiveTab('match'); setCurrentView('editor'); window.scrollTo(0,0); }} className="group bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-3xl p-6 cursor-pointer hover:shadow-2xl hover:shadow-slate-900/50 transition-all hover:-translate-y-1 flex flex-col items-start text-left relative overflow-hidden">
+                                            <div className={`absolute -right-10 -bottom-10 w-32 h-32 ${tool.bg} rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity`}></div>
+                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-5 ${tool.bg} ${tool.color} border ${tool.border} group-hover:scale-110 transition-transform shadow-inner [&>svg]:w-7 [&>svg]:h-7 relative z-10`}>
+                                                <tool.icon />
+                                            </div>
+                                            <h3 className="text-lg font-bold text-white mb-1.5 group-hover:text-rose-400 transition-colors relative z-10">{tool.name}</h3>
+                                            <p className="text-xs text-slate-400 font-medium leading-relaxed relative z-10">{tool.desc}</p>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
+                            </div>
+                        ))}
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animation-slideUpFade">
                         {showInstallPrompt && (<div className="lg:col-span-12 install-prompt bg-slate-900 text-white p-5 rounded-2xl shadow-2xl flex items-center justify-between border border-slate-700"><div className="flex items-center gap-4"><div className="bg-rose-500/10 text-rose-500 p-3 rounded-xl border border-rose-500/20"><IconInstall /></div><div><h4 className="font-bold text-sm">Install App</h4><p className="text-xs text-slate-400 font-medium">Add to Home Screen for best experience</p></div></div><div className="flex gap-2"><button onClick={() => setShowInstallPrompt(false)} className="p-2 text-slate-500 hover:text-white transition-colors"><IconClose /></button><button onClick={handleInstallApp} className="bg-white hover:bg-slate-200 text-slate-900 px-4 py-2 rounded-xl text-sm font-bold transition-colors">Install</button></div></div>)}
 
-                        {/* LEFT COLUMN: Canvas & Image Controls */}
                         <div className="lg:col-span-5 xl:col-span-5 space-y-6">
-                            {/* MODE SELECTOR (PILLS) */}
                             <div className="flex gap-2 overflow-x-auto custom-scroll pb-2 px-1">
                                 {TOOLS.map(toolConfig => (
                                     <button key={toolConfig.id} onClick={() => setAppMode(toolConfig.id)} className={`whitespace-nowrap px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 ${appMode === toolConfig.id ? 'bg-gradient-to-r from-rose-500 to-red-600 text-white shadow-[0_0_15px_rgba(225,29,72,0.3)]' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-800/50'}`}>
@@ -1065,11 +1202,10 @@ function App() {
                                 ))}
                             </div>
 
-                            {/* CANVAS AREA */}
                             <div className="bg-slate-900 rounded-[2rem] overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.5)] border border-slate-800 aspect-[1080/1200] relative group canvas-container touch-none ring-1 ring-white/5">
                                 <canvas 
                                     ref={canvasRef} 
-                                    className="w-full h-full object-contain cursor-move touch-none" 
+                                    className={`w-full h-full object-contain touch-none ${appMode === 't_fixture' || appMode === 'discussion' ? '' : 'cursor-move'}`} 
                                     onTouchStart={handleTouchStart} 
                                     onTouchMove={handleTouchMove} 
                                     onTouchEnd={handleEnd} 
@@ -1083,11 +1219,10 @@ function App() {
                                     <button onClick={resetImage} className="bg-slate-900/60 text-white p-3 rounded-full backdrop-blur-md hover:bg-rose-600 transition-colors border border-slate-700/50 shadow-lg" title="Reset Image Positions"><IconRefresh /></button>
                                 </div>
                                 
-                                {!bgImage && appMode !== 'discussion' && appMode !== 'squad' && <div className="absolute inset-0 pointer-events-none flex items-center justify-center bg-slate-950/50 backdrop-blur-sm"><span className="bg-slate-900 border border-slate-700 text-white px-6 py-3 rounded-full text-sm font-bold shadow-2xl flex items-center gap-3"><div className="loader border-t-rose-500 border-white/20"></div> Initializing Canvas...</span></div>}
+                                {!bgImage && appMode !== 'discussion' && appMode !== 'squad' && appMode !== 't_fixture' && <div className="absolute inset-0 pointer-events-none flex items-center justify-center bg-slate-950/50 backdrop-blur-sm"><span className="bg-slate-900 border border-slate-700 text-white px-6 py-3 rounded-full text-sm font-bold shadow-2xl flex items-center gap-3"><div className="loader border-t-rose-500 border-white/20"></div> Initializing Canvas...</span></div>}
                             </div>
                             
-                            {/* IMAGE SCALERS */}
-                            {bgImage && appMode !== 'discussion' && (
+                            {bgImage && appMode !== 'discussion' && appMode !== 't_fixture' && (
                                 <div className="bg-slate-900 p-5 rounded-3xl shadow-xl border border-slate-800 flex flex-col gap-4 relative overflow-hidden">
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
                                     <div className="flex items-center gap-4 relative z-10">
@@ -1113,10 +1248,8 @@ function App() {
                             )}
                         </div>
 
-                        {/* RIGHT COLUMN: Workspace Controls */}
                         <div className="lg:col-span-7 xl:col-span-7 flex flex-col h-full">
                             <div className="bg-slate-900 rounded-3xl shadow-xl border border-slate-800 flex flex-col flex-1 relative overflow-hidden h-[calc(100vh-140px)] lg:h-[85vh]">
-                                {/* Segmented Tabs */}
                                 <div className="p-3 bg-slate-950 border-b border-slate-800 sticky top-0 z-20">
                                     <div className="flex p-1 bg-slate-900 rounded-2xl border border-slate-800 shadow-inner">
                                         <button onClick={() => setActiveTab('match')} className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'match' ? 'bg-slate-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-300'}`}>Content</button>
@@ -1130,8 +1263,7 @@ function App() {
                                 <div className="p-6 space-y-6 overflow-y-auto custom-scroll flex-1">
                                     {activeTab === 'match' && (
                                         <div className="space-y-6">
-                                            {/* Image Uploaders */}
-                                            {appMode !== 'discussion' && (
+                                            {appMode !== 'discussion' && appMode !== 't_fixture' && (
                                                 <div className="flex gap-4">
                                                     <div className="relative group flex-1">
                                                         <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, false)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
@@ -1178,14 +1310,13 @@ function App() {
                                                 </div>
                                             )}
 
-                                            {/* Basic Settings */}
                                             <div className="space-y-4">
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
                                                         <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Badge Text</label>
                                                         <input type="text" name="badgeText" value={formData.badgeText} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-medium text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Badge" />
                                                     </div>
-                                                    {appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone' && appMode !== 'statement' && appMode !== 'discussion' && appMode !== 'multi_result' && appMode !== 'multi_schedule' && appMode !== 'squad' && (
+                                                    {appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone' && appMode !== 'statement' && appMode !== 'discussion' && appMode !== 'multi_result' && appMode !== 'multi_schedule' && appMode !== 'squad' && appMode !== 't_fixture' && (
                                                         <div>
                                                             <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Main Title</label>
                                                             <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-medium text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Tournament Name" />
@@ -1198,7 +1329,72 @@ function App() {
                                                 </div>
                                             </div>
 
-                                            {/* Contextual Forms based on Mode */}
+                                            {/* NEW TOURNAMENT FIXTURE TOOL EDITOR */}
+                                            {appMode === 't_fixture' && (
+                                                <div className="p-5 bg-orange-500/10 rounded-2xl border-l-4 border-orange-500 shadow-inner space-y-4">
+                                                    <h4 className="text-sm font-black text-orange-400 uppercase tracking-wider flex items-center gap-2 mb-4"><IconLayout /> Tournament Fixtures</h4>
+                                                    
+                                                    {/* Top Headers */}
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-orange-300 mb-1.5 block ml-1">Main Event Title (Use Enter to split lines)</label>
+                                                            <textarea name="fixtureTitle" value={formData.fixtureTitle} onChange={handleChange} rows="2" className="w-full px-4 py-3 bg-slate-900 border border-orange-500/30 rounded-xl text-sm font-bold text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all" placeholder="Title..."></textarea>
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-orange-300 mb-1.5 block ml-1">Subtitle (Round / Season)</label>
+                                                            <input type="text" name="fixtureSubtitle" value={formData.fixtureSubtitle} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-orange-500/30 rounded-xl text-sm font-bold text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all" placeholder="Subtitle" />
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Footers */}
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-orange-300 mb-1.5 block ml-1">Footer 1 (Date / Opening)</label>
+                                                            <input type="text" name="fixtureDateFooter" value={formData.fixtureDateFooter} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-orange-500/30 rounded-xl text-sm font-bold text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all" />
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-orange-300 mb-1.5 block ml-1">Footer 2 (Organizer)</label>
+                                                            <input type="text" name="fixtureOrganizerFooter" value={formData.fixtureOrganizerFooter} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-orange-500/30 rounded-xl text-sm font-bold text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all" />
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Dynamic Matchups Array */}
+                                                    <div className="space-y-4 mt-8 pt-6 border-t border-orange-500/20">
+                                                        <h5 className="text-xs font-black text-slate-300 uppercase tracking-widest text-center">Matchups List</h5>
+                                                        
+                                                        {formData.matchupList.map((match, index) => (
+                                                            <div key={match.id} className="p-4 bg-slate-950 rounded-2xl border border-slate-800 relative group transition-all hover:border-orange-500/30">
+                                                                <div className="absolute -top-3 left-4 bg-slate-800 px-3 py-0.5 rounded text-[10px] font-bold text-slate-300 shadow-sm border border-slate-700">Match {index + 1}</div>
+                                                                <button onClick={() => removeMatchup(match.id)} className="absolute top-2 right-2 p-1.5 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors border border-red-500/20" title="Delete"><IconTrash /></button>
+                                                                
+                                                                <div className="grid grid-cols-2 gap-4 mt-3">
+                                                                    <div className="space-y-2">
+                                                                        <div>
+                                                                            <label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Left Team</label>
+                                                                            <input type="text" value={match.t1} onChange={(e) => handleMatchupChange(match.id, 't1', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-white focus:border-orange-500 transition-colors" />
+                                                                        </div>
+                                                                        <div>
+                                                                            <label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Left Sub-Text</label>
+                                                                            <input type="text" value={match.t1Sub} onChange={(e) => handleMatchupChange(match.id, 't1Sub', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-slate-400 focus:border-orange-500 transition-colors" />
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="space-y-2">
+                                                                        <div>
+                                                                            <label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Right Team</label>
+                                                                            <input type="text" value={match.t2} onChange={(e) => handleMatchupChange(match.id, 't2', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-white focus:border-orange-500 transition-colors" />
+                                                                        </div>
+                                                                        <div>
+                                                                            <label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Right Sub-Text</label>
+                                                                            <input type="text" value={match.t2Sub} onChange={(e) => handleMatchupChange(match.id, 't2Sub', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-slate-400 focus:border-orange-500 transition-colors" />
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <button onClick={addMatchup} className="w-full py-4 mt-2 bg-slate-900 hover:bg-slate-800 text-orange-400 rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-dashed border-orange-500/30 hover:border-orange-500/60 transition-all">+ Add Fixture Match</button>
+                                                </div>
+                                            )}
                                             
                                             {appMode === 'squad' && (
                                                 <div className="p-5 bg-green-500/10 rounded-2xl border-l-4 border-green-500 shadow-inner space-y-4">
