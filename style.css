@@ -22,11 +22,25 @@ body {
 
 /* --- ANIMATIONS --- */
 /* Smooth Modal & Panel Transitions */
-.modal-backdrop { animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-.modal-content { animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+.modal-backdrop { 
+    animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+}
+
+.modal-content { 
+    animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+    /* Hardware acceleration for smoother animations on low-end devices */
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+}
+
 .animation-fadeIn { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
 .animation-slideUpFade { animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-.toast-enter { animation: slideUpToast 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+.toast-enter { 
+    animation: slideUpToast 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+}
 
 @keyframes fadeIn { 
     from { opacity: 0; backdrop-filter: blur(0px); } 
@@ -54,6 +68,7 @@ body {
     height: 16px; 
     animation: spin 0.8s linear infinite; 
 }
+
 @keyframes spin { 
     0% { transform: rotate(0deg); } 
     100% { transform: rotate(360deg); } 
