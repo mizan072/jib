@@ -204,7 +204,7 @@ function App() {
     const [formData, setFormData] = useState({
         badgeText: 'ProSports', title: 'ওয়ার্ল্ড চ্যাম্পিয়নশিপ ২০২৬', footerHandle: 'Created with Poster Bot Pro',
         primaryColor: '#dc2626', secondaryColor: '#020617', bgOpacity: 0.85, newsGradientHeight: 0.6,
-        team1: 'বাংলাদেশ', team1Color: '#facc15', team2: 'ভারত', team2Color: '#3b82f6', 
+        team1: 'বাংলাদেশ', team1Color: '#d4af37', team2: 'ভারত', team2Color: '#3b82f6', 
         team1Score: '১৭৪/৪', team1Overs: '(২০ ওভার)', team2Score: '১৬০/৮', team2Overs: '(২০ ওভার)',
         result: 'বাংলাদেশ ১৪ রানে জয়ী', resultColor: '#ffffff', 
         matchDate: '২০ অক্টোবর, ২০২৬', matchTime: 'রাত ৮:০০টা', matchVenue: 'মিরপুর স্টেডিয়াম',
@@ -233,20 +233,20 @@ function App() {
             { id: 4, sport: 'ক্রিকেট', tourney: 'টি-টোয়েন্টি বিশ্বকাপ', match: 'অস্ট্রেলিয়া বনাম ইংল্যান্ড', time: 'বিকেল ৪:০০ টা' }
         ],
 
-        // NEW TOURNAMENT FIXTURE DATA
+        // NEW TOURNAMENT FIXTURE DATA (With Dates)
         fixtureTitle: 'গোপালনগর ক্রিকেট\nটুর্নামেন্ট ২০২৫',
         fixtureSubtitle: 'সিজন - ৪ | ১ম রাউন্ড',
         fixtureDateFooter: 'উদ্বোধনী ম্যাচ: ঈদের ৩য় দিন',
         fixtureOrganizerFooter: 'আয়োজনে: গোপালনগর ইয়ং বয়েজ',
         matchupList: [
-            { id: 1, t1: 'আদমপুর', t1Sub: '১নং ওয়ার্ড', t2: 'মণিরামপুর', t2Sub: '১নং ওয়ার্ড' },
-            { id: 2, t1: 'ফতেপুর', t1Sub: 'মমিন ট্রের্ডাস', t2: 'বাউবাডিয়া', t2Sub: 'একাদশ' },
-            { id: 3, t1: 'শোলমারী', t1Sub: 'কাউন্সিল বয়েজ', t2: 'চেংগারা', t2Sub: 'একাদশ, গাংনী' },
-            { id: 4, t1: 'বারাদি', t1Sub: '৩নং ওয়ার্ড', t2: 'গৌরিনাথপুর', t2Sub: 'একাদশ, মেহেরপুর' },
-            { id: 5, t1: 'শিবপুর', t1Sub: 'সমাজকল্যাণ ক্লাব', t2: 'শুভরাজপুর', t2Sub: 'বর্ডার বয়েজ' },
-            { id: 6, t1: 'গোপালনগর', t1Sub: 'ইয়ং বয়েজ', t2: 'রামনগর', t2Sub: 'একাদশ' },
-            { id: 7, t1: 'বিশ্বনাথপুর', t1Sub: 'একাদশ', t2: 'ভবানীপুর', t2Sub: 'একাদশ' },
-            { id: 8, t1: 'শিবপুর', t1Sub: 'স্টারস', t2: 'গোপালনগর', t2Sub: 'জুনিয়র টাইগার্স' }
+            { id: 1, date: '২০ মার্চ', t1: 'আদমপুর', t1Sub: '১নং ওয়ার্ড', t2: 'মণিরামপুর', t2Sub: '১নং ওয়ার্ড' },
+            { id: 2, date: '২১ মার্চ', t1: 'ফতেপুর', t1Sub: 'মমিন ট্রের্ডাস', t2: 'বাউবাডিয়া', t2Sub: 'একাদশ' },
+            { id: 3, date: '২২ মার্চ', t1: 'শোলমারী', t1Sub: 'কাউন্সিল বয়েজ', t2: 'চেংগারা', t2Sub: 'একাদশ, গাংনী' },
+            { id: 4, date: '২৩ মার্চ', t1: 'বারাদি', t1Sub: '৩নং ওয়ার্ড', t2: 'গৌরিনাথপুর', t2Sub: 'একাদশ, মেহেরপুর' },
+            { id: 5, date: '২৪ মার্চ', t1: 'শিবপুর', t1Sub: 'সমাজকল্যাণ ক্লাব', t2: 'শুভরাজপুর', t2Sub: 'বর্ডার বয়েজ' },
+            { id: 6, date: '২৫ মার্চ', t1: 'গোপালনগর', t1Sub: 'ইয়ং বয়েজ', t2: 'রামনগর', t2Sub: 'একাদশ' },
+            { id: 7, date: '২৬ মার্চ', t1: 'বিশ্বনাথপুর', t1Sub: 'একাদশ', t2: 'ভবানীপুর', t2Sub: 'একাদশ' },
+            { id: 8, date: '২৭ মার্চ', t1: 'শিবপুর', t1Sub: 'স্টারস', t2: 'গোপালনগর', t2Sub: 'জুনিয়র টাইগার্স' }
         ]
     });
 
@@ -321,9 +321,9 @@ function App() {
     const addSchedule = () => { setFormData(p => ({ ...p, scheduleList: [...p.scheduleList, { id: Date.now(), sport: 'খেলা', tourney: 'টুর্নামেন্ট', match: 'দল বনাম দল', time: 'সময়' }] })); };
     const removeSchedule = (id) => { setFormData(p => ({ ...p, scheduleList: p.scheduleList.filter(item => item.id !== id) })); };
 
-    // Fixture List Handlers
+    // Fixture List Handlers (Updated with Date)
     const handleMatchupChange = (id, field, value) => { setFormData(p => ({ ...p, matchupList: p.matchupList.map(item => item.id === id ? { ...item, [field]: value } : item) })); };
-    const addMatchup = () => { setFormData(p => ({ ...p, matchupList: [...p.matchupList, { id: Date.now(), t1: 'দল ১', t1Sub: 'স্থান', t2: 'দল ২', t2Sub: 'স্থান' }] })); };
+    const addMatchup = () => { setFormData(p => ({ ...p, matchupList: [...p.matchupList, { id: Date.now(), date: 'তারিখ', t1: 'দল ১', t1Sub: 'স্থান', t2: 'দল ২', t2Sub: 'স্থান' }] })); };
     const removeMatchup = (id) => { setFormData(p => ({ ...p, matchupList: p.matchupList.filter(item => item.id !== id) })); };
 
     const handleInstallApp = async () => {
@@ -473,31 +473,34 @@ function App() {
                 const footerAreaH = 260; // Space for the two large footers
                 const availableH = (H - footerH - footerAreaH - currentY);
                 const spacingY = availableH / rowCount;
-                const boxH = Math.min(110, spacingY * 0.85); // Cap height to match visual density
+                const boxH = Math.min(110, spacingY * 0.85); 
                 const boxW = 460;
-                const startX = (W - (boxW * 2 + 20)) / 2; // Center the grid horizontally
+                const startX = (W - (boxW * 2 + 20)) / 2;
 
                 list.forEach((match, i) => {
                     const col = i % colCount;
                     const row = Math.floor(i / colCount);
-                    const x = startX + (col * (boxW + 20)); // 20px gap between columns
+                    const x = startX + (col * (boxW + 20));
                     const y = currentY + (row * spacingY);
 
                     // Main Match Box (White)
                     ctx.fillStyle = '#ffffff';
                     drawRoundedRect(ctx, x, y, boxW, boxH, 16);
 
-                    // Number Badge (Left Dark Pillar)
+                    // Wider Date Badge (Left Dark Pillar)
+                    const pillarW = 95; 
                     ctx.fillStyle = '#0f172a';
                     if (ctx.roundRect) {
-                        ctx.beginPath(); ctx.roundRect(x, y, 70, boxH, [16, 0, 0, 16]); ctx.fill();
+                        ctx.beginPath(); ctx.roundRect(x, y, pillarW, boxH, [16, 0, 0, 16]); ctx.fill();
                     } else {
-                        ctx.fillRect(x, y, 70, boxH);
+                        ctx.fillRect(x, y, pillarW, boxH);
                     }
-                    drawText(ctx, (i+1).toString(), x + 35, y + boxH/2 + 15, 40, '#ffffff', 'center', '900');
+                    
+                    // Draw the responsive date text inside the pillar
+                    drawResponsiveText(ctx, match.date, x + pillarW/2, y + boxH/2 + 8, pillarW - 10, 24, '#ffffff', 'center', '900');
 
-                    // VS Circle in Center
-                    const vsX = x + boxW/2 + 25; // Shifted slightly right to balance with the number badge
+                    // Math to auto-center the VS circle between the pillar and right edge
+                    const vsX = x + pillarW + (boxW - pillarW) / 2;
                     
                     // The VS Gold Badge
                     ctx.beginPath(); ctx.arc(vsX, y + boxH/2, 26, 0, Math.PI*2); 
@@ -505,15 +508,15 @@ function App() {
                     ctx.lineWidth = 4; ctx.strokeStyle = '#0f172a'; ctx.stroke();
                     drawText(ctx, "VS", vsX, y + boxH/2 + 8, 22, '#0f172a', 'center', '900');
 
-                    // Team 1 (Left of VS)
-                    const t1W = (boxW - 70) / 2 - 35; // Available width left of VS
-                    const t1X = x + 70 + t1W/2;
+                    // Team 1 (Left of VS, dynamic width)
+                    const t1W = (vsX - 26) - (x + pillarW) - 10; 
+                    const t1X = (x + pillarW) + t1W/2 + 5;
                     drawResponsiveText(ctx, match.t1, t1X, y + boxH/2 - 2, t1W, 26, '#0f172a', 'center', '900');
                     drawResponsiveText(ctx, match.t1Sub, t1X, y + boxH/2 + 22, t1W, 18, '#475569', 'center', 'bold');
 
-                    // Team 2 (Right of VS)
-                    const t2W = boxW - (vsX - x) - 35; // Available width right of VS
-                    const t2X = vsX + 26 + t2W/2;
+                    // Team 2 (Right of VS, dynamic width)
+                    const t2W = (x + boxW) - (vsX + 26) - 10; 
+                    const t2X = (vsX + 26) + t2W/2 + 5;
                     drawResponsiveText(ctx, match.t2, t2X, y + boxH/2 - 2, t2W, 26, '#0f172a', 'center', '900');
                     drawResponsiveText(ctx, match.t2Sub, t2X, y + boxH/2 + 22, t2W, 18, '#475569', 'center', 'bold');
                 });
@@ -985,7 +988,7 @@ function App() {
     };
 
     const handleTouchStart = (e) => { 
-        if (appMode === 't_fixture') return; // Prevent panning on fully structured modes
+        if (appMode === 't_fixture') return; 
         const t = e.touches; const rect = e.target.getBoundingClientRect(); 
         const touchX = t[0].clientX - rect.left; const touchY = t[0].clientY - rect.top;
         
@@ -1367,7 +1370,12 @@ function App() {
                                                                 <div className="absolute -top-3 left-4 bg-slate-800 px-3 py-0.5 rounded text-[10px] font-bold text-slate-300 shadow-sm border border-slate-700">Match {index + 1}</div>
                                                                 <button onClick={() => removeMatchup(match.id)} className="absolute top-2 right-2 p-1.5 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors border border-red-500/20" title="Delete"><IconTrash /></button>
                                                                 
-                                                                <div className="grid grid-cols-2 gap-4 mt-3">
+                                                                <div className="mt-3 mb-2">
+                                                                    <label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Match Date / Info</label>
+                                                                    <input type="text" value={match.date} onChange={(e) => handleMatchupChange(match.id, 'date', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm font-bold text-white focus:border-orange-500 transition-colors" placeholder="e.g. 20 Mar" />
+                                                                </div>
+
+                                                                <div className="grid grid-cols-2 gap-4 mt-2">
                                                                     <div className="space-y-2">
                                                                         <div>
                                                                             <label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Left Team</label>
