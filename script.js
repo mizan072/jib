@@ -220,8 +220,6 @@ function App() {
         // FOOTBALL SCORECARD DATA
         fTourneyTitle: 'সাফ অনূর্ধ্ব-২০ চ্যাম্পিয়নশিপ',
         fMatchStatus: 'ফুল টাইম',
-        fTeam1Short: 'BAN',
-        fTeam2Short: 'PAK',
 
         squadTitle: 'বাংলাদেশের বিপক্ষে ওয়ানডে সিরিজের জন্য পাকিস্তানের স্কোয়াড',
         squadList: 'শাহিন শাহ আফ্রিদি (অধিনায়ক)\nমোহাম্মদ ওয়াসিম জুনিয়র\nসাহিবজাদা ফারহান\nমোহাম্মদ গাজী ঘুরি\nআবরার আহমেদ\nশাদ মাসুদ\nফাহিম আশরাফ\nআব্দুল সামাদ\nফাইসাল আকরাম\nসালমান আলী আগা\nহারিস রউফ\nশামিল হুসেন\nহুসাইন তালাত\nমাআজ সাদাকাত\nমোহাম্মদ রিজওয়ান (উইকেটকিপার)',
@@ -319,7 +317,7 @@ function App() {
 
     // --- FORM ACTIONS ---
     const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
-    const swapTeams = () => setFormData(p => ({ ...p, team1: p.team2, team1Score: p.team2Score, team1Overs: p.team2Overs, team1Color: p.team2Color, team2: p.team1, team2Score: p.team1Score, team2Overs: p.team1Overs, team2Color: p.team1Color, pollPlayer1: p.pollPlayer2, pollPlayer2: p.pollPlayer1, fTeam1Short: p.fTeam2Short, fTeam2Short: p.fTeam1Short }));
+    const swapTeams = () => setFormData(p => ({ ...p, team1: p.team2, team1Score: p.team2Score, team1Overs: p.team2Overs, team1Color: p.team2Color, team2: p.team1, team2Score: p.team1Score, team2Overs: p.team1Overs, team2Color: p.team1Color, pollPlayer1: p.pollPlayer2, pollPlayer2: p.pollPlayer1 }));
     
     const handleResultChange = (id, field, value) => { setFormData(p => ({ ...p, resultsList: p.resultsList.map(item => item.id === id ? { ...item, [field]: value } : item) })); };
     const addResult = () => { setFormData(p => ({ ...p, resultsList: [...p.resultsList, { id: Date.now(), team1: 'দল ১', team2: 'দল ২', score1: '০', score2: '০', tourney: 'টুর্নামেন্ট' }] })); };
@@ -512,7 +510,7 @@ function App() {
                 // Tournament Title
                 drawResponsiveText(ctx, formData.fTourneyTitle, W/2, panelY + 65, W - 160, 48, '#ffffff', 'center', '900');
                 
-                // Red underline under title
+                // Underline under title
                 ctx.beginPath(); ctx.moveTo(80, panelY + 100); ctx.lineTo(W - 80, panelY + 100); 
                 ctx.strokeStyle = formData.primaryColor; ctx.lineWidth = 4; ctx.stroke();
 
@@ -531,23 +529,14 @@ function App() {
                 // Score Text
                 drawText(ctx, formData.team1Score + " - " + formData.team2Score, W/2, scoreBoxY + 100, 100, '#ffffff', 'center', '900');
 
-                // Generated Team Badges (Instead of Flags)
-                const badgeY = scoreBoxY + 70;
-                const badgeR = 80;
+                // Team Names (Centered vertically with the score box, NO BADGES)
+                const nameY = scoreBoxY + 85; 
+                
+                // Team 1 Name
+                drawResponsiveText(ctx, formData.team1, W/2 - 280, nameY, 280, 60, formData.team1Color, 'center', '900');
 
-                // Team 1 Badge
-                const b1X = W/2 - 280;
-                ctx.beginPath(); ctx.arc(b1X, badgeY, badgeR, 0, Math.PI*2); ctx.fillStyle = formData.team1Color; ctx.fill();
-                ctx.lineWidth = 8; ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.stroke();
-                drawResponsiveText(ctx, formData.fTeam1Short, b1X, badgeY + 18, 120, 50, '#ffffff', 'center', '900');
-                drawResponsiveText(ctx, formData.team1, b1X, panelY + 340, 240, 38, formData.team1Color, 'center', 'bold');
-
-                // Team 2 Badge
-                const b2X = W/2 + 280;
-                ctx.beginPath(); ctx.arc(b2X, badgeY, badgeR, 0, Math.PI*2); ctx.fillStyle = formData.team2Color; ctx.fill();
-                ctx.lineWidth = 8; ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.stroke();
-                drawResponsiveText(ctx, formData.fTeam2Short, b2X, badgeY + 18, 120, 50, '#ffffff', 'center', '900');
-                drawResponsiveText(ctx, formData.team2, b2X, panelY + 340, 240, 38, formData.team2Color, 'center', 'bold');
+                // Team 2 Name
+                drawResponsiveText(ctx, formData.team2, W/2 + 280, nameY, 280, 60, formData.team2Color, 'center', '900');
 
                 // Match Status (e.g. ফুল টাইম)
                 drawResponsiveText(ctx, formData.fMatchStatus, W/2, panelY + 340, 300, 32, '#cbd5e1', 'center', 'bold');
@@ -1801,13 +1790,6 @@ function App() {
                                                     <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Full Team Name</label>
                                                     <input type="text" name="team1" value={formData.team1} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
                                                 </div>
-                                                
-                                                {appMode === 'f_scorecard' && (
-                                                    <div>
-                                                        <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Short Name (Badge Text)</label>
-                                                        <input type="text" name="fTeam1Short" value={formData.fTeam1Short} onChange={handleChange} maxLength="4" className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all uppercase" placeholder="e.g. BAN" />
-                                                    </div>
-                                                )}
 
                                                 {(appMode === 'scorecard' || appMode === 'f_scorecard') && (
                                                     <div className="flex gap-4">
@@ -1834,13 +1816,6 @@ function App() {
                                                     <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Full Team Name</label>
                                                     <input type="text" name="team2" value={formData.team2} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
                                                 </div>
-
-                                                {appMode === 'f_scorecard' && (
-                                                    <div>
-                                                        <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Short Name (Badge Text)</label>
-                                                        <input type="text" name="fTeam2Short" value={formData.fTeam2Short} onChange={handleChange} maxLength="4" className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all uppercase" placeholder="e.g. PAK" />
-                                                    </div>
-                                                )}
 
                                                 {(appMode === 'scorecard' || appMode === 'f_scorecard') && (
                                                     <div className="flex gap-4">
