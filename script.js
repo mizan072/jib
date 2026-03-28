@@ -33,6 +33,7 @@ const IconList = ({className}) => <svg className={className || "w-6 h-6"} xmlns=
 const IconGrid = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>;
 const IconUsers = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
 const IconLayout = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>;
+const IconFootball = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="12 6 15.5 8.5 14.5 13.5 9.5 13.5 8.5 8.5 12 6"></polygon><line x1="12" y1="6" x2="12" y2="2"></line><line x1="15.5" y1="8.5" x2="20.5" y2="7"></line><line x1="14.5" y1="13.5" x2="18.5" y2="18"></line><line x1="9.5" y1="13.5" x2="5.5" y2="18"></line><line x1="8.5" y1="8.5" x2="3.5" y2="7"></line></svg>;
 
 // --- TOOL CATEGORIES ---
 const TOOL_CATEGORIES = [
@@ -48,6 +49,7 @@ const TOOL_CATEGORIES = [
     {
         name: "Live & Match Results",
         tools: [
+            { id: 'f_scorecard', name: 'Football PRO', desc: 'Photo-rich football result', icon: IconFootball, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
             { id: 'scorecard', name: 'Match Scorecard', desc: 'Classic Match score updates', icon: IconTrophy, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
             { id: 'multi_result', name: 'Multi Results', desc: 'List of match scores', icon: IconList, color: 'text-rose-400', bg: 'bg-rose-400/10', border: 'border-rose-400/20' },
             { id: 'poll', name: 'Reaction Poll', desc: 'Facebook-style reaction polls', icon: IconSwap, color: 'text-indigo-400', bg: 'bg-indigo-400/10', border: 'border-indigo-400/20' }
@@ -175,7 +177,7 @@ function App() {
     
     // --- STATE MANAGEMENT ---
     const [currentView, setCurrentView] = useState('home'); 
-    const [appMode, setAppMode] = useState('t_fixture'); 
+    const [appMode, setAppMode] = useState('f_scorecard'); 
     const [activeTab, setActiveTab] = useState('match');
     
     const [bgImage, setBgImage] = useState(null);
@@ -204,8 +206,8 @@ function App() {
     const [formData, setFormData] = useState({
         badgeText: 'ProSports', title: 'ওয়ার্ল্ড চ্যাম্পিয়নশিপ ২০২৬', footerHandle: 'Created with Poster Bot Pro',
         primaryColor: '#dc2626', secondaryColor: '#020617', bgOpacity: 0.85, newsGradientHeight: 0.6,
-        team1: 'বাংলাদেশ', team1Color: '#d4af37', team2: 'ভারত', team2Color: '#3b82f6', 
-        team1Score: '১৭৪/৪', team1Overs: '(২০ ওভার)', team2Score: '১৬০/৮', team2Overs: '(২০ ওভার)',
+        team1: 'বাংলাদেশ', team1Color: '#16a34a', team2: 'পাকিস্তান', team2Color: '#047857', 
+        team1Score: '2', team1Overs: '(২০ ওভার)', team2Score: '0', team2Overs: '(২০ ওভার)',
         result: 'বাংলাদেশ ১৪ রানে জয়ী', resultColor: '#ffffff', 
         matchDate: '২০ অক্টোবর, ২০২৬', matchTime: 'রাত ৮:০০টা', matchVenue: 'মিরপুর স্টেডিয়াম',
         playerName: 'সাকিব আল হাসান', playerStatMain: '৮২*', playerStatSub: 'রান (৪৫ বল)', playerRole: 'ব্যাটসম্যান', 
@@ -215,6 +217,12 @@ function App() {
         discTopic: 'ম্যাচ বিশ্লেষণ', discLine1: 'পাওয়ার প্লে-তে কে বেশি রান করবে?', discLine2: 'আজকের পিচ কাদের জন্য সহায়ক?', discLine3: 'সেরা বোলার কে হতে পারে?',
         quoteText: 'ফিলিস্তিনের মাটিতে জন্ম নেওয়াটাই কি দোষ? আমাদের নিষ্পাপ শিশুরা কি দোষ করছে?', quoteAuthor: 'পেপ গার্দিওলা',
         
+        // FOOTBALL SCORECARD DATA
+        fTourneyTitle: 'সাফ অনূর্ধ্ব-২০ চ্যাম্পিয়নশিপ',
+        fMatchStatus: 'ফুল টাইম',
+        fTeam1Short: 'BAN',
+        fTeam2Short: 'PAK',
+
         squadTitle: 'বাংলাদেশের বিপক্ষে ওয়ানডে সিরিজের জন্য পাকিস্তানের স্কোয়াড',
         squadList: 'শাহিন শাহ আফ্রিদি (অধিনায়ক)\nমোহাম্মদ ওয়াসিম জুনিয়র\nসাহিবজাদা ফারহান\nমোহাম্মদ গাজী ঘুরি\nআবরার আহমেদ\nশাদ মাসুদ\nফাহিম আশরাফ\nআব্দুল সামাদ\nফাইসাল আকরাম\nসালমান আলী আগা\nহারিস রউফ\nশামিল হুসেন\nহুসাইন তালাত\nমাআজ সাদাকাত\nমোহাম্মদ রিজওয়ান (উইকেটকিপার)',
 
@@ -233,7 +241,7 @@ function App() {
             { id: 4, sport: 'ক্রিকেট', tourney: 'টি-টোয়েন্টি বিশ্বকাপ', match: 'অস্ট্রেলিয়া বনাম ইংল্যান্ড', time: 'বিকেল ৪:০০ টা' }
         ],
 
-        // NEW TOURNAMENT FIXTURE DATA (With Dates)
+        // TOURNAMENT FIXTURE DATA 
         fixtureTitle: 'গোপালনগর ক্রিকেট\nটুর্নামেন্ট ২০২৫',
         fixtureSubtitle: 'সিজন - ৪ | ১ম রাউন্ড',
         fixtureDateFooter: 'উদ্বোধনী ম্যাচ: ঈদের ৩য় দিন',
@@ -311,7 +319,7 @@ function App() {
 
     // --- FORM ACTIONS ---
     const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
-    const swapTeams = () => setFormData(p => ({ ...p, team1: p.team2, team1Score: p.team2Score, team1Overs: p.team2Overs, team1Color: p.team2Color, team2: p.team1, team2Score: p.team1Score, team2Overs: p.team1Overs, team2Color: p.team1Color, pollPlayer1: p.pollPlayer2, pollPlayer2: p.pollPlayer1 }));
+    const swapTeams = () => setFormData(p => ({ ...p, team1: p.team2, team1Score: p.team2Score, team1Overs: p.team2Overs, team1Color: p.team2Color, team2: p.team1, team2Score: p.team1Score, team2Overs: p.team1Overs, team2Color: p.team1Color, pollPlayer1: p.pollPlayer2, pollPlayer2: p.pollPlayer1, fTeam1Short: p.fTeam2Short, fTeam2Short: p.fTeam1Short }));
     
     const handleResultChange = (id, field, value) => { setFormData(p => ({ ...p, resultsList: p.resultsList.map(item => item.id === id ? { ...item, [field]: value } : item) })); };
     const addResult = () => { setFormData(p => ({ ...p, resultsList: [...p.resultsList, { id: Date.now(), team1: 'দল ১', team2: 'দল ২', score1: '০', score2: '০', tourney: 'টুর্নামেন্ট' }] })); };
@@ -321,7 +329,7 @@ function App() {
     const addSchedule = () => { setFormData(p => ({ ...p, scheduleList: [...p.scheduleList, { id: Date.now(), sport: 'খেলা', tourney: 'টুর্নামেন্ট', match: 'দল বনাম দল', time: 'সময়' }] })); };
     const removeSchedule = (id) => { setFormData(p => ({ ...p, scheduleList: p.scheduleList.filter(item => item.id !== id) })); };
 
-    // Fixture List Handlers (Updated with Date)
+    // Fixture List Handlers
     const handleMatchupChange = (id, field, value) => { setFormData(p => ({ ...p, matchupList: p.matchupList.map(item => item.id === id ? { ...item, [field]: value } : item) })); };
     const addMatchup = () => { setFormData(p => ({ ...p, matchupList: [...p.matchupList, { id: Date.now(), date: 'তারিখ', t1: 'দল ১', t1Sub: 'স্থান', t2: 'দল ২', t2Sub: 'স্থান' }] })); };
     const removeMatchup = (id) => { setFormData(p => ({ ...p, matchupList: p.matchupList.filter(item => item.id !== id) })); };
@@ -379,6 +387,31 @@ function App() {
                     ctx.restore();
                 }
 
+            } else if (appMode === 'f_scorecard') {
+                // Football PRO Backgrounds
+                if (bgImage) {
+                    ctx.save(); ctx.translate(img1Pos.x, img1Pos.y); ctx.scale(img1Pos.scale, img1Pos.scale); ctx.drawImage(bgImage, 0, 0); ctx.restore();
+                } else {
+                    const grd = ctx.createLinearGradient(0, 0, 0, splitY); grd.addColorStop(0, '#1e293b'); grd.addColorStop(1, '#0f172a');
+                    ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H); drawText(ctx, "Loading Image 1...", W/2, H/3, 50, "#94a3b8", "center", "bold");
+                }
+
+                // Inset Celebration Circle (Image 2)
+                if (bgImage2) {
+                    ctx.save();
+                    const cx = 830; const cy = 360; const r = 180;
+                    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                    ctx.clip();
+                    // Pan relative to the original image center
+                    ctx.translate(img2Pos.x, img2Pos.y); ctx.scale(img2Pos.scale, img2Pos.scale);
+                    ctx.drawImage(bgImage2, 0, 0);
+                    ctx.restore();
+                    
+                    // Outer Ring
+                    ctx.lineWidth = 10; ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+                    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+                }
+
             } else if (appMode === 'squad') {
                 const topH = H * 0.35;
                 if (bgImage) {
@@ -425,7 +458,7 @@ function App() {
                 gradient.addColorStop(0, formData.primaryColor); gradient.addColorStop(1, formData.secondaryColor);
                 ctx.fillStyle = gradient;
                 ctx.fillRect(0, 0, W, H);
-            } else if (appMode === 'statement' || appMode === 'squad' || appMode === 't_fixture') {
+            } else if (appMode === 'statement' || appMode === 'squad' || appMode === 't_fixture' || appMode === 'f_scorecard') {
                 // Handled separately
             } else if (appMode !== 'discussion') { 
                 const gradient = ctx.createLinearGradient(0, splitY, 0, H);
@@ -444,7 +477,82 @@ function App() {
             ctx.restore(); 
 
             // 3. Draw Specific Modules
-            if (appMode === 't_fixture') {
+            
+            if (appMode === 'f_scorecard') {
+                // To match reference image gradient overlay behind panel
+                const darkGradient = ctx.createLinearGradient(0, 500, 0, H);
+                darkGradient.addColorStop(0, 'transparent');
+                darkGradient.addColorStop(1, 'rgba(0,0,0,0.8)');
+                ctx.fillStyle = darkGradient;
+                ctx.fillRect(0, 500, W, H - 500);
+
+                const panelY = 740;
+                const panelH = H - panelY - footerH;
+
+                // Main Scorecard Panel
+                ctx.fillStyle = '#0f172a'; // Deep blue/slate
+                ctx.beginPath(); 
+                if(ctx.roundRect) {
+                    ctx.roundRect(40, panelY, W - 80, panelH, 24); 
+                } else {
+                    ctx.fillRect(40, panelY, W - 80, panelH);
+                }
+                ctx.fill();
+
+                // Top Accent Border (Red in reference)
+                ctx.fillStyle = formData.primaryColor;
+                ctx.beginPath(); 
+                if(ctx.roundRect) {
+                    ctx.roundRect(40, panelY, W - 80, 10, [24, 24, 0, 0]); 
+                } else {
+                    ctx.fillRect(40, panelY, W - 80, 10);
+                }
+                ctx.fill();
+
+                // Tournament Title
+                drawResponsiveText(ctx, formData.fTourneyTitle, W/2, panelY + 65, W - 160, 48, '#ffffff', 'center', '900');
+                
+                // Red underline under title
+                ctx.beginPath(); ctx.moveTo(80, panelY + 100); ctx.lineTo(W - 80, panelY + 100); 
+                ctx.strokeStyle = formData.primaryColor; ctx.lineWidth = 4; ctx.stroke();
+
+                // The Central Score Parallelogram
+                const scoreBoxY = panelY + 140;
+                const scoreBoxH = 140;
+                ctx.fillStyle = '#1e293b'; // Lighter slate
+                ctx.beginPath();
+                ctx.moveTo(W/2 - 140, scoreBoxY);
+                ctx.lineTo(W/2 + 100, scoreBoxY);
+                ctx.lineTo(W/2 + 140, scoreBoxY + scoreBoxH);
+                ctx.lineTo(W/2 - 100, scoreBoxY + scoreBoxH);
+                ctx.closePath();
+                ctx.fill();
+
+                // Score Text
+                drawText(ctx, formData.team1Score + " - " + formData.team2Score, W/2, scoreBoxY + 100, 100, '#ffffff', 'center', '900');
+
+                // Generated Team Badges (Instead of Flags)
+                const badgeY = scoreBoxY + 70;
+                const badgeR = 80;
+
+                // Team 1 Badge
+                const b1X = W/2 - 280;
+                ctx.beginPath(); ctx.arc(b1X, badgeY, badgeR, 0, Math.PI*2); ctx.fillStyle = formData.team1Color; ctx.fill();
+                ctx.lineWidth = 8; ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.stroke();
+                drawResponsiveText(ctx, formData.fTeam1Short, b1X, badgeY + 18, 120, 50, '#ffffff', 'center', '900');
+                drawResponsiveText(ctx, formData.team1, b1X, panelY + 340, 240, 38, formData.team1Color, 'center', 'bold');
+
+                // Team 2 Badge
+                const b2X = W/2 + 280;
+                ctx.beginPath(); ctx.arc(b2X, badgeY, badgeR, 0, Math.PI*2); ctx.fillStyle = formData.team2Color; ctx.fill();
+                ctx.lineWidth = 8; ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.stroke();
+                drawResponsiveText(ctx, formData.fTeam2Short, b2X, badgeY + 18, 120, 50, '#ffffff', 'center', '900');
+                drawResponsiveText(ctx, formData.team2, b2X, panelY + 340, 240, 38, formData.team2Color, 'center', 'bold');
+
+                // Match Status (e.g. ফুল টাইম)
+                drawResponsiveText(ctx, formData.fMatchStatus, W/2, panelY + 340, 300, 32, '#cbd5e1', 'center', 'bold');
+            }
+            else if (appMode === 't_fixture') {
                 const topY = 100;
                 
                 // HEADER AREA
@@ -958,11 +1066,20 @@ function App() {
             const img = new Image();
             img.onload = () => {
                 if (isSecond) {
-                    setBgImage2(img); const scale2 = Math.max(540 / img.width, 1200 / img.height);
-                    setImg2Pos({ x: 540 + (540 - img.width * scale2) / 2, y: (1200 - img.height * scale2) / 2, scale: scale2 });
-                    if (bgImage) { const scale1 = Math.max(540 / bgImage.width, 1200 / bgImage.height); setImg1Pos({ x: (540 - bgImage.width * scale1) / 2, y: (1200 - bgImage.height * scale1) / 2, scale: scale1 }); }
+                    setBgImage2(img); 
+                    // Calculate a reasonable scale for the inset circle in Football Scorecard
+                    let targetW = 540; let targetH = 1200;
+                    if(appMode === 'f_scorecard') { targetW = 360; targetH = 360; }
+                    const scale2 = Math.max(targetW / img.width, targetH / img.height);
+                    
+                    if(appMode === 'f_scorecard') {
+                        setImg2Pos({ x: (360 - img.width * scale2) / 2, y: (360 - img.height * scale2) / 2, scale: scale2 });
+                    } else {
+                        setImg2Pos({ x: 540 + (540 - img.width * scale2) / 2, y: (1200 - img.height * scale2) / 2, scale: scale2 });
+                    }
+                    if (bgImage && appMode !== 'f_scorecard') { const scale1 = Math.max(540 / bgImage.width, 1200 / bgImage.height); setImg1Pos({ x: (540 - bgImage.width * scale1) / 2, y: (1200 - bgImage.height * scale1) / 2, scale: scale1 }); }
                 } else {
-                    setBgImage(img); const targetW = bgImage2 ? 540 : 1080; const scale1 = Math.max(targetW / img.width, 1200 / img.height);
+                    setBgImage(img); const targetW = (bgImage2 && appMode !== 'f_scorecard') ? 540 : 1080; const scale1 = Math.max(targetW / img.width, 1200 / img.height);
                     setImg1Pos({ x: (targetW - img.width * scale1) / 2, y: (1200 - img.height * scale1) / 2, scale: scale1 });
                 }
             }; img.src = ev.target.result;
@@ -982,8 +1099,18 @@ function App() {
     };
 
     const resetImage = () => { 
-        if (bgImage) { const targetW = bgImage2 ? 540 : 1080; const scale1 = Math.max(targetW / bgImage.width, 1200 / bgImage.height); setImg1Pos({ x: (targetW - bgImage.width * scale1) / 2, y: (1200 - bgImage.height * scale1) / 2, scale: scale1 }); }
-        if (bgImage2) { const scale2 = Math.max(540 / bgImage2.width, 1200 / bgImage2.height); setImg2Pos({ x: 540 + (540 - bgImage2.width * scale2) / 2, y: (1200 - bgImage2.height * scale2) / 2, scale: scale2 }); }
+        if (bgImage) { const targetW = (bgImage2 && appMode !== 'f_scorecard') ? 540 : 1080; const scale1 = Math.max(targetW / bgImage.width, 1200 / bgImage.height); setImg1Pos({ x: (targetW - bgImage.width * scale1) / 2, y: (1200 - bgImage.height * scale1) / 2, scale: scale1 }); }
+        if (bgImage2) { 
+            let targetW = 540; let targetH = 1200;
+            if(appMode === 'f_scorecard') { targetW = 360; targetH = 360; }
+            const scale2 = Math.max(targetW / bgImage2.width, targetH / bgImage2.height);
+            
+            if(appMode === 'f_scorecard') {
+                setImg2Pos({ x: (360 - bgImage2.width * scale2) / 2, y: (360 - bgImage2.height * scale2) / 2, scale: scale2 });
+            } else {
+                setImg2Pos({ x: 540 + (540 - bgImage2.width * scale2) / 2, y: (1200 - bgImage2.height * scale2) / 2, scale: scale2 });
+            }
+        }
         if (avatarImage) { const scale3 = Math.max(320 / avatarImage.width, 320 / avatarImage.height); setAvatarPos({ x: (320 - avatarImage.width * scale3) / 2, y: (320 - avatarImage.height * scale3) / 2, scale: scale3 }); }
     };
 
@@ -998,7 +1125,9 @@ function App() {
 
         if (appMode === 'statement' && avatarImage && Math.hypot(canvasX - 1080/2, canvasY - 750) < 160) {
             targetImg = 'avatar';
-        } else if (bgImage2 && touchX > rect.width / 2 && appMode !== 'statement') {
+        } else if (appMode === 'f_scorecard' && bgImage2 && Math.hypot(canvasX - 830, canvasY - 360) < 180) {
+            targetImg = 'img2';
+        } else if (bgImage2 && touchX > rect.width / 2 && appMode !== 'statement' && appMode !== 'f_scorecard') {
             targetImg = 'img2';
         }
         
@@ -1027,7 +1156,9 @@ function App() {
 
         if (appMode === 'statement' && avatarImage && Math.hypot(canvasX - 1080/2, canvasY - 750) < 160) {
             targetImg = 'avatar';
-        } else if (bgImage2 && touchX > rect.width / 2 && appMode !== 'statement') {
+        } else if (appMode === 'f_scorecard' && bgImage2 && Math.hypot(canvasX - 830, canvasY - 360) < 180) {
+            targetImg = 'img2';
+        } else if (bgImage2 && touchX > rect.width / 2 && appMode !== 'statement' && appMode !== 'f_scorecard') {
             targetImg = 'img2';
         }
         
@@ -1166,7 +1297,7 @@ function App() {
                     <div className="space-y-12 animation-fadeIn">
                         <div className="relative text-center py-12 px-4 mb-4 rounded-[2rem] border border-slate-800 bg-slate-900/50 shadow-inner overflow-hidden">
                             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-lg h-32 bg-rose-500/20 blur-[100px] pointer-events-none"></div>
-                            <div className="bg-rose-500/10 text-rose-500 px-4 py-1.5 rounded-full text-xs font-bold inline-flex items-center gap-2 mb-6 border border-rose-500/20"><IconStar className="w-4 h-4"/> v2.5 Categorized Studio</div>
+                            <div className="bg-rose-500/10 text-rose-500 px-4 py-1.5 rounded-full text-xs font-bold inline-flex items-center gap-2 mb-6 border border-rose-500/20"><IconStar className="w-4 h-4"/> v3.0 Football Pro</div>
                             <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">Create Pro Graphics. <br className="md:hidden"/><span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-amber-500">In Seconds.</span></h2>
                             <p className="text-slate-400 text-sm md:text-base font-medium max-w-xl mx-auto">Select a tool from the dashboard below to instantly generate high-quality sports posters, news overlays, and match scorecards.</p>
                         </div>
@@ -1256,7 +1387,7 @@ function App() {
                                 <div className="p-3 bg-slate-950 border-b border-slate-800 sticky top-0 z-20">
                                     <div className="flex p-1 bg-slate-900 rounded-2xl border border-slate-800 shadow-inner">
                                         <button onClick={() => setActiveTab('match')} className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'match' ? 'bg-slate-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-300'}`}>Content</button>
-                                        {(appMode === 'scorecard' || appMode === 'schedule') && (
+                                        {(appMode === 'scorecard' || appMode === 'schedule' || appMode === 'f_scorecard') && (
                                             <button onClick={() => setActiveTab('teams')} className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'teams' ? 'bg-slate-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-300'}`}>Teams</button>
                                         )}
                                         <button onClick={() => setActiveTab('style')} className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'style' ? 'bg-slate-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-300'}`}>Style</button>
@@ -1272,7 +1403,7 @@ function App() {
                                                         <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, false)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
                                                         <div className="border-2 border-dashed border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-slate-950/50 group-hover:bg-slate-800/80 group-hover:border-rose-500/50 transition-all">
                                                             <div className="bg-slate-800 p-3 rounded-full shadow-lg text-rose-500 group-hover:scale-110 transition-transform"><IconUpload /></div>
-                                                            <span className="text-xs font-bold text-slate-400">Photo 1</span>
+                                                            <span className="text-xs font-bold text-slate-400">Photo 1 (Main)</span>
                                                         </div>
                                                     </div>
                                                     <div className="relative group flex-1">
@@ -1303,7 +1434,7 @@ function App() {
                                                                         <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, true)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
                                                                         <div className="border-2 border-dashed border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-slate-950/50 group-hover:bg-slate-800/80 group-hover:border-blue-500/50 transition-all">
                                                                             <div className="bg-slate-800 p-3 rounded-full shadow-lg text-blue-500 group-hover:scale-110 transition-transform"><IconUpload /></div>
-                                                                            <span className="text-xs font-bold text-slate-400">Photo 2 (Opt)</span>
+                                                                            <span className="text-xs font-bold text-slate-400">{appMode === 'f_scorecard' ? 'Photo 2 (Inset Circle)' : 'Photo 2 (Opt)'}</span>
                                                                         </div>
                                                                     </>
                                                                 )
@@ -1319,7 +1450,7 @@ function App() {
                                                         <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Badge Text</label>
                                                         <input type="text" name="badgeText" value={formData.badgeText} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-medium text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Badge" />
                                                     </div>
-                                                    {appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone' && appMode !== 'statement' && appMode !== 'discussion' && appMode !== 'multi_result' && appMode !== 'multi_schedule' && appMode !== 'squad' && appMode !== 't_fixture' && (
+                                                    {appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone' && appMode !== 'statement' && appMode !== 'discussion' && appMode !== 'multi_result' && appMode !== 'multi_schedule' && appMode !== 'squad' && appMode !== 't_fixture' && appMode !== 'f_scorecard' && (
                                                         <div>
                                                             <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Main Title</label>
                                                             <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-medium text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Tournament Name" />
@@ -1332,7 +1463,22 @@ function App() {
                                                 </div>
                                             </div>
 
-                                            {/* NEW TOURNAMENT FIXTURE TOOL EDITOR */}
+                                            {/* NEW FOOTBALL SCORECARD TOOL EDITOR */}
+                                            {appMode === 'f_scorecard' && (
+                                                <div className="p-5 bg-emerald-500/10 rounded-2xl border-l-4 border-emerald-500 shadow-inner space-y-4">
+                                                    <h4 className="text-sm font-black text-emerald-400 uppercase tracking-wider flex items-center gap-2 mb-4"><IconFootball /> Football PRO Setup</h4>
+                                                    
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-emerald-300 mb-1.5 block ml-1">Tournament Title</label>
+                                                        <input type="text" name="fTourneyTitle" value={formData.fTourneyTitle} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-emerald-300 mb-1.5 block ml-1">Match Status (e.g. ফুল টাইম)</label>
+                                                        <input type="text" name="fMatchStatus" value={formData.fMatchStatus} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
+                                                    </div>
+                                                </div>
+                                            )}
+
                                             {appMode === 't_fixture' && (
                                                 <div className="p-5 bg-orange-500/10 rounded-2xl border-l-4 border-orange-500 shadow-inner space-y-4">
                                                     <h4 className="text-sm font-black text-orange-400 uppercase tracking-wider flex items-center gap-2 mb-4"><IconLayout /> Tournament Fixtures</h4>
@@ -1642,52 +1788,72 @@ function App() {
                                         </div>
                                     )}
                                     
-                                    {activeTab === 'teams' && (appMode === 'scorecard' || appMode === 'schedule') && (
+                                    {activeTab === 'teams' && (appMode === 'scorecard' || appMode === 'schedule' || appMode === 'f_scorecard') && (
                                         <div className="space-y-6">
                                             <button onClick={swapTeams} className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors border border-slate-700 shadow-sm"><IconSwap /> Swap Sides</button>
                                             
-                                            <div className="bg-slate-950 p-5 rounded-2xl border-l-4 border-blue-500 shadow-inner space-y-4">
+                                            <div className="bg-slate-950 p-5 rounded-2xl border-l-4 border-emerald-500 shadow-inner space-y-4">
                                                 <div className="flex justify-between items-center mb-2">
-                                                    <h3 className="text-xs font-black text-blue-400 uppercase tracking-wider">Left Team</h3>
+                                                    <h3 className="text-xs font-black text-emerald-400 uppercase tracking-wider">Left Team</h3>
                                                     <input type="color" name="team1Color" value={formData.team1Color} onChange={handleChange} className="w-8 h-8 rounded-full overflow-hidden border-2 border-slate-800 cursor-pointer shadow-sm" />
                                                 </div>
                                                 <div>
-                                                    <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Name</label>
-                                                    <input type="text" name="team1" value={formData.team1} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" />
+                                                    <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Full Team Name</label>
+                                                    <input type="text" name="team1" value={formData.team1} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
                                                 </div>
-                                                {appMode === 'scorecard' && (
+                                                
+                                                {appMode === 'f_scorecard' && (
+                                                    <div>
+                                                        <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Short Name (Badge Text)</label>
+                                                        <input type="text" name="fTeam1Short" value={formData.fTeam1Short} onChange={handleChange} maxLength="4" className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all uppercase" placeholder="e.g. BAN" />
+                                                    </div>
+                                                )}
+
+                                                {(appMode === 'scorecard' || appMode === 'f_scorecard') && (
                                                     <div className="flex gap-4">
                                                         <div className="flex-1">
-                                                            <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Score</label>
-                                                            <input type="text" name="team1Score" value={formData.team1Score} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" />
+                                                            <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Score / Goals</label>
+                                                            <input type="text" name="team1Score" value={formData.team1Score} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
                                                         </div>
-                                                        <div className="w-28">
-                                                            <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Overs</label>
-                                                            <input type="text" name="team1Overs" value={formData.team1Overs} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-center" />
-                                                        </div>
+                                                        {appMode === 'scorecard' && (
+                                                            <div className="w-28">
+                                                                <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Overs</label>
+                                                                <input type="text" name="team1Overs" value={formData.team1Overs} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-center" />
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
                                             
-                                            <div className="bg-slate-950 p-5 rounded-2xl border-l-4 border-rose-500 shadow-inner space-y-4">
+                                            <div className="bg-slate-950 p-5 rounded-2xl border-l-4 border-emerald-500 shadow-inner space-y-4">
                                                 <div className="flex justify-between items-center mb-2">
-                                                    <h3 className="text-xs font-black text-rose-400 uppercase tracking-wider">Right Team</h3>
+                                                    <h3 className="text-xs font-black text-emerald-400 uppercase tracking-wider">Right Team</h3>
                                                     <input type="color" name="team2Color" value={formData.team2Color} onChange={handleChange} className="w-8 h-8 rounded-full overflow-hidden border-2 border-slate-800 cursor-pointer shadow-sm" />
                                                 </div>
                                                 <div>
-                                                    <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Name</label>
-                                                    <input type="text" name="team2" value={formData.team2} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
+                                                    <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Full Team Name</label>
+                                                    <input type="text" name="team2" value={formData.team2} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
                                                 </div>
-                                                {appMode === 'scorecard' && (
+
+                                                {appMode === 'f_scorecard' && (
+                                                    <div>
+                                                        <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Short Name (Badge Text)</label>
+                                                        <input type="text" name="fTeam2Short" value={formData.fTeam2Short} onChange={handleChange} maxLength="4" className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all uppercase" placeholder="e.g. PAK" />
+                                                    </div>
+                                                )}
+
+                                                {(appMode === 'scorecard' || appMode === 'f_scorecard') && (
                                                     <div className="flex gap-4">
                                                         <div className="flex-1">
-                                                            <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Score</label>
-                                                            <input type="text" name="team2Score" value={formData.team2Score} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
+                                                            <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Score / Goals</label>
+                                                            <input type="text" name="team2Score" value={formData.team2Score} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
                                                         </div>
-                                                        <div className="w-28">
-                                                            <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Overs</label>
-                                                            <input type="text" name="team2Overs" value={formData.team2Overs} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all text-center" />
-                                                        </div>
+                                                        {appMode === 'scorecard' && (
+                                                            <div className="w-28">
+                                                                <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Overs</label>
+                                                                <input type="text" name="team2Overs" value={formData.team2Overs} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-center" />
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
