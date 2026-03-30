@@ -420,7 +420,7 @@ window.VideoGeneratorTool = function(props) {
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
                 ctx.font = '700 22px Inter, sans-serif';
                 ctx.letterSpacing = "6px";
-                ctx.fillText('VIRAL SPORTS EDITS', W / 2, (H - 30) - (20 * tBrand));
+                ctx.fillText('BDCast', W / 2, (H - 30) - (20 * tBrand));
                 ctx.letterSpacing = "0px";
             }
 
