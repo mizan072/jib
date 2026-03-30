@@ -270,7 +270,7 @@ window.VideoGeneratorTool = function(props) {
         // --- POINT SYSTEM INTEGRATION ---
         btnRenderVideo.addEventListener('click', async () => {
             if (isRecording) return;
-            const VIDEO_COST = 10; // Set cost for video generation
+            const VIDEO_COST = 10; // Set the cost for video generation here
             
             if (props.points < VIDEO_COST) {
                 alert(`You need ${VIDEO_COST} Pro Points to render a video. Please buy points from the main dashboard.`);
@@ -414,15 +414,7 @@ window.VideoGeneratorTool = function(props) {
                 drawProText(userBrand, W - 40, 60, '700 28px Inter, sans-serif', '#ffffff', 'right', 'rgba(0,0,0,0.8)', 15, W / 2);
             }
 
-            const tBrand = easeOutQuart(clamp((elapsed - 1000) / 1000, 0, 1));
-            if (tBrand > 0) {
-                ctx.globalAlpha = tBrand;
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-                ctx.font = '700 22px Inter, sans-serif';
-                ctx.letterSpacing = "6px";
-                ctx.fillText('BDCast', W / 2, (H - 30) - (20 * tBrand));
-                ctx.letterSpacing = "0px";
-            }
+            // Watermark block removed here!
 
             ctx.restore(); 
         }
@@ -469,7 +461,7 @@ window.VideoGeneratorTool = function(props) {
             ctx.fillStyle = grad; ctx.fill(); ctx.restore();
         }
 
-        // --- Video Render Templates (Truncated for space, they are identical to your HTML logic) ---
+        // --- Video Render Templates ---
         function drawMatchResult(W, H, elapsed, themeColor) {
             const teamA = inputs.teamA.value.toUpperCase(); const teamB = inputs.teamB.value.toUpperCase();
             const scoreA = inputs.scoreA.value; const scoreB = inputs.scoreB.value;
@@ -1159,10 +1151,16 @@ window.VideoGeneratorTool = function(props) {
             }
 
             const stream = renderCanvas.captureStream(60);
-            let mimeType = 'video/webm; codecs=vp8';
-            if (MediaRecorder.isTypeSupported('video/mp4')) mimeType = 'video/mp4';
-            else if (MediaRecorder.isTypeSupported('video/webm; codecs=vp8')) mimeType = 'video/webm; codecs=vp8';
-            else if (MediaRecorder.isTypeSupported('video/webm')) mimeType = 'video/webm';
+            
+            // PREFER WEBM: We can perfectly inject duration metadata into WebM files.
+            let mimeType = '';
+            if (MediaRecorder.isTypeSupported('video/webm; codecs=vp8')) {
+                mimeType = 'video/webm; codecs=vp8';
+            } else if (MediaRecorder.isTypeSupported('video/webm')) {
+                mimeType = 'video/webm';
+            } else if (MediaRecorder.isTypeSupported('video/mp4')) {
+                mimeType = 'video/mp4';
+            }
 
             mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType });
             
@@ -1199,7 +1197,8 @@ window.VideoGeneratorTool = function(props) {
             };
 
             setTimeout(() => {
-                mediaRecorder.start(100); 
+                // Removed the 100ms chunking to ensure a solid, uncorrupted video file
+                mediaRecorder.start(); 
                 const recStartTime = Date.now();
                 particles = [];
                 for(let i=0; i<40; i++) particles.push({ x: Math.random()*1080, y: Math.random()*1080, size: Math.random()*4+1, speedY: Math.random()*2+0.5, opacity: Math.random()*0.5+0.1 });
