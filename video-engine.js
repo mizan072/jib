@@ -270,7 +270,7 @@ window.VideoGeneratorTool = function(props) {
         // --- POINT SYSTEM INTEGRATION ---
         btnRenderVideo.addEventListener('click', async () => {
             if (isRecording) return;
-            const VIDEO_COST = 15; // Set cost for video generation
+            const VIDEO_COST = 10; // Set cost for video generation
             
             if (props.points < VIDEO_COST) {
                 alert(`You need ${VIDEO_COST} Pro Points to render a video. Please buy points from the main dashboard.`);
