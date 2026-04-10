@@ -11,12 +11,15 @@
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1165/1165249.png">
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/fix-webm-duration@1.0.6/fix-webm-duration.js"></script>
 
-    <link href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@600;700;800&family=Hind+Siliguri:wght@400;500;600;700;800;900&family=Oswald:ital,wght@0,400;0,600;0,700;1,700&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@600;700;800&family=Hind+Siliguri:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -40,10 +43,11 @@
         }
     </script>
 </head>
-<body oncontextmenu="return false;">
+<body oncontextmenu="return false;" class="bg-slate-950 text-slate-200 selection:bg-rose-500/30 selection:text-white">
     <div id="root"></div>
 
     <script type="text/babel" src="video-engine.js"></script>
+    
     <script type="text/babel" src="script.js"></script>
 </body>
 </html>
