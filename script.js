@@ -105,11 +105,13 @@ function App() {
     const [showAppNotification, setShowAppNotification] = useState(false);
     const [toastMsg, setToastMsg] = useState(null);
 
-    // READY-MADE PROFESSIONAL DEFAULTS
+    // READY-MADE PROFESSIONAL DEFAULTS (Premium Theme Applied)
     const [formData, setFormData] = useState({
         badgeText: 'ProSports', title: 'ওয়ার্ল্ড চ্যাম্পিয়নশিপ ২০২৬', footerHandle: 'Created with Poster Bot Pro',
-        primaryColor: '#dc2626', secondaryColor: '#020617', bgOpacity: 0.85, newsGradientHeight: 0.6,
-        team1: 'বাংলাদেশ', team1Color: '#16a34a', team2: 'পাকিস্তান', team2Color: '#047857', 
+        primaryColor: '#f59e0b', // Amber/Gold Default
+        secondaryColor: '#020617', bgOpacity: 0.85, newsGradientHeight: 0.6,
+        team1: 'বাংলাদেশ', team1Color: '#10b981', // Emerald Green
+        team2: 'পাকিস্তান', team2Color: '#047857', // Dark Green
         team1Score: '2', team1Overs: '(২০ ওভার)', team2Score: '0', team2Overs: '(২০ ওভার)',
         result: 'বাংলাদেশ ১৪ রানে জয়ী', resultColor: '#ffffff', 
         matchDate: '২০ অক্টোবর, ২০২৬', matchTime: 'রাত ৮:০০টা', matchVenue: 'মিরপুর স্টেডিয়াম',
@@ -149,7 +151,7 @@ function App() {
             { id: 1, date: '২০ মার্চ', t1: 'আদমপুর', t1Sub: '১নং ওয়ার্ড', t2: 'মণিরামপুর', t2Sub: '১নং ওয়ার্ড' },
             { id: 2, date: '২১ মার্চ', t1: 'ফতেপুর', t1Sub: 'মমিন ট্রের্ডাস', t2: 'বাউবাডিয়া', t2Sub: 'একাদশ' },
             { id: 3, date: '২২ মার্চ', t1: 'শোলমারী', t1Sub: 'কাউন্সিল বয়েজ', t2: 'চেংগারা', t2Sub: 'একাদশ, গাংনী' },
-            { id: 4, date: '২৩ মার্চ', t1: 'বারাদি', t1Sub: '৩নং ওয়ার্ড', t2: ' গৌরিনাথপুর', t2Sub: 'একাদশ, মেহেরপুর' },
+            { id: 4, date: '২৩ মার্চ', t1: 'বারাদি', t1Sub: '৩নং ওয়ার্ড', t2: 'গৌরিনাথপুর', t2Sub: 'একাদশ, মেহেরপুর' },
             { id: 5, date: '২৪ মার্চ', t1: 'শিবপুর', t1Sub: 'সমাজকল্যাণ ক্লাব', t2: 'শুভরাজপুর', t2Sub: 'বর্ডার বয়েজ' },
             { id: 6, date: '২৫ মার্চ', t1: 'গোপালনগর', t1Sub: 'ইয়ং বয়েজ', t2: 'রামনগর', t2Sub: 'একাদশ' },
             { id: 7, date: '২৬ মার্চ', t1: 'বিশ্বনাথপুর', t1Sub: 'একাদশ', t2: 'ভবানীপুর', t2Sub: 'একাদশ' },
@@ -248,7 +250,6 @@ function App() {
         const W = 1080, H = 1200;
         canvas.width = W; canvas.height = H;
 
-        // Route all rendering to our global math engine
         if (window.PosterRenderer) {
             window.PosterRenderer(
                 ctx, W, H, appMode, formData, 
@@ -391,8 +392,7 @@ function App() {
     };
 
     const performHighResDownload = () => {
-        // Create an offscreen canvas at 4x resolution (4320 x 4800)
-        const SCALE = 4; 
+        const SCALE = 4; // 4x scale for high resolution
         const W = 1080; 
         const H = 1200;
         
@@ -401,25 +401,20 @@ function App() {
         exportCanvas.height = H * SCALE;
         
         const ctx = exportCanvas.getContext('2d');
-        
-        // Disable smoothing for ultra-crisp fonts
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
         
-        // Scale the entire rendering context up
         ctx.scale(SCALE, SCALE);
         
-        // Run the renderer mathematically scaled up
         if (window.PosterRenderer) {
             window.PosterRenderer(
                 ctx, W, H, appMode, formData, 
                 { bgImage, bgImage2, avatarImage }, 
                 { img1Pos, img2Pos, avatarPos }, 
-                true // isExport = true (hides watermark)
+                true 
             );
         }
 
-        // Export at 100% quality PNG
         exportCanvas.toBlob((blob) => {
             const url = URL.createObjectURL(blob); 
             const link = document.createElement('a'); 
