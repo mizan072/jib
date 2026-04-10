@@ -1,4 +1,4 @@
-// --- ADVANCED 8K RENDERING ENGINE ---
+// --- ADVANCED 8K RENDERING ENGINE v2 (PRODUCTION READY) ---
 // Handles Auto-Color Grading, Bulletproof Text Wrapping, and Scalable Math
 
 window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions, isExport = false) {
@@ -11,9 +11,9 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
         ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`; 
         ctx.fillStyle = color; 
         ctx.textAlign = align; 
-        if(color === '#fff' || color === '#ffffff') { ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 6; }
+        if(color === '#fff' || color === '#ffffff') { ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;}
         ctx.fillText(text, x, y); 
-        ctx.shadowBlur = 0;
+        ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
     };
 
     const wrapText = (text, maxWidth) => {
@@ -38,11 +38,11 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
             ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`;
         }
         ctx.fillStyle = color; ctx.textAlign = align;
-        if(color === '#fff' || color === '#ffffff') { ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 6; }
-        ctx.fillText(text, x, y); ctx.shadowBlur = 0;
+        if(color === '#fff' || color === '#ffffff') { ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 12; ctx.shadowOffsetY = 4; }
+        ctx.fillText(text, x, y); 
+        ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
     };
 
-    // Upgraded: Recursive Shrink & Auto-Truncate
     const drawSmartText = (text, x, y, boxW, boxH, maxFs, minFs, color, align, fw, lhRatio = 1.3) => {
         let fs = maxFs;
         let lines = [];
@@ -56,7 +56,6 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
             fs -= 2;
         }
 
-        // Hard Boundary Limit: If it still overflows, truncate and add ellipsis
         if (textHeight > boxH) {
             const maxAllowedLines = Math.floor(boxH / (fs * lhRatio));
             lines = lines.slice(0, maxAllowedLines);
@@ -68,15 +67,19 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
 
         let currentY = y - (textHeight / 2) + (fs * lhRatio * 0.7) / 2;
         if(align === 'top') currentY = y + fs;
+        // Fix for left-aligned multiline text positioning
+        if(align === 'left' && textHeight > fs * lhRatio) {
+            currentY = y - (textHeight / 2) + fs; 
+        }
 
         ctx.fillStyle = color; ctx.textAlign = align === 'top' ? 'center' : align;
-        if(color === '#fff' || color === '#ffffff') { ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 6; }
+        if(color === '#fff' || color === '#ffffff') { ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;}
 
         lines.forEach(line => {
             ctx.fillText(line, x, currentY);
             currentY += (fs * lhRatio);
         });
-        ctx.shadowBlur = 0;
+        ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
     };
 
     const drawFBIcon = (cx, cy, size) => {
@@ -92,6 +95,36 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
             let r = radius; if (Array.isArray(radius)) r = radius;
             ctx.beginPath(); ctx.roundRect(x, y, width, height, r); ctx.fill();
         } else { ctx.fillRect(x, y, width, height); }
+    };
+
+    const drawPremiumGlassBox = (x, y, w, h, radius, alpha, accentColor) => {
+        ctx.save(); 
+        ctx.globalAlpha = alpha;
+        
+        // Deep base
+        ctx.fillStyle = 'rgba(11, 15, 25, 0.85)';
+        ctx.beginPath(); ctx.roundRect(x, y, w, h, radius); ctx.fill(); 
+        
+        // Subtle Gradient Overlay
+        const grad = ctx.createLinearGradient(x, y, x, y + h);
+        grad.addColorStop(0, 'rgba(255,255,255,0.08)'); 
+        grad.addColorStop(1, 'transparent');
+        ctx.fillStyle = grad; ctx.fill(); 
+        
+        // Premium Border
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Accent Glow if provided
+        if (accentColor) {
+            ctx.strokeStyle = accentColor;
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = alpha * 0.5;
+            ctx.beginPath(); ctx.roundRect(x, y, w, h, radius); ctx.stroke();
+        }
+        
+        ctx.restore();
     };
 
     // --- CORE RENDER PIPELINE ---
@@ -119,14 +152,11 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
         } else if (appMode === 'f_scorecard') {
             if (assets.bgImage) {
                 ctx.save(); 
-                // AUTO COLOR GRADING: Contrast + Multiply Blend
-                ctx.filter = 'contrast(1.15) saturate(0.8) brightness(0.95)';
+                ctx.filter = 'contrast(1.2) saturate(0.85) brightness(0.95)';
                 ctx.translate(positions.img1Pos.x, positions.img1Pos.y); ctx.scale(positions.img1Pos.scale, positions.img1Pos.scale); 
                 ctx.drawImage(assets.bgImage, 0, 0); 
                 ctx.restore();
-
-                // Brand Color Multiply Overlay
-                ctx.save(); ctx.globalCompositeOperation = 'multiply'; ctx.globalAlpha = 0.25; ctx.fillStyle = formData.primaryColor; ctx.fillRect(0,0,W,H); ctx.restore();
+                ctx.save(); ctx.globalCompositeOperation = 'multiply'; ctx.globalAlpha = 0.3; ctx.fillStyle = formData.primaryColor; ctx.fillRect(0,0,W,H); ctx.restore();
             } else {
                 const grd = ctx.createLinearGradient(0, 0, 0, splitY); grd.addColorStop(0, '#1e293b'); grd.addColorStop(1, '#0f172a');
                 ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H); drawText("Loading Image 1...", W/2, H/3, 50, "#94a3b8", "center", "bold");
@@ -138,20 +168,20 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
                 ctx.translate(positions.img2Pos.x, positions.img2Pos.y); ctx.scale(positions.img2Pos.scale, positions.img2Pos.scale);
                 ctx.drawImage(assets.bgImage2, 0, 0);
                 ctx.restore();
-                ctx.lineWidth = 10; ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+                ctx.lineWidth = 10; ctx.strokeStyle = 'rgba(255,255,255,0.9)';
                 ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
             }
         } else if (appMode === 'squad') {
-            const topH = H * 0.35;
+            const topH = H * 0.38; // Increased slightly for breathing room
             if (assets.bgImage) {
                 ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, topH); ctx.clip();
-                ctx.filter = 'contrast(1.1) saturate(0.9)';
+                ctx.filter = 'contrast(1.15) saturate(0.9) brightness(0.9)';
                 ctx.translate(positions.img1Pos.x, positions.img1Pos.y); ctx.scale(positions.img1Pos.scale, positions.img1Pos.scale); 
                 ctx.drawImage(assets.bgImage, 0, 0); ctx.restore();
             } else {
                 ctx.fillStyle = '#1e293b'; ctx.fillRect(0, 0, W, topH); drawText("Team Photo Area", W/2, topH/2, 40, "#475569", "center", "bold");
             }
-            const grad = ctx.createLinearGradient(0, topH, 0, H); grad.addColorStop(0, '#111'); grad.addColorStop(1, '#000');
+            const grad = ctx.createLinearGradient(0, topH, 0, H); grad.addColorStop(0, '#0a0a0a'); grad.addColorStop(1, '#000000');
             ctx.fillStyle = grad; ctx.fillRect(0, topH, W, H - topH);
         } else {
             if (assets.bgImage && assets.bgImage2 && appMode !== 'statement') {
@@ -159,8 +189,8 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
                 ctx.save(); ctx.beginPath(); ctx.rect(W/2, 0, W/2, H); ctx.clip(); ctx.translate(positions.img2Pos.x, positions.img2Pos.y); ctx.scale(positions.img2Pos.scale, positions.img2Pos.scale); ctx.drawImage(assets.bgImage2, 0, 0); ctx.restore();
                 ctx.beginPath(); ctx.moveTo(W/2, 0); ctx.lineTo(W/2, H); ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 4; ctx.stroke();
             } else if (assets.bgImage) {
-                ctx.save(); ctx.filter = 'contrast(1.15) saturate(0.85) brightness(0.9)'; ctx.translate(positions.img1Pos.x, positions.img1Pos.y); ctx.scale(positions.img1Pos.scale, positions.img1Pos.scale); ctx.drawImage(assets.bgImage, 0, 0); ctx.restore();
-                ctx.save(); ctx.globalCompositeOperation = 'multiply'; ctx.globalAlpha = 0.2; ctx.fillStyle = formData.primaryColor; ctx.fillRect(0,0,W,H); ctx.restore();
+                ctx.save(); ctx.filter = 'contrast(1.2) saturate(0.85) brightness(0.9)'; ctx.translate(positions.img1Pos.x, positions.img1Pos.y); ctx.scale(positions.img1Pos.scale, positions.img1Pos.scale); ctx.drawImage(assets.bgImage, 0, 0); ctx.restore();
+                ctx.save(); ctx.globalCompositeOperation = 'multiply'; ctx.globalAlpha = 0.25; ctx.fillStyle = formData.primaryColor; ctx.fillRect(0,0,W,H); ctx.restore();
             } else {
                 const grd = ctx.createLinearGradient(0, 0, 0, splitY); grd.addColorStop(0, '#1e293b'); grd.addColorStop(1, '#0f172a');
                 ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H); drawText("Loading Image...", W/2, H/2, 50, "#94a3b8", "center", "bold");
@@ -175,21 +205,21 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
         ctx.globalAlpha = formData.bgOpacity; 
         if (appMode === 'news') { 
             const h = H * formData.newsGradientHeight; const gradient = ctx.createLinearGradient(0, H - h, 0, H);
-            gradient.addColorStop(0, formData.primaryColor); gradient.addColorStop(1, formData.secondaryColor);
+            gradient.addColorStop(0, 'transparent'); gradient.addColorStop(0.3, formData.primaryColor); gradient.addColorStop(1, formData.secondaryColor);
             ctx.fillStyle = gradient; ctx.fillRect(0, H - h, W, h); 
         } else if (appMode === 'multi_result' || appMode === 'multi_schedule') {
             const gradient = ctx.createLinearGradient(0, 0, 0, H);
             gradient.addColorStop(0, formData.primaryColor); gradient.addColorStop(1, formData.secondaryColor);
             ctx.fillStyle = gradient; ctx.fillRect(0, 0, W, H);
         } else if (['scorecard', 'schedule', 'player', 'career', 'poll', 'milestone'].includes(appMode)) { 
-            const gradient = ctx.createLinearGradient(0, splitY, 0, H);
-            gradient.addColorStop(0, formData.primaryColor); gradient.addColorStop(1, formData.secondaryColor);
-            ctx.fillStyle = gradient; ctx.fillRect(0, splitY, W, H - splitY); 
+            const gradient = ctx.createLinearGradient(0, splitY - 100, 0, H);
+            gradient.addColorStop(0, 'transparent'); gradient.addColorStop(0.2, formData.primaryColor); gradient.addColorStop(1, formData.secondaryColor);
+            ctx.fillStyle = gradient; ctx.fillRect(0, splitY - 100, W, H - splitY + 100); 
         }
         
         if (['scorecard', 'schedule', 'player'].includes(appMode)) { 
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.4)'; drawRoundedRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH, 20);
-            ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 2; ctx.strokeRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'; drawRoundedRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH, 20);
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 2; ctx.strokeRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH);
             drawResponsiveText(formData.title, W / 2, titleBoxY + 60, titleBoxW - 40, 50, '#fff', 'center', 'bold');
         }
         ctx.restore(); 
@@ -197,29 +227,37 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
         // 3. Module Rendering
         if (appMode === 'f_scorecard') {
             const darkGradient = ctx.createLinearGradient(0, 500, 0, H);
-            darkGradient.addColorStop(0, 'transparent'); darkGradient.addColorStop(1, 'rgba(0,0,0,0.8)');
+            darkGradient.addColorStop(0, 'transparent'); darkGradient.addColorStop(1, 'rgba(0,0,0,0.9)');
             ctx.fillStyle = darkGradient; ctx.fillRect(0, 500, W, H - 500);
 
             const panelY = 740; const panelH = H - panelY - footerH;
             ctx.fillStyle = '#0f172a'; ctx.beginPath(); 
             if(ctx.roundRect) ctx.roundRect(40, panelY, W - 80, panelH, 24); else ctx.fillRect(40, panelY, W - 80, panelH); ctx.fill();
 
-            ctx.fillStyle = formData.primaryColor; ctx.beginPath(); 
-            if(ctx.roundRect) ctx.roundRect(40, panelY, W - 80, 10, [24, 24, 0, 0]); else ctx.fillRect(40, panelY, W - 80, 10); ctx.fill();
+            // Upgraded Top Border Gradient
+            const tGrad = ctx.createLinearGradient(40, 0, W-80, 0);
+            tGrad.addColorStop(0, formData.team1Color); tGrad.addColorStop(1, formData.team2Color);
+            ctx.fillStyle = tGrad; ctx.beginPath(); 
+            if(ctx.roundRect) ctx.roundRect(40, panelY, W - 80, 12, [24, 24, 0, 0]); else ctx.fillRect(40, panelY, W - 80, 12); ctx.fill();
 
             drawResponsiveText(formData.fTourneyTitle, W/2, panelY + 65, W - 160, 48, '#ffffff', 'center', '900');
-            ctx.beginPath(); ctx.moveTo(80, panelY + 100); ctx.lineTo(W - 80, panelY + 100); ctx.strokeStyle = formData.primaryColor; ctx.lineWidth = 4; ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(80, panelY + 100); ctx.lineTo(W - 80, panelY + 100); ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 2; ctx.stroke();
 
             const scoreBoxY = panelY + 140; const scoreBoxH = 140;
-            ctx.fillStyle = '#1e293b'; ctx.beginPath();
+            const scoreGrad = ctx.createLinearGradient(0, scoreBoxY, 0, scoreBoxY + scoreBoxH);
+            scoreGrad.addColorStop(0, '#1e293b'); scoreGrad.addColorStop(1, '#0f172a');
+            ctx.fillStyle = scoreGrad; ctx.beginPath();
             ctx.moveTo(W/2 - 140, scoreBoxY); ctx.lineTo(W/2 + 100, scoreBoxY); ctx.lineTo(W/2 + 140, scoreBoxY + scoreBoxH); ctx.lineTo(W/2 - 100, scoreBoxY + scoreBoxH);
             ctx.closePath(); ctx.fill();
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 2; ctx.stroke();
+            
             drawText(formData.team1Score + " - " + formData.team2Score, W/2, scoreBoxY + 100, 100, '#ffffff', 'center', '900');
 
             const nameY = scoreBoxY + 85; 
             drawResponsiveText(formData.team1, W/2 - 280, nameY, 280, 60, formData.team1Color, 'center', '900');
             drawResponsiveText(formData.team2, W/2 + 280, nameY, 280, 60, formData.team2Color, 'center', '900');
-            drawResponsiveText(formData.fMatchStatus, W/2, panelY + 340, 300, 32, '#cbd5e1', 'center', 'bold');
+
+            drawResponsiveText(formData.fMatchStatus, W/2, panelY + 340, 300, 32, '#94a3b8', 'center', 'bold');
         }
         else if (appMode === 't_fixture') {
             const topY = 100; const titleLines = formData.fixtureTitle.split('\n'); let currentY = topY;
@@ -262,10 +300,18 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
             drawRoundedRect(W/2 - 320, footY2, 640, 60, 30); ctx.stroke();
             drawText("🛡️ " + formData.fixtureOrganizerFooter, W/2, footY2 + 40, 26, '#cbd5e1', 'center', 'bold');
         } else if (appMode === 'squad') {
-            const topH = H * 0.35; const titleBarH = 140; 
-            const tGrad = ctx.createLinearGradient(0, topH, W, topH); tGrad.addColorStop(0, formData.primaryColor); tGrad.addColorStop(1, '#ef4444'); ctx.fillStyle = tGrad; 
-            ctx.beginPath(); ctx.roundRect(40, topH - 20, W - 80, titleBarH, 20); ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke();
-            drawSmartText(formData.squadTitle, W/2, topH + titleBarH/2 - 20, W-120, titleBarH - 20, 55, 12, '#fff', 'center', 'bold');
+            const topH = H * 0.38; 
+            const titleBarH = 150; 
+            
+            const tGrad = ctx.createLinearGradient(0, topH - 30, W, topH - 30); 
+            tGrad.addColorStop(0, formData.primaryColor); tGrad.addColorStop(1, formData.secondaryColor); 
+            ctx.fillStyle = tGrad; 
+            
+            ctx.beginPath(); ctx.roundRect(40, topH - 30, W - 80, titleBarH, 20); ctx.fill(); 
+            ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 3; ctx.stroke();
+            
+            // FIX: Pushed title down and gave it more vertical space
+            drawSmartText(formData.squadTitle, W/2, topH + titleBarH/2 - 30, W-120, titleBarH - 30, 50, 18, '#fff', 'center', 'bold');
 
             const gridY = topH + titleBarH + 20; const gridH = H - footerH - gridY - 20; const gridW = W - 60; const gridX = 30;
             const players = formData.squadList.split('\n').filter(line => line.trim() !== ''); const colCount = 2; const rowCount = Math.ceil(players.length / colCount);
@@ -274,7 +320,7 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
             players.forEach((player, i) => {
                 const col = i % colCount; const row = Math.floor(i / colCount); const itemX = gridX + (col * colW); const itemY = gridY + (row * rowH);
                 const bx = itemX + 30; const by = itemY + rowH/2;
-                ctx.beginPath(); ctx.moveTo(bx, by-8); ctx.lineTo(bx+12, by); ctx.lineTo(bx, by+8); ctx.closePath(); ctx.fillStyle = '#4ade80'; ctx.fill();
+                ctx.beginPath(); ctx.moveTo(bx, by-8); ctx.lineTo(bx+12, by); ctx.lineTo(bx, by+8); ctx.closePath(); ctx.fillStyle = formData.primaryColor; ctx.fill();
 
                 let pText = player.trim(); let isSpecial = false; const specialTags = ['(c)', '(C)', '(wk)', '(WK)', '(অধিনায়ক)', '(উইকেটকিপার)', '(captain)'];
                 specialTags.forEach(tag => { if (pText.includes(tag)) isSpecial = true; });
@@ -288,23 +334,24 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
             ctx.beginPath(); ctx.moveTo(W/2-250, py+40); ctx.lineTo(W/2+250, py+40); ctx.strokeStyle='rgba(255,255,255,0.2)'; ctx.lineWidth=2; ctx.stroke();
 
             const boxW = 440; const boxH = 140; const leftX = W/4 - boxW/2; const rightX = (3*W/4) - boxW/2; const topY = py + 80;
-            ctx.fillStyle = 'rgba(15, 23, 42, 0.85)'; drawRoundedRect(leftX, topY, boxW, boxH, 20); ctx.strokeStyle = formData.team2Color; ctx.lineWidth = 3; ctx.stroke();
+            drawPremiumGlassBox(leftX, topY, boxW, boxH, 20, 1, formData.team2Color);
             drawFBIcon(leftX + 80, topY + 70, 75); drawText("লাইক (LIKE)", leftX + boxW/2 + 20, topY + 60, 26, formData.team2Color, 'center', 'bold');
             drawResponsiveText(formData.pollPlayer1, leftX + boxW/2 + 20, topY + 105, 300, 40, '#fff', 'center', 'bold');
 
-            ctx.beginPath(); ctx.fillStyle = 'rgba(15, 23, 42, 0.85)'; drawRoundedRect(rightX, topY, boxW, boxH, 20); ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 3; ctx.stroke();
+            drawPremiumGlassBox(rightX, topY, boxW, boxH, 20, 1, formData.team1Color);
             ctx.save(); ctx.translate(rightX + 80, topY + 70); ctx.beginPath(); ctx.arc(0, 0, 75 / 2, 0, Math.PI * 2); ctx.fillStyle = formData.team1Color; ctx.fill(); ctx.fillStyle = '#ffffff'; const scale = 75 / 40; ctx.scale(scale, scale); ctx.translate(-12, -12); ctx.fill(new Path2D('M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z')); ctx.restore();
             drawText("লাভ (LOVE)", rightX + boxW/2 + 20, topY + 60, 26, formData.team1Color, 'center', 'bold'); drawResponsiveText(formData.pollPlayer2, rightX + boxW/2 + 20, topY + 105, 300, 40, '#fff', 'center', 'bold');
 
             ctx.beginPath(); ctx.arc(W/2, topY + boxH/2, 40, 0, Math.PI*2); ctx.fillStyle = '#0f172a'; ctx.fill(); ctx.lineWidth = 4; ctx.strokeStyle = '#fff'; ctx.stroke(); drawText("VS", W/2, topY + boxH/2 + 12, 32, '#fff', 'center', '900');
         } else if (appMode === 'milestone') {
-            const py = splitY + 40; ctx.fillStyle = 'rgba(15, 23, 42, 0.85)'; drawRoundedRect(100, py, W - 200, 240, 24); ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 4; ctx.stroke();
+            const py = splitY + 40; 
+            drawPremiumGlassBox(100, py, W - 200, 240, 24, 1, formData.team1Color);
             drawResponsiveText(formData.milestoneOccasion, W/2, py + 55, W-250, 35, formData.team1Color, 'center', 'bold'); drawResponsiveText(formData.milestoneNumber, W/2, py + 140, W-250, 90, '#fff', 'center', 'bold'); drawResponsiveText(formData.milestoneName, W/2, py + 210, W-250, 50, '#fff', 'center', 'bold'); ctx.fillStyle = '#ddd'; drawText(formData.milestoneMessage, W/2, py + 300, 28, '#cbd5e1', 'center', 'normal');
         } else if (appMode === 'scorecard') {
             drawResponsiveText(formData.team1, leftCenter, scoresY, 400, 65, formData.team1Color, 'center', 'bold');
             const t1w = measureText(formData.team1Score, 60, 'bold'), t1o = measureText(formData.team1Overs, 35, 'normal'); const t1x = leftCenter - ((t1w + 15 + t1o) / 2);
             ctx.textAlign = 'left'; ctx.font = `bold 60px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#fff'; ctx.fillText(formData.team1Score, t1x, scoresY + 80); ctx.font = `normal 35px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#cbd5e1'; ctx.fillText(formData.team1Overs, t1x + t1w + 15, scoresY + 80);
-            ctx.beginPath(); ctx.moveTo(W/2, scoresY-20); ctx.lineTo(W/2, scoresY+100); ctx.lineWidth=4; ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(W/2, scoresY-20); ctx.lineTo(W/2, scoresY+100); ctx.lineWidth=4; ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.stroke();
             
             drawResponsiveText(formData.team2, rightCenter, scoresY, 400, 65, formData.team2Color, 'center', 'bold');
             const t2w = measureText(formData.team2Score, 60, 'bold'), t2o = measureText(formData.team2Overs, 35, 'normal'); const t2x = rightCenter - ((t2w + 15 + t2o) / 2);
@@ -312,18 +359,27 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
             drawResponsiveText(formData.result, W / 2, scoresY + 180, 900, 45, formData.resultColor, 'center', 'bold');
         } else if (appMode === 'schedule') {
             drawResponsiveText(formData.team1, leftCenter - 20, scoresY + 40, 380, 80, formData.team1Color, 'center', 'bold'); ctx.beginPath(); ctx.arc(W/2, scoresY+30, 50, 0, Math.PI*2); ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#fff'; ctx.stroke(); drawText("VS", W/2, scoresY+45, 40, '#fff', 'center', 'bold'); drawResponsiveText(formData.team2, rightCenter + 20, scoresY + 40, 380, 80, formData.team2Color, 'center', 'bold');
-            const dy = scoresY + 130; ctx.fillStyle = 'rgba(0,0,0,0.3)'; drawRoundedRect((W-700)/2, dy, 700, 100, 20); drawResponsiveText(formData.matchDate, W/2, dy+45, 650, 40, '#fff', 'center', 'bold'); drawResponsiveText(`${formData.matchTime} | ${formData.matchVenue}`, W/2, dy+85, 650, 30, '#cbd5e1', 'center', 'normal');
+            const dy = scoresY + 130; drawPremiumGlassBox((W-700)/2, dy, 700, 100, 20, 1); drawResponsiveText(formData.matchDate, W/2, dy+45, 650, 40, '#fff', 'center', 'bold'); drawResponsiveText(`${formData.matchTime} | ${formData.matchVenue}`, W/2, dy+85, 650, 30, '#cbd5e1', 'center', 'normal');
         } else if (appMode === 'player') {
-            const py = scoresY - 20; drawResponsiveText(formData.playerStatMain, W/2, py + 40, 800, 130, formData.team1Color, 'center', 'bold'); drawResponsiveText(formData.playerStatSub, W/2, py + 90, 800, 40, '#cbd5e1', 'center', 'normal'); ctx.beginPath(); ctx.moveTo(W/2-150, py+120); ctx.lineTo(W/2+150, py+120); ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=2; ctx.stroke(); drawResponsiveText(formData.playerName, W/2, py + 180, 800, 60, '#fff', 'center', 'bold');
+            const py = scoresY - 20; drawResponsiveText(formData.playerStatMain, W/2, py + 40, 800, 130, formData.team1Color, 'center', 'bold'); drawResponsiveText(formData.playerStatSub, W/2, py + 90, 800, 40, '#cbd5e1', 'center', 'normal'); ctx.beginPath(); ctx.moveTo(W/2-150, py+120); ctx.lineTo(W/2+150, py+120); ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.lineWidth=2; ctx.stroke(); drawResponsiveText(formData.playerName, W/2, py + 180, 800, 60, '#fff', 'center', 'bold');
         } else if (appMode === 'career') {
-            const py = splitY + 40; drawResponsiveText(formData.playerName, W/2, py, 800, 60, '#fff', 'center', 'bold'); drawText(formData.playerRole, W/2, py + 35, 25, formData.team1Color, 'center', 'bold'); ctx.beginPath(); ctx.moveTo(W/2-250, py+55); ctx.lineTo(W/2+250, py+55); ctx.strokeStyle='rgba(255,255,255,0.2)'; ctx.lineWidth=2; ctx.stroke();
-            const boxW = 400; const boxH = 90; const gap = 15; const leftX = W/2 - boxW - gap/2; const rightX = W/2 + gap/2; const topY = py + 75; const midY = topY + boxH + gap; const botY = midY + boxH + gap;
-            const drawStatBox = (label, val, x, y) => { ctx.fillStyle = 'rgba(15, 23, 42, 0.85)'; ctx.beginPath(); drawRoundedRect(x, y, boxW, boxH, 15); ctx.strokeStyle = formData.team1Color; ctx.stroke(); drawText(label, x + boxW/2, y + 35, 20, formData.team1Color, 'center', 'bold'); drawResponsiveText(val, x + boxW/2, y + 75, 380, 45, '#fff', 'center', 'bold'); };
+            const py = splitY + 40; 
+            // FIX: SmartText for Player Name so it wraps if it's too long
+            drawSmartText(formData.playerName, W/2, py, 800, 70, 60, 35, '#fff', 'center', 'bold'); 
+            
+            drawText(formData.playerRole, W/2, py + 45, 22, formData.team1Color, 'center', 'bold'); 
+            ctx.beginPath(); ctx.moveTo(W/2-250, py+65); ctx.lineTo(W/2+250, py+65); ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.lineWidth=2; ctx.stroke();
+            
+            const boxW = 400; const boxH = 90; const gap = 15; const leftX = W/2 - boxW - gap/2; const rightX = W/2 + gap/2; const topY = py + 85; const midY = topY + boxH + gap; const botY = midY + boxH + gap;
+            const drawStatBox = (label, val, x, y) => { 
+                drawPremiumGlassBox(x, y, boxW, boxH, 15, 1, formData.team1Color);
+                drawText(label, x + boxW/2, y + 35, 20, formData.team1Color, 'center', 'bold'); drawResponsiveText(val, x + boxW/2, y + 75, 380, 45, '#fff', 'center', 'bold'); 
+            };
             drawStatBox("ম্যাচ (MATCHES)", formData.careerMatches, leftX, topY); drawStatBox("রান (RUNS)", formData.careerRuns, rightX, topY); drawStatBox("সেঞ্চুরি (100s)", formData.careerHundreds, leftX, midY); drawStatBox("ফিফটি (50s)", formData.careerFifties, rightX, midY); drawStatBox("সর্বোচ্চ (BEST SCORE)", formData.careerBest, leftX, botY); drawStatBox("উইকেট (WICKETS)", formData.careerWickets, rightX, botY);
         } else if (appMode === 'news') {
             const h = H * formData.newsGradientHeight; const nsy = H - h; const csy = nsy + 60; const nw = 880;
             ctx.fillStyle = formData.primaryColor; drawRoundedRect(W/2 - 150, csy - 90, 300, 55, 10); drawText("ব্রেকিং নিউজ", W/2, csy - 48, 36, '#fff', 'center', 'bold');
-            ctx.font = "140px serif"; ctx.fillStyle = "rgba(255,255,255,0.1)"; ctx.textAlign = "center"; ctx.fillText("❝", W/2, csy + 30);
+            ctx.font = "140px serif"; ctx.fillStyle = "rgba(255,255,255,0.05)"; ctx.textAlign = "center"; ctx.fillText("❝", W/2, csy + 30);
             const authorZoneH = 120; const safeBottomY = footerY - authorZoneH; const textStartY = csy + 110; const newsBoxH = Math.max(100, safeBottomY - textStartY); 
             drawSmartText(formData.quoteText, W/2, textStartY + (newsBoxH/2), nw, newsBoxH, 55, 20, '#fff', 'center', 'bold');
             const ay = footerY - 90; ctx.beginPath(); ctx.moveTo(W/2 - 120, ay); ctx.lineTo(W/2 + 120, ay); ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 5; ctx.stroke(); drawResponsiveText(formData.quoteAuthor, W/2, ay + 60, 900, 38, '#cbd5e1', 'center', 'bold');
@@ -342,13 +398,13 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
             const linesBoxH = totalAvailableH * 0.55; const gap = linesBoxH / 3;
             drawSmartText(formData.discLine1, W/2, divY + 40 + (gap*0.5), 950, gap-20, 80, 24, formData.team1Color, 'center', 'bold'); drawSmartText(formData.discLine2, W/2, divY + 40 + (gap*1.5), 950, gap-20, 80, 24, '#fff', 'center', 'bold'); drawSmartText(formData.discLine3, W/2, divY + 40 + (gap*2.5), 950, gap-20, 80, 24, formData.team2Color, 'center', 'bold');
         } else if (appMode === 'multi_result') {
-            const py = 120; ctx.fillStyle = 'rgba(15, 23, 42, 0.85)'; if(ctx.roundRect) { ctx.beginPath(); ctx.roundRect(W/2 - 350, py, 700, 80, 40); ctx.fill(); ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 2; ctx.stroke(); } else { ctx.fillRect(W/2 - 350, py, 700, 80); }
+            const py = 120; drawPremiumGlassBox(W/2 - 350, py, 700, 80, 40, 1, formData.team1Color);
             drawResponsiveText(formData.multiResultTitle, W/2, py + 55, 600, 45, '#fff', 'center', '900');
             const sy = py + 140; const totalH = H - footerH - sy - 40; const numItems = formData.resultsList.length || 1; const spacing = totalH / numItems; const boxH = Math.min(150, spacing * 0.85); 
             const fsTeam = Math.min(42, boxH * 0.28); const fsScore = Math.min(55, boxH * 0.4); const fsTourney = Math.min(22, boxH * 0.16);
             formData.resultsList.forEach((res, index) => {
                 const y = sy + (index * spacing); const cardW = 880; const cardX = W/2 - cardW/2;
-                ctx.fillStyle = 'rgba(15, 23, 42, 0.9)'; if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(cardX, y, cardW, boxH, 20); ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 2; ctx.stroke(); } else { ctx.fillRect(cardX, y, cardW, boxH); }
+                drawPremiumGlassBox(cardX, y, cardW, boxH, 20, 1);
                 ctx.fillStyle = formData.team1Color; if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(cardX, y, 12, boxH, [20, 0, 0, 20]); ctx.fill(); } else { ctx.fillRect(cardX, y, 12, boxH); }
                 ctx.fillStyle = formData.team2Color; if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(cardX + cardW - 12, y, 12, boxH, [0, 20, 20, 0]); ctx.fill(); } else { ctx.fillRect(cardX + cardW - 12, y, 12, boxH); }
                 const scorePillW = 220; ctx.fillStyle = formData.primaryColor; if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(W/2 - scorePillW/2, y + 15, scorePillW, boxH - 30, 15); ctx.fill(); } else { ctx.fillRect(W/2 - scorePillW/2, y + 15, scorePillW, boxH - 30); }
@@ -357,13 +413,13 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
                 ctx.fillStyle = '#ffffff'; ctx.font = `bold ${fsTourney}px "Hind Siliguri", sans-serif`; const tw = ctx.measureText(res.tourney).width + 60; if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(W/2 - tw/2, y - 14, tw, 28, 14); ctx.fill(); } else { ctx.fillRect(W/2 - tw/2, y - 14, tw, 28); } drawResponsiveText(res.tourney, W/2, y + 6, tw - 20, fsTourney, '#000', 'center', 'bold');
             });
         } else if (appMode === 'multi_schedule') {
-            const py = 120; ctx.fillStyle = 'rgba(15, 23, 42, 0.85)'; if(ctx.roundRect) { ctx.beginPath(); ctx.roundRect(W/2 - 250, py, 500, 60, 30); ctx.fill(); } else { ctx.fillRect(W/2 - 250, py, 500, 60); }
+            const py = 120; drawPremiumGlassBox(W/2 - 250, py, 500, 60, 30, 1);
             drawResponsiveText(formData.multiScheduleDate, W/2, py + 42, 450, 35, formData.team1Color, 'center', 'bold'); drawResponsiveText(formData.multiScheduleTitle, W/2, py + 140, 900, 70, '#fff', 'center', 'bold'); ctx.beginPath(); ctx.moveTo(60, py + 180); ctx.lineTo(W - 60, py + 180); ctx.strokeStyle = formData.team1Color; ctx.lineWidth=4; ctx.stroke();
             const sy = py + 220; const totalH = H - footerH - sy - 30; const numItems = formData.scheduleList.length || 1; const rows = Math.ceil(numItems / 2); const spacing = totalH / rows; const boxH = Math.min(180, spacing * 0.85); const colW = 460;
             const fsSport = Math.min(24, boxH * 0.13); const fsTourney = Math.min(26, boxH * 0.14); const fsMatch = Math.min(38, boxH * 0.21); const fsTime = Math.min(28, boxH * 0.15);
             formData.scheduleList.forEach((sch, index) => {
                 const col = index % 2; const row = Math.floor(index / 2); const cx = col === 0 ? W/2 - colW - 20 : W/2 + 20; const y = sy + (row * spacing);
-                ctx.fillStyle = 'rgba(15, 23, 42, 0.85)'; if(ctx.roundRect) { ctx.beginPath(); ctx.roundRect(cx, y, colW, boxH, 20); ctx.fill(); } else { ctx.fillRect(cx, y, colW, boxH); }
+                drawPremiumGlassBox(cx, y, colW, boxH, 20, 1);
                 ctx.fillStyle = formData.team1Color; if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(cx, y, 12, boxH, [20, 0, 0, 20]); ctx.fill(); } else { ctx.fillRect(cx, y, 12, boxH); }
                 ctx.fillStyle = 'rgba(255,255,255,0.1)'; if(ctx.roundRect) { ctx.beginPath(); ctx.roundRect(cx + 30, y + (boxH*0.1), 120, boxH*0.18, 8); ctx.fill(); } else { ctx.fillRect(cx + 30, y + (boxH*0.1), 120, boxH*0.18); }
                 drawResponsiveText(sch.sport, cx + 90, y + (boxH*0.23), 100, fsSport, formData.team1Color, 'center', 'bold'); ctx.textAlign = 'right'; drawResponsiveText(sch.tourney, cx + colW - 25, y + (boxH*0.23), 280, fsTourney, '#cbd5e1', 'right', 'normal'); drawResponsiveText(sch.match, cx + colW/2, y + (boxH*0.6), colW - 60, fsMatch, '#fff', 'center', 'bold'); drawText("🕒 " + sch.time, cx + colW/2, y + (boxH*0.85), fsTime, formData.team1Color, 'center', 'bold');
@@ -377,7 +433,7 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
         }
 
         ctx.save(); ctx.font = 'bold 30px "Hind Siliguri", sans-serif'; const fwText = ctx.measureText(formData.badgeText).width; const pillW = fwText + 90; const pillX = W - pillW - 40; const pillY = 40;
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)'; drawRoundedRect(pillX, pillY, pillW, 60, 30); ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 2; ctx.stroke();
+        drawPremiumGlassBox(pillX, pillY, pillW, 60, 30, 1);
         drawFBIcon(pillX + 30, pillY + 30, 40); drawText(formData.badgeText, pillX + 65, pillY + 41, 30, '#fff', 'left', 'bold'); ctx.restore();
 
         if (!isExport) {
