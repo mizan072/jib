@@ -34,16 +34,9 @@ const IconGrid = ({className}) => <svg className={className || "w-6 h-6"} xmlns=
 const IconUsers = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
 const IconLayout = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>;
 const IconFootball = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="12 6 15.5 8.5 14.5 13.5 9.5 13.5 8.5 8.5 12 6"></polygon><line x1="12" y1="6" x2="12" y2="2"></line><line x1="15.5" y1="8.5" x2="20.5" y2="7"></line><line x1="14.5" y1="13.5" x2="18.5" y2="18"></line><line x1="9.5" y1="13.5" x2="5.5" y2="18"></line><line x1="8.5" y1="8.5" x2="3.5" y2="7"></line></svg>;
-const IconVideo = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>;
 
 // --- TOOL CATEGORIES ---
 const TOOL_CATEGORIES = [
-    {
-        name: "Video & Motion",
-        tools: [
-            { id: 'viral_video', name: 'Viral Shorts Pro', desc: 'Animated sports videos', icon: IconVideo, color: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/20' }
-        ]
-    },
     {
         name: "Pre-Match & Fixtures",
         tools: [
@@ -81,103 +74,6 @@ const TOOL_CATEGORIES = [
 ];
 
 const TOOLS = TOOL_CATEGORIES.flatMap(cat => cat.tools);
-
-// --- CANVAS RENDERING HELPERS ---
-const measureText = (ctx, text, fs, fw) => { ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`; return ctx.measureText(text).width; };
-
-const drawText = (ctx, text, x, y, fs, color, align, fw) => { 
-    ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`; 
-    ctx.fillStyle = color; 
-    ctx.textAlign = align; 
-    if(color === '#fff' || color === '#ffffff') {
-        ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 6;
-    }
-    ctx.fillText(text, x, y); 
-    ctx.shadowBlur = 0;
-};
-
-const wrapText = (ctx, text, maxWidth) => {
-    if (!text) return [];
-    const words = text.toString().split(' ');
-    let lines = [];
-    let currentLine = words[0] || '';
-    for (let i = 1; i < words.length; i++) {
-        const word = words[i];
-        const width = ctx.measureText(currentLine + " " + word).width;
-        if (width < maxWidth) {
-            currentLine += " " + word;
-        } else {
-            lines.push(currentLine);
-            currentLine = word;
-        }
-    }
-    if (currentLine) lines.push(currentLine);
-    return lines;
-};
-
-const drawResponsiveText = (ctx, text, x, y, maxW, defaultFs, color, align, fw) => {
-    let fs = defaultFs;
-    ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`;
-    while (ctx.measureText(text).width > maxW && fs > 14) {
-        fs -= 1;
-        ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`;
-    }
-    ctx.fillStyle = color;
-    ctx.textAlign = align;
-    if(color === '#fff' || color === '#ffffff') {
-        ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 6;
-    }
-    ctx.fillText(text, x, y);
-    ctx.shadowBlur = 0;
-};
-
-const drawSmartText = (ctx, text, x, y, boxW, boxH, maxFs, minFs, color, align, fw, lhRatio = 1.3) => {
-    let fs = maxFs;
-    let lines = [];
-    let textHeight = 0;
-
-    while (fs >= minFs) {
-        ctx.font = `${fw} ${fs}px "Hind Siliguri", sans-serif`;
-        lines = wrapText(ctx, text, boxW);
-        textHeight = lines.length * (fs * lhRatio);
-        
-        if (textHeight <= boxH) break;
-        fs -= 2;
-    }
-
-    let currentY = y - (textHeight / 2) + (fs * lhRatio * 0.7) / 2;
-    if(align === 'top') currentY = y + fs;
-
-    ctx.fillStyle = color;
-    ctx.textAlign = align === 'top' ? 'center' : align;
-    if(color === '#fff' || color === '#ffffff') {
-        ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 6;
-    }
-
-    lines.forEach(line => {
-        ctx.fillText(line, x, currentY);
-        currentY += (fs * lhRatio);
-    });
-    ctx.shadowBlur = 0;
-};
-
-const drawFBIcon = (ctx, cx, cy, size) => {
-    ctx.save(); ctx.translate(cx, cy); ctx.beginPath(); ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
-    ctx.fillStyle = '#1877F2'; ctx.fill(); ctx.fillStyle = '#ffffff';
-    const scale = size / 40; ctx.scale(scale, scale); ctx.translate(-12, -12);
-    ctx.fill(new Path2D('M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z')); 
-    ctx.restore();
-};
-
-const drawRoundedRect = (ctx, x, y, width, height, radius) => {
-    if (ctx.roundRect) {
-        let r = radius;
-        if (Array.isArray(radius)) r = radius;
-        ctx.beginPath(); ctx.roundRect(x, y, width, height, r); ctx.fill();
-    } else {
-        ctx.fillRect(x, y, width, height); 
-    }
-};
 
 function App() {
     const canvasRef = useRef(null);
@@ -253,7 +149,7 @@ function App() {
             { id: 1, date: '২০ মার্চ', t1: 'আদমপুর', t1Sub: '১নং ওয়ার্ড', t2: 'মণিরামপুর', t2Sub: '১নং ওয়ার্ড' },
             { id: 2, date: '২১ মার্চ', t1: 'ফতেপুর', t1Sub: 'মমিন ট্রের্ডাস', t2: 'বাউবাডিয়া', t2Sub: 'একাদশ' },
             { id: 3, date: '২২ মার্চ', t1: 'শোলমারী', t1Sub: 'কাউন্সিল বয়েজ', t2: 'চেংগারা', t2Sub: 'একাদশ, গাংনী' },
-            { id: 4, date: '২৩ মার্চ', t1: 'বারাদি', t1Sub: '৩নং ওয়ার্ড', t2: 'গৌরিনাথপুর', t2Sub: 'একাদশ, মেহেরপুর' },
+            { id: 4, date: '২৩ মার্চ', t1: 'বারাদি', t1Sub: '৩নং ওয়ার্ড', t2: ' গৌরিনাথপুর', t2Sub: 'একাদশ, মেহেরপুর' },
             { id: 5, date: '২৪ মার্চ', t1: 'শিবপুর', t1Sub: 'সমাজকল্যাণ ক্লাব', t2: 'শুভরাজপুর', t2Sub: 'বর্ডার বয়েজ' },
             { id: 6, date: '২৫ মার্চ', t1: 'গোপালনগর', t1Sub: 'ইয়ং বয়েজ', t2: 'রামনগর', t2Sub: 'একাদশ' },
             { id: 7, date: '২৬ মার্চ', t1: 'বিশ্বনাথপুর', t1Sub: 'একাদশ', t2: 'ভবানীপুর', t2Sub: 'একাদশ' },
@@ -302,31 +198,6 @@ function App() {
         setIsCheckingPoints(false);
     };
 
-    // --- DYNAMIC VIDEO POINT DEDUCTION ---
-    const handleVideoDeduction = async (cost) => {
-        if(GOOGLE_SCRIPT_URL.includes("xxxxxxxx")) { 
-            setPoints(prev => prev - cost); 
-            return true; 
-        }
-        try {
-            const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=deduct&userId=${userId}&amount=${cost}`);
-            if (!response.ok) throw new Error("Server error");
-            const data = await response.json();
-            if (data.status === 'success') { 
-                setPoints(data.points); 
-                return true; 
-            } else { 
-                showToast("Insufficient points to render video!"); 
-                setShowBuyModal(true);
-                return false;
-            }
-        } catch (error) { 
-            console.error("Deduction Error:", error); 
-            showToast("Network Error."); 
-            return false; 
-        }
-    };
-
     const dismissNotification = () => {
         if (appNotification) {
             const msgId = appNotification.title + appNotification.message;
@@ -357,7 +228,6 @@ function App() {
     const addSchedule = () => { setFormData(p => ({ ...p, scheduleList: [...p.scheduleList, { id: Date.now(), sport: 'খেলা', tourney: 'টুর্নামেন্ট', match: 'দল বনাম দল', time: 'সময়' }] })); };
     const removeSchedule = (id) => { setFormData(p => ({ ...p, scheduleList: p.scheduleList.filter(item => item.id !== id) })); };
 
-    // Fixture List Handlers
     const handleMatchupChange = (id, field, value) => { setFormData(p => ({ ...p, matchupList: p.matchupList.map(item => item.id === id ? { ...item, [field]: value } : item) })); };
     const addMatchup = () => { setFormData(p => ({ ...p, matchupList: [...p.matchupList, { id: Date.now(), date: 'তারিখ', t1: 'দল ১', t1Sub: 'স্থান', t2: 'দল ২', t2Sub: 'স্থান' }] })); };
     const removeMatchup = (id) => { setFormData(p => ({ ...p, matchupList: p.matchupList.filter(item => item.id !== id) })); };
@@ -370,673 +240,23 @@ function App() {
         }
     };
 
-    // --- CANVAS RENDER CORE ---
-    const drawCanvas = (isExport) => {
-        const canvas = canvasRef.current; if (!canvas) return;
+    // --- CANVAS ROUTER (Connects to renderer.js) ---
+    const drawCanvas = (isExport = false) => {
+        const canvas = canvasRef.current; 
+        if (!canvas) return;
         const ctx = canvas.getContext('2d');
-        const W = 1080, H = 1200, splitY = 700;
+        const W = 1080, H = 1200;
         canvas.width = W; canvas.height = H;
 
-        // Default Dark BG
-        ctx.fillStyle = '#0f172a'; 
-        ctx.fillRect(0, 0, W, H);
-
-        try {
-            // 1. Draw Background Images
-            if (appMode === 'discussion') {
-                const grad = ctx.createLinearGradient(0, 0, 0, H);
-                grad.addColorStop(0, '#020617');
-                grad.addColorStop(1, formData.primaryColor);
-                ctx.fillStyle = grad;
-                ctx.globalAlpha = formData.bgOpacity;
-                ctx.fillRect(0, 0, W, H);
-                ctx.globalAlpha = 1.0;
-                
-                // Subtle Watermark
-                ctx.font = "bold 600px serif";
-                ctx.fillStyle = "rgba(255,255,255,0.03)";
-                ctx.textAlign = "center";
-                ctx.fillText("❝", W/2, H/2 + 100);
-
-            } else if (appMode === 't_fixture') {
-                // Fixture Deep Blue Background with subtle image overlay
-                const grad = ctx.createLinearGradient(0, 0, 0, H);
-                grad.addColorStop(0, '#1e3a8a'); // Deep dark blue
-                grad.addColorStop(1, '#020617'); // Almost black
-                ctx.fillStyle = grad;
-                ctx.fillRect(0, 0, W, H);
-
-                if (bgImage) {
-                    ctx.save(); 
-                    ctx.globalAlpha = formData.bgOpacity * 0.4; // Keep it subtle
-                    ctx.translate(img1Pos.x, img1Pos.y); 
-                    ctx.scale(img1Pos.scale, img1Pos.scale); 
-                    ctx.drawImage(bgImage, 0, 0); 
-                    ctx.restore();
-                }
-
-            } else if (appMode === 'f_scorecard') {
-                // Football PRO Backgrounds
-                if (bgImage) {
-                    ctx.save(); ctx.translate(img1Pos.x, img1Pos.y); ctx.scale(img1Pos.scale, img1Pos.scale); ctx.drawImage(bgImage, 0, 0); ctx.restore();
-                } else {
-                    const grd = ctx.createLinearGradient(0, 0, 0, splitY); grd.addColorStop(0, '#1e293b'); grd.addColorStop(1, '#0f172a');
-                    ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H); drawText(ctx, "Loading Image 1...", W/2, H/3, 50, "#94a3b8", "center", "bold");
-                }
-
-                // Inset Celebration Circle (Image 2)
-                if (bgImage2) {
-                    ctx.save();
-                    const cx = 830; const cy = 360; const r = 180;
-                    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
-                    ctx.clip();
-                    ctx.translate(img2Pos.x, img2Pos.y); ctx.scale(img2Pos.scale, img2Pos.scale);
-                    ctx.drawImage(bgImage2, 0, 0);
-                    ctx.restore();
-                    
-                    // Outer Ring
-                    ctx.lineWidth = 10; ctx.strokeStyle = 'rgba(255,255,255,0.8)';
-                    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
-                }
-
-            } else if (appMode === 'squad') {
-                const topH = H * 0.35;
-                if (bgImage) {
-                    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, topH); ctx.clip();
-                    ctx.translate(img1Pos.x, img1Pos.y); ctx.scale(img1Pos.scale, img1Pos.scale); 
-                    ctx.drawImage(bgImage, 0, 0); ctx.restore();
-                } else {
-                    ctx.fillStyle = '#1e293b'; ctx.fillRect(0, 0, W, topH);
-                    drawText(ctx, "Team Photo Area", W/2, topH/2, 40, "#475569", "center", "bold");
-                }
-                const grad = ctx.createLinearGradient(0, topH, 0, H);
-                grad.addColorStop(0, '#111'); grad.addColorStop(1, '#000');
-                ctx.fillStyle = grad; ctx.fillRect(0, topH, W, H - topH);
-
-            } else {
-                if (bgImage && bgImage2 && appMode !== 'statement') {
-                    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W/2, H); ctx.clip(); ctx.translate(img1Pos.x, img1Pos.y); ctx.scale(img1Pos.scale, img1Pos.scale); ctx.drawImage(bgImage, 0, 0); ctx.restore();
-                    ctx.save(); ctx.beginPath(); ctx.rect(W/2, 0, W/2, H); ctx.clip(); ctx.translate(img2Pos.x, img2Pos.y); ctx.scale(img2Pos.scale, img2Pos.scale); ctx.drawImage(bgImage2, 0, 0); ctx.restore();
-                    ctx.beginPath(); ctx.moveTo(W/2, 0); ctx.lineTo(W/2, H); ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 4; ctx.stroke();
-                } else if (bgImage) {
-                    ctx.save(); ctx.translate(img1Pos.x, img1Pos.y); ctx.scale(img1Pos.scale, img1Pos.scale); ctx.drawImage(bgImage, 0, 0); ctx.restore();
-                } else {
-                    const grd = ctx.createLinearGradient(0, 0, 0, splitY); grd.addColorStop(0, '#1e293b'); grd.addColorStop(1, '#0f172a');
-                    ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H); drawText(ctx, "Loading Image...", W/2, H/2, 50, "#94a3b8", "center", "bold");
-                }
-            }
-
-            // Pre-calculate common metrics
-            const titleBoxY = splitY + 40; const titleBoxW = 800; const titleBoxH = 90; const titleBoxX = (W - titleBoxW) / 2;
-            const scoresY = titleBoxY + 160; const leftCenter = W * 0.25; const rightCenter = W * 0.75; const footerH = 60; const footerY = H - footerH;
-
-            // 2. Draw Overlays & Gradients
-            ctx.save();
-            ctx.globalAlpha = formData.bgOpacity; 
-            
-            if (appMode === 'news') { 
-                const h = H * formData.newsGradientHeight;
-                const gradient = ctx.createLinearGradient(0, H - h, 0, H);
-                gradient.addColorStop(0, formData.primaryColor); gradient.addColorStop(1, formData.secondaryColor);
-                ctx.fillStyle = gradient;
-                ctx.fillRect(0, H - h, W, h); 
-            } else if (appMode === 'multi_result' || appMode === 'multi_schedule') {
-                const gradient = ctx.createLinearGradient(0, 0, 0, H);
-                gradient.addColorStop(0, formData.primaryColor); gradient.addColorStop(1, formData.secondaryColor);
-                ctx.fillStyle = gradient;
-                ctx.fillRect(0, 0, W, H);
-            } else if (appMode === 'statement' || appMode === 'squad' || appMode === 't_fixture' || appMode === 'f_scorecard') {
-                // Handled separately
-            } else if (appMode !== 'discussion') { 
-                const gradient = ctx.createLinearGradient(0, splitY, 0, H);
-                gradient.addColorStop(0, formData.primaryColor); gradient.addColorStop(1, formData.secondaryColor);
-                ctx.fillStyle = gradient;
-                ctx.fillRect(0, splitY, W, H - splitY); 
-            }
-            
-            // Dark boxes for titles
-            if (['scorecard', 'schedule', 'player'].includes(appMode)) { 
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.4)'; 
-                drawRoundedRect(ctx, titleBoxX, titleBoxY, titleBoxW, titleBoxH, 20);
-                ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 2; ctx.strokeRect(titleBoxX, titleBoxY, titleBoxW, titleBoxH);
-                drawResponsiveText(ctx, formData.title, W / 2, titleBoxY + 60, titleBoxW - 40, 50, '#fff', 'center', 'bold');
-            }
-            ctx.restore(); 
-
-            // 3. Draw Specific Modules
-            
-            if (appMode === 'f_scorecard') {
-                const darkGradient = ctx.createLinearGradient(0, 500, 0, H);
-                darkGradient.addColorStop(0, 'transparent');
-                darkGradient.addColorStop(1, 'rgba(0,0,0,0.8)');
-                ctx.fillStyle = darkGradient;
-                ctx.fillRect(0, 500, W, H - 500);
-
-                const panelY = 740;
-                const panelH = H - panelY - footerH;
-
-                ctx.fillStyle = '#0f172a';
-                ctx.beginPath(); 
-                if(ctx.roundRect) {
-                    ctx.roundRect(40, panelY, W - 80, panelH, 24); 
-                } else {
-                    ctx.fillRect(40, panelY, W - 80, panelH);
-                }
-                ctx.fill();
-
-                ctx.fillStyle = formData.primaryColor;
-                ctx.beginPath(); 
-                if(ctx.roundRect) {
-                    ctx.roundRect(40, panelY, W - 80, 10, [24, 24, 0, 0]); 
-                } else {
-                    ctx.fillRect(40, panelY, W - 80, 10);
-                }
-                ctx.fill();
-
-                drawResponsiveText(ctx, formData.fTourneyTitle, W/2, panelY + 65, W - 160, 48, '#ffffff', 'center', '900');
-                ctx.beginPath(); ctx.moveTo(80, panelY + 100); ctx.lineTo(W - 80, panelY + 100); 
-                ctx.strokeStyle = formData.primaryColor; ctx.lineWidth = 4; ctx.stroke();
-
-                const scoreBoxY = panelY + 140;
-                const scoreBoxH = 140;
-                ctx.fillStyle = '#1e293b'; 
-                ctx.beginPath();
-                ctx.moveTo(W/2 - 140, scoreBoxY);
-                ctx.lineTo(W/2 + 100, scoreBoxY);
-                ctx.lineTo(W/2 + 140, scoreBoxY + scoreBoxH);
-                ctx.lineTo(W/2 - 100, scoreBoxY + scoreBoxH);
-                ctx.closePath();
-                ctx.fill();
-
-                drawText(ctx, formData.team1Score + " - " + formData.team2Score, W/2, scoreBoxY + 100, 100, '#ffffff', 'center', '900');
-
-                const nameY = scoreBoxY + 85; 
-                drawResponsiveText(ctx, formData.team1, W/2 - 280, nameY, 280, 60, formData.team1Color, 'center', '900');
-                drawResponsiveText(ctx, formData.team2, W/2 + 280, nameY, 280, 60, formData.team2Color, 'center', '900');
-
-                drawResponsiveText(ctx, formData.fMatchStatus, W/2, panelY + 340, 300, 32, '#cbd5e1', 'center', 'bold');
-            }
-            else if (appMode === 't_fixture') {
-                const topY = 100;
-                
-                const titleLines = formData.fixtureTitle.split('\n');
-                let currentY = topY;
-                titleLines.forEach(line => {
-                    drawResponsiveText(ctx, line.trim(), W/2, currentY + 40, 960, 65, '#ffffff', 'center', '900');
-                    currentY += 75;
-                });
-
-                drawResponsiveText(ctx, formData.fixtureSubtitle, W/2, currentY + 30, 800, 40, '#cbd5e1', 'center', 'bold');
-                currentY += 70;
-
-                ctx.beginPath(); ctx.moveTo(W/2 - 250, currentY); ctx.lineTo(W/2 + 250, currentY); 
-                ctx.strokeStyle = formData.team1Color || '#d4af37'; ctx.lineWidth = 3; ctx.stroke();
-                currentY += 40;
-
-                const list = formData.matchupList;
-                const numItems = list.length || 1;
-                const colCount = 2;
-                const rowCount = Math.ceil(numItems / colCount);
-
-                const footerAreaH = 260; 
-                const availableH = (H - footerH - footerAreaH - currentY);
-                const spacingY = availableH / rowCount;
-                const boxH = Math.min(110, spacingY * 0.85); 
-                const boxW = 460;
-                const startX = (W - (boxW * 2 + 20)) / 2;
-
-                list.forEach((match, i) => {
-                    const col = i % colCount;
-                    const row = Math.floor(i / colCount);
-                    const x = startX + (col * (boxW + 20));
-                    const y = currentY + (row * spacingY);
-
-                    ctx.fillStyle = '#ffffff';
-                    drawRoundedRect(ctx, x, y, boxW, boxH, 16);
-
-                    const pillarW = 95; 
-                    ctx.fillStyle = '#0f172a';
-                    if (ctx.roundRect) {
-                        ctx.beginPath(); ctx.roundRect(x, y, pillarW, boxH, [16, 0, 0, 16]); ctx.fill();
-                    } else {
-                        ctx.fillRect(x, y, pillarW, boxH);
-                    }
-                    
-                    drawResponsiveText(ctx, match.date, x + pillarW/2, y + boxH/2 + 8, pillarW - 10, 24, '#ffffff', 'center', '900');
-
-                    const vsX = x + pillarW + (boxW - pillarW) / 2;
-                    ctx.beginPath(); ctx.arc(vsX, y + boxH/2, 26, 0, Math.PI*2); 
-                    ctx.fillStyle = formData.team1Color || '#d4af37'; ctx.fill();
-                    ctx.lineWidth = 4; ctx.strokeStyle = '#0f172a'; ctx.stroke();
-                    drawText(ctx, "VS", vsX, y + boxH/2 + 8, 22, '#0f172a', 'center', '900');
-
-                    const t1W = (vsX - 26) - (x + pillarW) - 10; 
-                    const t1X = (x + pillarW) + t1W/2 + 5;
-                    drawResponsiveText(ctx, match.t1, t1X, y + boxH/2 - 2, t1W, 26, '#0f172a', 'center', '900');
-                    drawResponsiveText(ctx, match.t1Sub, t1X, y + boxH/2 + 22, t1W, 18, '#475569', 'center', 'bold');
-
-                    const t2W = (x + boxW) - (vsX + 26) - 10; 
-                    const t2X = (vsX + 26) + t2W/2 + 5;
-                    drawResponsiveText(ctx, match.t2, t2X, y + boxH/2 - 2, t2W, 26, '#0f172a', 'center', '900');
-                    drawResponsiveText(ctx, match.t2Sub, t2X, y + boxH/2 + 22, t2W, 18, '#475569', 'center', 'bold');
-                });
-
-                const footY1 = H - footerH - 220;
-                ctx.fillStyle = 'rgba(15, 23, 42, 0.7)';
-                ctx.strokeStyle = formData.team1Color || '#d4af37'; 
-                ctx.lineWidth = 3;
-                drawRoundedRect(ctx, W/2 - 280, footY1, 560, 70, 35);
-                ctx.stroke();
-                drawText(ctx, "📅 " + formData.fixtureDateFooter, W/2, footY1 + 46, 30, '#ffffff', 'center', 'bold');
-
-                const footY2 = footY1 + 95;
-                ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
-                ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-                drawRoundedRect(ctx, W/2 - 320, footY2, 640, 60, 30);
-                ctx.stroke();
-                drawText(ctx, "🛡️ " + formData.fixtureOrganizerFooter, W/2, footY2 + 40, 26, '#cbd5e1', 'center', 'bold');
-
-            } else if (appMode === 'squad') {
-                const topH = H * 0.35; 
-                const titleBarH = 140; 
-                
-                const tGrad = ctx.createLinearGradient(0, topH, W, topH); 
-                tGrad.addColorStop(0, formData.primaryColor); tGrad.addColorStop(1, '#ef4444'); 
-                ctx.fillStyle = tGrad; 
-                
-                ctx.beginPath(); ctx.roundRect(40, topH - 20, W - 80, titleBarH, 20); ctx.fill();
-                ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke();
-
-                drawSmartText(ctx, formData.squadTitle, W/2, topH + titleBarH/2 - 20, W-120, titleBarH - 20, 55, 12, '#fff', 'center', 'bold');
-
-                const gridY = topH + titleBarH + 20; 
-                const gridH = H - footerH - gridY - 20;
-                const gridW = W - 60;
-                const gridX = 30;
-
-                const players = formData.squadList.split('\n').filter(line => line.trim() !== '');
-                const colCount = 2;
-                const rowCount = Math.ceil(players.length / colCount);
-                const colW = gridW / colCount;
-                const rowH = gridH / rowCount;
-                
-                const fontSize = Math.min(42, rowH * 0.55); 
-
-                players.forEach((player, i) => {
-                    const col = i % colCount; 
-                    const row = Math.floor(i / colCount); 
-                    
-                    const itemX = gridX + (col * colW);
-                    const itemY = gridY + (row * rowH);
-
-                    const bx = itemX + 30; 
-                    const by = itemY + rowH/2;
-                    ctx.beginPath(); ctx.moveTo(bx, by-8); ctx.lineTo(bx+12, by); ctx.lineTo(bx, by+8); ctx.closePath();
-                    ctx.fillStyle = '#4ade80'; ctx.fill();
-
-                    let pText = player.trim();
-                    let isSpecial = false;
-                    const specialTags = ['(c)', '(C)', '(wk)', '(WK)', '(অধিনায়ক)', '(উইকেটকিপার)', '(captain)'];
-                    
-                    specialTags.forEach(tag => {
-                        if (pText.includes(tag)) {
-                            isSpecial = true;
-                        }
-                    });
-
-                    const pColor = isSpecial ? '#facc15' : '#fff'; 
-                    const pWeight = isSpecial ? '900' : 'bold';
-
-                    ctx.font = `${pWeight} ${fontSize}px "Hind Siliguri", sans-serif`;
-                    ctx.fillStyle = pColor;
-                    ctx.textAlign = 'left';
-                    ctx.fillText(pText, bx + 25, by + (fontSize*0.35));
-                });
-
-            } else if (appMode === 'poll') {
-                const py = splitY + 40;
-                drawResponsiveText(ctx, formData.pollQuestion, W / 2, py + 20, 900, 55, '#fff', 'center', 'bold');
-                ctx.beginPath(); ctx.moveTo(W/2-250, py+40); ctx.lineTo(W/2+250, py+40); ctx.strokeStyle='rgba(255,255,255,0.2)'; ctx.lineWidth=2; ctx.stroke();
-
-                const boxW = 440; const boxH = 140; const leftX = W/4 - boxW/2; const rightX = (3*W/4) - boxW/2; const topY = py + 80;
-
-                ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-                drawRoundedRect(ctx, leftX, topY, boxW, boxH, 20);
-                ctx.strokeStyle = formData.team2Color; ctx.lineWidth = 3; ctx.stroke();
-                drawFBIcon(ctx, leftX + 80, topY + 70, 75);
-                drawText(ctx, "লাইক (LIKE)", leftX + boxW/2 + 20, topY + 60, 26, formData.team2Color, 'center', 'bold');
-                drawResponsiveText(ctx, formData.pollPlayer1, leftX + boxW/2 + 20, topY + 105, 300, 40, '#fff', 'center', 'bold');
-
-                ctx.beginPath(); ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-                drawRoundedRect(ctx, rightX, topY, boxW, boxH, 20);
-                ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 3; ctx.stroke();
-                ctx.save(); ctx.translate(rightX + 80, topY + 70); ctx.beginPath(); ctx.arc(0, 0, 75 / 2, 0, Math.PI * 2);
-                ctx.fillStyle = formData.team1Color; ctx.fill(); ctx.fillStyle = '#ffffff';
-                const scale = 75 / 40; ctx.scale(scale, scale); ctx.translate(-12, -12);
-                ctx.fill(new Path2D('M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'));
-                ctx.restore();
-
-                drawText(ctx, "লাভ (LOVE)", rightX + boxW/2 + 20, topY + 60, 26, formData.team1Color, 'center', 'bold');
-                drawResponsiveText(ctx, formData.pollPlayer2, rightX + boxW/2 + 20, topY + 105, 300, 40, '#fff', 'center', 'bold');
-
-                ctx.beginPath(); ctx.arc(W/2, topY + boxH/2, 40, 0, Math.PI*2); ctx.fillStyle = '#0f172a'; ctx.fill();
-                ctx.lineWidth = 4; ctx.strokeStyle = '#fff'; ctx.stroke();
-                drawText(ctx, "VS", W/2, topY + boxH/2 + 12, 32, '#fff', 'center', '900');
-
-            } else if (appMode === 'milestone') {
-                const py = splitY + 40;
-                ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-                drawRoundedRect(ctx, 100, py, W - 200, 240, 24);
-                ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 4; ctx.stroke();
-                drawResponsiveText(ctx, formData.milestoneOccasion, W/2, py + 55, W-250, 35, formData.team1Color, 'center', 'bold');
-                drawResponsiveText(ctx, formData.milestoneNumber, W/2, py + 140, W-250, 90, '#fff', 'center', 'bold');
-                drawResponsiveText(ctx, formData.milestoneName, W/2, py + 210, W-250, 50, '#fff', 'center', 'bold');
-                ctx.fillStyle = '#ddd'; drawText(ctx, formData.milestoneMessage, W/2, py + 300, 28, '#cbd5e1', 'center', 'normal');
-
-            } else if (appMode === 'scorecard') {
-                drawResponsiveText(ctx, formData.team1, leftCenter, scoresY, 400, 65, formData.team1Color, 'center', 'bold');
-                
-                const t1w = measureText(ctx, formData.team1Score, 60, 'bold'), t1o = measureText(ctx, formData.team1Overs, 35, 'normal');
-                const t1x = leftCenter - ((t1w + 15 + t1o) / 2);
-                
-                ctx.textAlign = 'left'; 
-                ctx.font = `bold 60px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#fff'; 
-                ctx.fillText(formData.team1Score, t1x, scoresY + 80);
-                ctx.font = `normal 35px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#cbd5e1'; 
-                ctx.fillText(formData.team1Overs, t1x + t1w + 15, scoresY + 80);
-                
-                ctx.beginPath(); ctx.moveTo(W/2, scoresY-20); ctx.lineTo(W/2, scoresY+100); ctx.lineWidth=4; ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.stroke();
-                
-                drawResponsiveText(ctx, formData.team2, rightCenter, scoresY, 400, 65, formData.team2Color, 'center', 'bold');
-                
-                const t2w = measureText(ctx, formData.team2Score, 60, 'bold'), t2o = measureText(ctx, formData.team2Overs, 35, 'normal');
-                const t2x = rightCenter - ((t2w + 15 + t2o) / 2);
-                
-                ctx.textAlign = 'left'; 
-                ctx.font = `bold 60px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#fff'; 
-                ctx.fillText(formData.team2Score, t2x, scoresY + 80);
-                ctx.font = `normal 35px "Hind Siliguri", sans-serif`; ctx.fillStyle = '#cbd5e1'; 
-                ctx.fillText(formData.team2Overs, t2x + t2w + 15, scoresY + 80);
-                
-                drawResponsiveText(ctx, formData.result, W / 2, scoresY + 180, 900, 45, formData.resultColor, 'center', 'bold');
-            
-            } else if (appMode === 'schedule') {
-                drawResponsiveText(ctx, formData.team1, leftCenter - 20, scoresY + 40, 380, 80, formData.team1Color, 'center', 'bold');
-                ctx.beginPath(); ctx.arc(W/2, scoresY+30, 50, 0, Math.PI*2); ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#fff'; ctx.stroke();
-                drawText(ctx, "VS", W/2, scoresY+45, 40, '#fff', 'center', 'bold');
-                drawResponsiveText(ctx, formData.team2, rightCenter + 20, scoresY + 40, 380, 80, formData.team2Color, 'center', 'bold');
-                
-                const dy = scoresY + 130; 
-                ctx.fillStyle = 'rgba(0,0,0,0.3)'; drawRoundedRect(ctx, (W-700)/2, dy, 700, 100, 20);
-                drawResponsiveText(ctx, formData.matchDate, W/2, dy+45, 650, 40, '#fff', 'center', 'bold'); 
-                drawResponsiveText(ctx, `${formData.matchTime} | ${formData.matchVenue}`, W/2, dy+85, 650, 30, '#cbd5e1', 'center', 'normal');
-            
-            } else if (appMode === 'player') {
-                const py = scoresY - 20; 
-                drawResponsiveText(ctx, formData.playerStatMain, W/2, py + 40, 800, 130, formData.team1Color, 'center', 'bold'); 
-                drawResponsiveText(ctx, formData.playerStatSub, W/2, py + 90, 800, 40, '#cbd5e1', 'center', 'normal');
-                ctx.beginPath(); ctx.moveTo(W/2-150, py+120); ctx.lineTo(W/2+150, py+120); ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=2; ctx.stroke();
-                drawResponsiveText(ctx, formData.playerName, W/2, py + 180, 800, 60, '#fff', 'center', 'bold');
-            
-            } else if (appMode === 'career') {
-                const py = splitY + 40; drawResponsiveText(ctx, formData.playerName, W/2, py, 800, 60, '#fff', 'center', 'bold');
-                drawText(ctx, formData.playerRole, W/2, py + 35, 25, formData.team1Color, 'center', 'bold');
-                ctx.beginPath(); ctx.moveTo(W/2-250, py+55); ctx.lineTo(W/2+250, py+55); ctx.strokeStyle='rgba(255,255,255,0.2)'; ctx.lineWidth=2; ctx.stroke();
-                
-                const boxW = 400; const boxH = 90; const gap = 15;
-                const leftX = W/2 - boxW - gap/2; const rightX = W/2 + gap/2;
-                const topY = py + 75; const midY = topY + boxH + gap; const botY = midY + boxH + gap;
-
-                const drawStatBox = (label, val, x, y) => {
-                    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)'; ctx.beginPath();
-                    drawRoundedRect(ctx, x, y, boxW, boxH, 15);
-                    ctx.strokeStyle = formData.team1Color; ctx.stroke();
-                    drawText(ctx, label, x + boxW/2, y + 35, 20, formData.team1Color, 'center', 'bold'); 
-                    drawResponsiveText(ctx, val, x + boxW/2, y + 75, 380, 45, '#fff', 'center', 'bold');
-                };
-                drawStatBox("ম্যাচ (MATCHES)", formData.careerMatches, leftX, topY); drawStatBox("রান (RUNS)", formData.careerRuns, rightX, topY);
-                drawStatBox("সেঞ্চুরি (100s)", formData.careerHundreds, leftX, midY); drawStatBox("ফিফটি (50s)", formData.careerFifties, rightX, midY);
-                drawStatBox("সর্বোচ্চ (BEST SCORE)", formData.careerBest, leftX, botY); drawStatBox("উইকেট (WICKETS)", formData.careerWickets, rightX, botY);
-            
-            } else if (appMode === 'news') {
-                const h = H * formData.newsGradientHeight; const nsy = H - h; const csy = nsy + 60; const nw = 880;
-                ctx.fillStyle = formData.primaryColor; 
-                drawRoundedRect(ctx, W/2 - 150, csy - 90, 300, 55, 10);
-                drawText(ctx, "ব্রেকিং নিউজ", W/2, csy - 48, 36, '#fff', 'center', 'bold');
-                
-                ctx.font = "140px serif"; ctx.fillStyle = "rgba(255,255,255,0.1)"; ctx.textAlign = "center"; ctx.fillText("❝", W/2, csy + 30);
-                
-                const authorZoneH = 120;
-                const safeBottomY = footerY - authorZoneH;
-                const textStartY = csy + 110;
-                const newsBoxH = Math.max(100, safeBottomY - textStartY); 
-
-                drawSmartText(ctx, formData.quoteText, W/2, textStartY + (newsBoxH/2), nw, newsBoxH, 55, 20, '#fff', 'center', 'bold');
-                
-                const ay = footerY - 90; 
-                ctx.beginPath(); ctx.moveTo(W/2 - 120, ay); ctx.lineTo(W/2 + 120, ay); ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 5; ctx.stroke();
-                drawResponsiveText(ctx, formData.quoteAuthor, W/2, ay + 60, 900, 38, '#cbd5e1', 'center', 'bold');
-            
-            } else if (appMode === 'statement') {
-                const sy = 750;
-                ctx.save();
-                ctx.globalAlpha = 1.0;
-                const grad = ctx.createLinearGradient(0, sy, 0, H);
-                grad.addColorStop(0, formData.primaryColor);
-                grad.addColorStop(1, formData.secondaryColor); 
-                ctx.fillStyle = grad;
-                ctx.fillRect(0, sy, W, H - sy);
-
-                ctx.fillStyle = formData.team1Color;
-                ctx.fillRect(0, sy - 10, W, 10);
-
-                const cx = W / 2, cy = sy;
-                const r = 160;
-
-                ctx.save();
-                ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.closePath();
-                ctx.fillStyle = '#0f172a'; ctx.fill();
-                ctx.clip();
-                if (avatarImage) {
-                    ctx.translate(cx - r + avatarPos.x, cy - r + avatarPos.y);
-                    ctx.scale(avatarPos.scale, avatarPos.scale);
-                    ctx.drawImage(avatarImage, 0, 0);
-                } else {
-                    drawText(ctx, "Upload Avatar", cx, cy + 10, 30, "#64748b", "center", "bold");
-                }
-                ctx.restore();
-
-                ctx.lineWidth = 12; ctx.strokeStyle = formData.team1Color;
-                ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
-
-                const quoteBoxH = 250;
-                drawSmartText(ctx, `“${formData.quoteText}”`, W/2, sy + r + 130, 960, quoteBoxH, 55, 24, '#fff', 'center', 'bold');
-                
-                const authorY = sy + r + quoteBoxH + 60;
-                drawResponsiveText(ctx, `— ${formData.quoteAuthor}`, W/2, authorY, 900, 45, '#fff', 'center', 'bold');
-                
-                ctx.beginPath(); ctx.moveTo(W/2 - 250, authorY + 40); ctx.lineTo(W/2 + 250, authorY + 40);
-                ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 3; ctx.stroke();
-                ctx.restore();
-            
-            } else if (appMode === 'discussion') {
-                const totalAvailableH = H - footerH - 120; 
-                const centerY = H / 2;
-                
-                const topicBoxH = totalAvailableH * 0.3;
-                const topicY = centerY - (totalAvailableH/2) + (topicBoxH/2);
-                
-                drawText(ctx, "DISCUSSION", W/2, topicY - (topicBoxH/2), 26, formData.team1Color, 'center', 'bold');
-                ctx.beginPath(); ctx.moveTo(W/2 - 40, topicY - (topicBoxH/2) + 25); ctx.lineTo(W/2 + 40, topicY - (topicBoxH/2) + 25); 
-                ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 4; ctx.stroke();
-
-                drawSmartText(ctx, formData.discTopic, W/2, topicY + 20, 950, topicBoxH - 40, 130, 40, '#fff', 'center', '900');
-
-                const divY = topicY + (topicBoxH/2) + 20;
-                ctx.beginPath(); ctx.moveTo(W/2 - 150, divY); ctx.lineTo(W/2 + 150, divY);
-                ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 8; ctx.stroke();
-                ctx.shadowColor = formData.team1Color; ctx.shadowBlur = 15; ctx.stroke(); ctx.shadowBlur = 0;
-
-                const linesBoxH = totalAvailableH * 0.55; 
-                const gap = linesBoxH / 3;
-                
-                drawSmartText(ctx, formData.discLine1, W/2, divY + 40 + (gap*0.5), 950, gap-20, 80, 24, formData.team1Color, 'center', 'bold');
-                drawSmartText(ctx, formData.discLine2, W/2, divY + 40 + (gap*1.5), 950, gap-20, 80, 24, '#fff', 'center', 'bold');
-                drawSmartText(ctx, formData.discLine3, W/2, divY + 40 + (gap*2.5), 950, gap-20, 80, 24, formData.team2Color, 'center', 'bold');
-            
-            } else if (appMode === 'multi_result') {
-                const py = 120;
-                
-                ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-                if(ctx.roundRect) {
-                    ctx.beginPath(); ctx.roundRect(W/2 - 350, py, 700, 80, 40); ctx.fill();
-                    ctx.strokeStyle = formData.team1Color; ctx.lineWidth = 2; ctx.stroke();
-                } else {
-                    ctx.fillRect(W/2 - 350, py, 700, 80);
-                }
-                drawResponsiveText(ctx, formData.multiResultTitle, W/2, py + 55, 600, 45, '#fff', 'center', '900');
-
-                const sy = py + 140;
-                const totalH = H - footerH - sy - 40;
-                const numItems = formData.resultsList.length || 1;
-                const spacing = totalH / numItems;
-                const boxH = Math.min(150, spacing * 0.85); 
-
-                const fsTeam = Math.min(42, boxH * 0.28);
-                const fsScore = Math.min(55, boxH * 0.4);
-                const fsTourney = Math.min(22, boxH * 0.16);
-
-                formData.resultsList.forEach((res, index) => {
-                    const y = sy + (index * spacing);
-                    const cardW = 880;
-                    const cardX = W/2 - cardW/2;
-                    
-                    ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
-                    if (ctx.roundRect) {
-                        ctx.beginPath(); ctx.roundRect(cardX, y, cardW, boxH, 20); ctx.fill();
-                        ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 2; ctx.stroke();
-                    } else { ctx.fillRect(cardX, y, cardW, boxH); }
-
-                    ctx.fillStyle = formData.team1Color;
-                    if (ctx.roundRect) {
-                        ctx.beginPath(); ctx.roundRect(cardX, y, 12, boxH, [20, 0, 0, 20]); ctx.fill();
-                    } else { ctx.fillRect(cardX, y, 12, boxH); }
-
-                    ctx.fillStyle = formData.team2Color;
-                    if (ctx.roundRect) {
-                        ctx.beginPath(); ctx.roundRect(cardX + cardW - 12, y, 12, boxH, [0, 20, 20, 0]); ctx.fill();
-                    } else { ctx.fillRect(cardX + cardW - 12, y, 12, boxH); }
-
-                    const scorePillW = 220;
-                    ctx.fillStyle = formData.primaryColor;
-                    if (ctx.roundRect) {
-                        ctx.beginPath(); ctx.roundRect(W/2 - scorePillW/2, y + 15, scorePillW, boxH - 30, 15); ctx.fill();
-                    } else { ctx.fillRect(W/2 - scorePillW/2, y + 15, scorePillW, boxH - 30); }
-
-                    drawResponsiveText(ctx, res.score1, W/2 - 50, y + boxH/2 + fsScore*0.35, 60, fsScore, '#fff', 'center', '900');
-                    drawText(ctx, "-", W/2, y + boxH/2 + fsScore*0.3, fsScore*0.8, 'rgba(255,255,255,0.5)', 'center', '900');
-                    drawResponsiveText(ctx, res.score2, W/2 + 50, y + boxH/2 + fsScore*0.35, 60, fsScore, '#fff', 'center', '900');
-
-                    drawResponsiveText(ctx, res.team1, W/2 - scorePillW/2 - 30, y + boxH/2 + fsTeam*0.35, 260, fsTeam, '#fff', 'right', 'bold');
-                    drawResponsiveText(ctx, res.team2, W/2 + scorePillW/2 + 30, y + boxH/2 + fsTeam*0.35, 260, fsTeam, '#fff', 'left', 'bold');
-
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = `bold ${fsTourney}px "Hind Siliguri", sans-serif`;
-                    const tw = ctx.measureText(res.tourney).width + 60;
-                    if (ctx.roundRect) {
-                        ctx.beginPath(); ctx.roundRect(W/2 - tw/2, y - 14, tw, 28, 14); ctx.fill();
-                    } else { ctx.fillRect(W/2 - tw/2, y - 14, tw, 28); }
-                    drawResponsiveText(ctx, res.tourney, W/2, y + 6, tw - 20, fsTourney, '#000', 'center', 'bold');
-                });
-
-            } else if (appMode === 'multi_schedule') {
-                const py = 120;
-                
-                ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-                if(ctx.roundRect) {
-                    ctx.beginPath(); ctx.roundRect(W/2 - 250, py, 500, 60, 30); ctx.fill();
-                } else { ctx.fillRect(W/2 - 250, py, 500, 60); }
-                drawResponsiveText(ctx, formData.multiScheduleDate, W/2, py + 42, 450, 35, formData.team1Color, 'center', 'bold');
-                
-                drawResponsiveText(ctx, formData.multiScheduleTitle, W/2, py + 140, 900, 70, '#fff', 'center', 'bold');
-                
-                ctx.beginPath(); ctx.moveTo(60, py + 180); ctx.lineTo(W - 60, py + 180); 
-                ctx.strokeStyle = formData.team1Color; ctx.lineWidth=4; ctx.stroke();
-
-                const sy = py + 220;
-                const totalH = H - footerH - sy - 30;
-                const numItems = formData.scheduleList.length || 1;
-                const rows = Math.ceil(numItems / 2);
-                const spacing = totalH / rows;
-                const boxH = Math.min(180, spacing * 0.85);
-                const colW = 460;
-
-                const fsSport = Math.min(24, boxH * 0.13);
-                const fsTourney = Math.min(26, boxH * 0.14);
-                const fsMatch = Math.min(38, boxH * 0.21);
-                const fsTime = Math.min(28, boxH * 0.15);
-
-                formData.scheduleList.forEach((sch, index) => {
-                    const col = index % 2;
-                    const row = Math.floor(index / 2);
-                    const cx = col === 0 ? W/2 - colW - 20 : W/2 + 20;
-                    const y = sy + (row * spacing);
-
-                    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-                    if(ctx.roundRect) {
-                        ctx.beginPath(); ctx.roundRect(cx, y, colW, boxH, 20); ctx.fill();
-                    } else { ctx.fillRect(cx, y, colW, boxH); }
-
-                    ctx.fillStyle = formData.team1Color;
-                    if (ctx.roundRect) {
-                        ctx.beginPath(); ctx.roundRect(cx, y, 12, boxH, [20, 0, 0, 20]); ctx.fill();
-                    } else { ctx.fillRect(cx, y, 12, boxH); }
-
-                    ctx.fillStyle = 'rgba(255,255,255,0.1)';
-                    if(ctx.roundRect) {
-                        ctx.beginPath(); ctx.roundRect(cx + 30, y + (boxH*0.1), 120, boxH*0.18, 8); ctx.fill();
-                    } else { ctx.fillRect(cx + 30, y + (boxH*0.1), 120, boxH*0.18); }
-                    drawResponsiveText(ctx, sch.sport, cx + 90, y + (boxH*0.23), 100, fsSport, formData.team1Color, 'center', 'bold');
-
-                    ctx.textAlign = 'right';
-                    drawResponsiveText(ctx, sch.tourney, cx + colW - 25, y + (boxH*0.23), 280, fsTourney, '#cbd5e1', 'right', 'normal');
-                    
-                    drawResponsiveText(ctx, sch.match, cx + colW/2, y + (boxH*0.6), colW - 60, fsMatch, '#fff', 'center', 'bold');
-                    
-                    drawText(ctx, "🕒 " + sch.time, cx + colW/2, y + (boxH*0.85), fsTime, formData.team1Color, 'center', 'bold');
-                });
-            }
-            
-            // 4. Draw Branding & Footer (ALWAYS ON TOP)
-            if (appMode !== 't_fixture') {
-                ctx.fillStyle = '#020617'; ctx.fillRect(0, footerY, W, footerH); 
-                drawText(ctx, formData.footerHandle, W / 2, footerY + 40, 24, '#94a3b8', 'center', 'normal');
-            }
-
-            // Glassmorphism Badge Pill ensuring it's visible on any background
-            ctx.save();
-            ctx.font = 'bold 30px "Hind Siliguri", sans-serif';
-            const fwText = ctx.measureText(formData.badgeText).width;
-            const pillW = fwText + 90;
-            const pillX = W - pillW - 40;
-            const pillY = 40;
-            
-            ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-            drawRoundedRect(ctx, pillX, pillY, pillW, 60, 30);
-            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            
-            drawFBIcon(ctx, pillX + 30, pillY + 30, 40);
-            drawText(ctx, formData.badgeText, pillX + 65, pillY + 41, 30, '#fff', 'left', 'bold');
-            ctx.restore();
-
-            // Display Preview Watermark if not exporting
-            if (!isExport) {
-                ctx.save(); ctx.translate(W/2, H/2); ctx.rotate(-Math.PI / 6);
-                ctx.font = "bold 150px sans-serif"; ctx.fillStyle = "rgba(255, 255, 255, 0.05)"; ctx.textAlign = "center"; ctx.fillText("PREVIEW", 0, 0); ctx.restore();
-            }
-        } catch(e) { console.error(e); }
+        // Route all rendering to our global math engine
+        if (window.PosterRenderer) {
+            window.PosterRenderer(
+                ctx, W, H, appMode, formData, 
+                { bgImage, bgImage2, avatarImage }, 
+                { img1Pos, img2Pos, avatarPos }, 
+                isExport
+            );
+        }
     };
 
     useEffect(() => { drawCanvas(false); }, [bgImage, bgImage2, formData, img1Pos, img2Pos, avatarPos, avatarImage, appMode, currentView]);
@@ -1049,16 +269,11 @@ function App() {
             img.onload = () => {
                 if (isSecond) {
                     setBgImage2(img); 
-                    // Calculate a reasonable scale for the inset circle in Football Scorecard
                     let targetW = 540; let targetH = 1200;
                     if(appMode === 'f_scorecard') { targetW = 360; targetH = 360; }
                     const scale2 = Math.max(targetW / img.width, targetH / img.height);
-                    
-                    if(appMode === 'f_scorecard') {
-                        setImg2Pos({ x: (360 - img.width * scale2) / 2, y: (360 - img.height * scale2) / 2, scale: scale2 });
-                    } else {
-                        setImg2Pos({ x: 540 + (540 - img.width * scale2) / 2, y: (1200 - img.height * scale2) / 2, scale: scale2 });
-                    }
+                    if(appMode === 'f_scorecard') setImg2Pos({ x: (360 - img.width * scale2) / 2, y: (360 - img.height * scale2) / 2, scale: scale2 });
+                    else setImg2Pos({ x: 540 + (540 - img.width * scale2) / 2, y: (1200 - img.height * scale2) / 2, scale: scale2 });
                     if (bgImage && appMode !== 'f_scorecard') { const scale1 = Math.max(540 / bgImage.width, 1200 / bgImage.height); setImg1Pos({ x: (540 - bgImage.width * scale1) / 2, y: (1200 - bgImage.height * scale1) / 2, scale: scale1 }); }
                 } else {
                     setBgImage(img); const targetW = (bgImage2 && appMode !== 'f_scorecard') ? 540 : 1080; const scale1 = Math.max(targetW / img.width, 1200 / img.height);
@@ -1086,12 +301,8 @@ function App() {
             let targetW = 540; let targetH = 1200;
             if(appMode === 'f_scorecard') { targetW = 360; targetH = 360; }
             const scale2 = Math.max(targetW / bgImage2.width, targetH / bgImage2.height);
-            
-            if(appMode === 'f_scorecard') {
-                setImg2Pos({ x: (360 - bgImage2.width * scale2) / 2, y: (360 - bgImage2.height * scale2) / 2, scale: scale2 });
-            } else {
-                setImg2Pos({ x: 540 + (540 - bgImage2.width * scale2) / 2, y: (1200 - bgImage2.height * scale2) / 2, scale: scale2 });
-            }
+            if(appMode === 'f_scorecard') setImg2Pos({ x: (360 - bgImage2.width * scale2) / 2, y: (360 - bgImage2.height * scale2) / 2, scale: scale2 });
+            else setImg2Pos({ x: 540 + (540 - bgImage2.width * scale2) / 2, y: (1200 - bgImage2.height * scale2) / 2, scale: scale2 });
         }
         if (avatarImage) { const scale3 = Math.max(320 / avatarImage.width, 320 / avatarImage.height); setAvatarPos({ x: (320 - avatarImage.width * scale3) / 2, y: (320 - avatarImage.height * scale3) / 2, scale: scale3 }); }
     };
@@ -1105,13 +316,9 @@ function App() {
         const s = 1080 / rect.width;
         const canvasX = touchX * s; const canvasY = touchY * s;
 
-        if (appMode === 'statement' && avatarImage && Math.hypot(canvasX - 1080/2, canvasY - 750) < 160) {
-            targetImg = 'avatar';
-        } else if (appMode === 'f_scorecard' && bgImage2 && Math.hypot(canvasX - 830, canvasY - 360) < 180) {
-            targetImg = 'img2';
-        } else if (bgImage2 && touchX > rect.width / 2 && appMode !== 'statement' && appMode !== 'f_scorecard') {
-            targetImg = 'img2';
-        }
+        if (appMode === 'statement' && avatarImage && Math.hypot(canvasX - 1080/2, canvasY - 750) < 160) targetImg = 'avatar';
+        else if (appMode === 'f_scorecard' && bgImage2 && Math.hypot(canvasX - 830, canvasY - 360) < 180) targetImg = 'img2';
+        else if (bgImage2 && touchX > rect.width / 2 && appMode !== 'statement' && appMode !== 'f_scorecard') targetImg = 'img2';
         
         const currentPos = targetImg === 'img1' ? img1Pos : (targetImg === 'img2' ? img2Pos : avatarPos);
         if (t.length === 1) { gestureStart.current = { mode: 'pan', target: targetImg, x: t[0].clientX, y: t[0].clientY, imgX: currentPos.x, imgY: currentPos.y }; 
@@ -1136,13 +343,9 @@ function App() {
         const s = 1080 / rect.width;
         const canvasX = touchX * s; const canvasY = touchY * s;
 
-        if (appMode === 'statement' && avatarImage && Math.hypot(canvasX - 1080/2, canvasY - 750) < 160) {
-            targetImg = 'avatar';
-        } else if (appMode === 'f_scorecard' && bgImage2 && Math.hypot(canvasX - 830, canvasY - 360) < 180) {
-            targetImg = 'img2';
-        } else if (bgImage2 && touchX > rect.width / 2 && appMode !== 'statement' && appMode !== 'f_scorecard') {
-            targetImg = 'img2';
-        }
+        if (appMode === 'statement' && avatarImage && Math.hypot(canvasX - 1080/2, canvasY - 750) < 160) targetImg = 'avatar';
+        else if (appMode === 'f_scorecard' && bgImage2 && Math.hypot(canvasX - 830, canvasY - 360) < 180) targetImg = 'img2';
+        else if (bgImage2 && touchX > rect.width / 2 && appMode !== 'statement' && appMode !== 'f_scorecard') targetImg = 'img2';
         
         const currentPos = targetImg === 'img1' ? img1Pos : (targetImg === 'img2' ? img2Pos : avatarPos);
         gestureStart.current = { mode: 'pan', target: targetImg, x: e.clientX, y: e.clientY, imgX: currentPos.x, imgY: currentPos.y };
@@ -1157,32 +360,79 @@ function App() {
     };
     const handleEnd = () => { gestureStart.current.mode = null; };
 
+    // --- HIGH RESOLUTION 8K EXPORT ENGINE ---
     const handleDownloadClick = async () => {
         if (isProcessing) return; 
         if (points < DOWNLOAD_COST) { setShowBuyModal(true); return; }
         setIsProcessing(true);
-        if(GOOGLE_SCRIPT_URL.includes("xxxxxxxx")) { performDownload(); setPoints(prev => prev - DOWNLOAD_COST); setIsProcessing(false); return; }
+
+        if(GOOGLE_SCRIPT_URL.includes("xxxxxxxx")) { 
+            performHighResDownload(); 
+            setPoints(prev => prev - DOWNLOAD_COST); 
+            setIsProcessing(false); 
+            return; 
+        }
+
         try {
             const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=deduct&userId=${userId}&amount=${DOWNLOAD_COST}`);
             if (!response.ok) throw new Error("Server error");
             const data = await response.json();
             if (data.status === 'success') { 
                 setPoints(data.points); 
-                performDownload(); 
+                performHighResDownload(); 
             } else { 
                 showToast("Insufficient points to export!"); 
             }
-        } catch (error) { console.error("Deduction Error:", error); showToast("Network Error."); }
+        } catch (error) { 
+            console.error("Deduction Error:", error); 
+            showToast("Network Error."); 
+        }
         setIsProcessing(false);
     };
 
-    const performDownload = () => {
-        const canvas = canvasRef.current; if (!canvas) return; drawCanvas(true);
-        canvas.toBlob((blob) => {
-            const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.download = `poster-${Date.now()}.png`; link.href = url;
-            document.body.appendChild(link); link.click();
-            setTimeout(() => { document.body.removeChild(link); URL.revokeObjectURL(url); drawCanvas(false); showToast("Graphic downloaded successfully!"); }, 100);
-        }, 'image/png');
+    const performHighResDownload = () => {
+        // Create an offscreen canvas at 4x resolution (4320 x 4800)
+        const SCALE = 4; 
+        const W = 1080; 
+        const H = 1200;
+        
+        const exportCanvas = document.createElement('canvas');
+        exportCanvas.width = W * SCALE;
+        exportCanvas.height = H * SCALE;
+        
+        const ctx = exportCanvas.getContext('2d');
+        
+        // Disable smoothing for ultra-crisp fonts
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        
+        // Scale the entire rendering context up
+        ctx.scale(SCALE, SCALE);
+        
+        // Run the renderer mathematically scaled up
+        if (window.PosterRenderer) {
+            window.PosterRenderer(
+                ctx, W, H, appMode, formData, 
+                { bgImage, bgImage2, avatarImage }, 
+                { img1Pos, img2Pos, avatarPos }, 
+                true // isExport = true (hides watermark)
+            );
+        }
+
+        // Export at 100% quality PNG
+        exportCanvas.toBlob((blob) => {
+            const url = URL.createObjectURL(blob); 
+            const link = document.createElement('a'); 
+            link.download = `PosterBot_8K_${Date.now()}.png`; 
+            link.href = url;
+            document.body.appendChild(link); 
+            link.click();
+            setTimeout(() => { 
+                document.body.removeChild(link); 
+                URL.revokeObjectURL(url); 
+                showToast("8K Graphic downloaded successfully!"); 
+            }, 100);
+        }, 'image/png', 1.0);
     };
 
     return (
@@ -1212,7 +462,7 @@ function App() {
                     <div className="bg-slate-900 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] w-full max-w-sm p-8 text-center modal-content border border-slate-800">
                         <div className="bg-rose-500/10 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl border border-rose-500/20">💎</div>
                         <h3 className="text-2xl font-black text-white mb-2 tracking-tight">Get Pro Points</h3>
-                        <p className="text-slate-400 text-sm mb-6 font-medium">Balance: <span className="text-amber-400 font-bold">{points}</span></p>
+                        <p className="text-slate-400 text-sm mb-6 font-medium">Export costs {DOWNLOAD_COST} points. Balance: <span className="text-amber-400 font-bold">{points}</span></p>
                         
                         <div className="bg-slate-800/50 p-5 rounded-2xl mb-6 text-sm text-slate-300 border border-slate-700/50 text-left">
                             <p className="font-bold text-white mb-3 uppercase tracking-wider text-xs">Pricing Tiers</p>
@@ -1239,696 +489,675 @@ function App() {
                 </div>
             )}
 
-            {/* --- NEW VIDEO COMPONENT RENDER BLOCK --- */}
-            {currentView === 'video' && window.VideoGeneratorTool ? (
-                <window.VideoGeneratorTool 
-                    points={points} 
-                    onGenerateVideo={handleVideoDeduction} 
-                    onBack={() => setCurrentView('home')} 
-                />
-            ) : (
-                <>
-                    <header className="bg-slate-950/80 backdrop-blur-xl border-b border-slate-800 sticky top-0 z-30 px-4 py-3 shadow-lg shadow-black/20">
-                        <div className="max-w-7xl mx-auto flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                {currentView === 'editor' ? (
-                                    <button onClick={() => setCurrentView('home')} className="p-2.5 bg-slate-900 hover:bg-slate-800 rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors flex items-center justify-center shadow-inner" title="Back to Dashboard">
-                                        <IconArrowLeft />
-                                    </button>
-                                ) : (
-                                    <div className="bg-gradient-to-tr from-rose-600 to-rose-400 p-2.5 rounded-xl shadow-[0_0_15px_rgba(225,29,72,0.4)] flex items-center justify-center">
-                                        <IconLogo className="text-white w-5 h-5" />
-                                    </div>
-                                )}
-                                <div className="hidden sm:block">
-                                    <h1 className="text-lg font-black text-white tracking-tight leading-none">
-                                        {currentView === 'editor' ? TOOLS.find(t => t.id === appMode)?.name : 'Poster Bot'} <span className="text-rose-500">PRO</span>
-                                    </h1>
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
-                                        {currentView === 'editor' ? 'Editor Studio' : 'Studio'}
-                                    </p>
-                                </div>
+            <header className="bg-slate-950/80 backdrop-blur-xl border-b border-slate-800 sticky top-0 z-30 px-4 py-3 shadow-lg shadow-black/20">
+                <div className="max-w-7xl mx-auto flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        {currentView === 'editor' ? (
+                            <button onClick={() => setCurrentView('home')} className="p-2.5 bg-slate-900 hover:bg-slate-800 rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors flex items-center justify-center shadow-inner" title="Back to Dashboard">
+                                <IconArrowLeft />
+                            </button>
+                        ) : (
+                            <div className="bg-gradient-to-tr from-rose-600 to-rose-400 p-2.5 rounded-xl shadow-[0_0_15px_rgba(225,29,72,0.4)] flex items-center justify-center">
+                                <IconLogo className="text-white w-5 h-5" />
                             </div>
-                            <div className="flex items-center gap-4">
-                                <div className="flex items-center gap-2.5 bg-slate-900 px-4 py-2 rounded-full border border-slate-800 cursor-pointer hover:bg-slate-800 transition-colors shadow-inner" onClick={() => setShowBuyModal(true)}>
-                                    <IconCoin />
-                                    {isCheckingPoints ? <div className="loader"></div> : <span className="text-sm font-bold text-amber-400">{points}</span>}
-                                </div>
-                                {currentView === 'editor' && (
-                                    <button onClick={handleDownloadClick} disabled={isProcessing} className="bg-rose-600 hover:bg-rose-500 text-white px-5 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 active:scale-95 transition-all shadow-[0_0_15px_rgba(225,29,72,0.4)] disabled:opacity-50 disabled:active:scale-100 disabled:shadow-none">
-                                        {isProcessing ? 'Processing...' : <><IconDownload /> Export</>}
-                                    </button>
-                                )}
-                            </div>
+                        )}
+                        <div className="hidden sm:block">
+                            <h1 className="text-lg font-black text-white tracking-tight leading-none">
+                                {currentView === 'editor' ? TOOLS.find(t => t.id === appMode)?.name : 'Poster Bot'} <span className="text-rose-500">PRO</span>
+                            </h1>
+                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                                {currentView === 'editor' ? 'Editor Studio' : 'Studio'}
+                            </p>
                         </div>
-                    </header>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2.5 bg-slate-900 px-4 py-2 rounded-full border border-slate-800 cursor-pointer hover:bg-slate-800 transition-colors shadow-inner" onClick={() => setShowBuyModal(true)}>
+                            <IconCoin />
+                            {isCheckingPoints ? <div className="loader"></div> : <span className="text-sm font-bold text-amber-400">{points}</span>}
+                        </div>
+                        {currentView === 'editor' && (
+                            <button onClick={handleDownloadClick} disabled={isProcessing} className="bg-rose-600 hover:bg-rose-500 text-white px-5 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 active:scale-95 transition-all shadow-[0_0_15px_rgba(225,29,72,0.4)] disabled:opacity-50 disabled:active:scale-100 disabled:shadow-none">
+                                {isProcessing ? 'Processing...' : <><IconDownload /> 8K Export</>}
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </header>
 
-                    <main className="flex-1 w-full p-4 md:p-6 max-w-7xl mx-auto">
-                        {currentView === 'home' ? (
-                            <div className="space-y-12 animation-fadeIn">
-                                <div className="relative text-center py-12 px-4 mb-4 rounded-[2rem] border border-slate-800 bg-slate-900/50 shadow-inner overflow-hidden">
-                                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-lg h-32 bg-rose-500/20 blur-[100px] pointer-events-none"></div>
-                                    <div className="bg-rose-500/10 text-rose-500 px-4 py-1.5 rounded-full text-xs font-bold inline-flex items-center gap-2 mb-6 border border-rose-500/20"><IconStar className="w-4 h-4"/> v3.5 Video Engine</div>
-                                    <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">Create Pro Graphics. <br className="md:hidden"/><span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-amber-500">In Seconds.</span></h2>
-                                    <p className="text-slate-400 text-sm md:text-base font-medium max-w-xl mx-auto">Select a tool from the dashboard below to instantly generate high-quality sports posters, news overlays, and match scorecards.</p>
-                                </div>
+            <main className="flex-1 w-full p-4 md:p-6 max-w-7xl mx-auto">
+                {currentView === 'home' ? (
+                    <div className="space-y-12 animation-fadeIn">
+                        <div className="relative text-center py-12 px-4 mb-4 rounded-[2rem] border border-slate-800 bg-slate-900/50 shadow-inner overflow-hidden">
+                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-lg h-32 bg-rose-500/20 blur-[100px] pointer-events-none"></div>
+                            <div className="bg-rose-500/10 text-rose-500 px-4 py-1.5 rounded-full text-xs font-bold inline-flex items-center gap-2 mb-6 border border-rose-500/20"><IconStar className="w-4 h-4"/> v4.0 Cinematic HD Engine</div>
+                            <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">Create Pro Graphics. <br className="md:hidden"/><span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-amber-500">In Seconds.</span></h2>
+                            <p className="text-slate-400 text-sm md:text-base font-medium max-w-xl mx-auto">Select a tool from the dashboard below to instantly generate high-quality sports posters, news overlays, and match scorecards.</p>
+                        </div>
 
-                                {/* CATEGORIZED TOOL GRID */}
-                                {TOOL_CATEGORIES.map(category => (
-                                    <div key={category.name} className="mb-10">
-                                        <h3 className="text-xl font-black text-slate-300 mb-5 flex items-center gap-2 border-l-4 border-rose-500 pl-3">
-                                            {category.name}
-                                        </h3>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                                            {category.tools.map(tool => (
-                                                <div key={tool.id} onClick={() => { 
-                                                    if (tool.id === 'viral_video') {
-                                                        setCurrentView('video');
-                                                        window.scrollTo(0,0);
-                                                    } else {
-                                                        setAppMode(tool.id); 
-                                                        setActiveTab('match'); 
-                                                        setCurrentView('editor'); 
-                                                        window.scrollTo(0,0); 
-                                                    }
-                                                }} className="group bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-3xl p-6 cursor-pointer hover:shadow-2xl hover:shadow-slate-900/50 transition-all hover:-translate-y-1 flex flex-col items-start text-left relative overflow-hidden">
-                                                    <div className={`absolute -right-10 -bottom-10 w-32 h-32 ${tool.bg} rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity`}></div>
-                                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-5 ${tool.bg} ${tool.color} border ${tool.border} group-hover:scale-110 transition-transform shadow-inner [&>svg]:w-7 [&>svg]:h-7 relative z-10`}>
-                                                        <tool.icon />
-                                                    </div>
-                                                    <h3 className="text-lg font-bold text-white mb-1.5 group-hover:text-rose-400 transition-colors relative z-10">{tool.name}</h3>
-                                                    <p className="text-xs text-slate-400 font-medium leading-relaxed relative z-10">{tool.desc}</p>
-                                                </div>
-                                            ))}
+                        {/* CATEGORIZED TOOL GRID */}
+                        {TOOL_CATEGORIES.map(category => (
+                            <div key={category.name} className="mb-10">
+                                <h3 className="text-xl font-black text-slate-300 mb-5 flex items-center gap-2 border-l-4 border-rose-500 pl-3">
+                                    {category.name}
+                                </h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                                    {category.tools.map(tool => (
+                                        <div key={tool.id} onClick={() => { setAppMode(tool.id); setActiveTab('match'); setCurrentView('editor'); window.scrollTo(0,0); }} className="group bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-3xl p-6 cursor-pointer hover:shadow-2xl hover:shadow-slate-900/50 transition-all hover:-translate-y-1 flex flex-col items-start text-left relative overflow-hidden">
+                                            <div className={`absolute -right-10 -bottom-10 w-32 h-32 ${tool.bg} rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity`}></div>
+                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-5 ${tool.bg} ${tool.color} border ${tool.border} group-hover:scale-110 transition-transform shadow-inner [&>svg]:w-7 [&>svg]:h-7 relative z-10`}>
+                                                <tool.icon />
+                                            </div>
+                                            <h3 className="text-lg font-bold text-white mb-1.5 group-hover:text-rose-400 transition-colors relative z-10">{tool.name}</h3>
+                                            <p className="text-xs text-slate-400 font-medium leading-relaxed relative z-10">{tool.desc}</p>
                                         </div>
-                                    </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animation-slideUpFade">
+                        {showInstallPrompt && (<div className="lg:col-span-12 install-prompt bg-slate-900 text-white p-5 rounded-2xl shadow-2xl flex items-center justify-between border border-slate-700"><div className="flex items-center gap-4"><div className="bg-rose-500/10 text-rose-500 p-3 rounded-xl border border-rose-500/20"><IconInstall /></div><div><h4 className="font-bold text-sm">Install App</h4><p className="text-xs text-slate-400 font-medium">Add to Home Screen for best experience</p></div></div><div className="flex gap-2"><button onClick={() => setShowInstallPrompt(false)} className="p-2 text-slate-500 hover:text-white transition-colors"><IconClose /></button><button onClick={handleInstallApp} className="bg-white hover:bg-slate-200 text-slate-900 px-4 py-2 rounded-xl text-sm font-bold transition-colors">Install</button></div></div>)}
+
+                        <div className="lg:col-span-5 xl:col-span-5 space-y-6">
+                            <div className="flex gap-2 overflow-x-auto custom-scroll pb-2 px-1">
+                                {TOOLS.map(toolConfig => (
+                                    <button key={toolConfig.id} onClick={() => setAppMode(toolConfig.id)} className={`whitespace-nowrap px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 ${appMode === toolConfig.id ? 'bg-gradient-to-r from-rose-500 to-red-600 text-white shadow-[0_0_15px_rgba(225,29,72,0.3)]' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-800/50'}`}>
+                                        {toolConfig.name}
+                                    </button>
                                 ))}
                             </div>
-                        ) : (
-                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animation-slideUpFade">
-                                {showInstallPrompt && (<div className="lg:col-span-12 install-prompt bg-slate-900 text-white p-5 rounded-2xl shadow-2xl flex items-center justify-between border border-slate-700"><div className="flex items-center gap-4"><div className="bg-rose-500/10 text-rose-500 p-3 rounded-xl border border-rose-500/20"><IconInstall /></div><div><h4 className="font-bold text-sm">Install App</h4><p className="text-xs text-slate-400 font-medium">Add to Home Screen for best experience</p></div></div><div className="flex gap-2"><button onClick={() => setShowInstallPrompt(false)} className="p-2 text-slate-500 hover:text-white transition-colors"><IconClose /></button><button onClick={handleInstallApp} className="bg-white hover:bg-slate-200 text-slate-900 px-4 py-2 rounded-xl text-sm font-bold transition-colors">Install</button></div></div>)}
 
-                                <div className="lg:col-span-5 xl:col-span-5 space-y-6">
-                                    <div className="flex gap-2 overflow-x-auto custom-scroll pb-2 px-1">
-                                        {TOOLS.filter(t => t.id !== 'viral_video').map(toolConfig => (
-                                            <button key={toolConfig.id} onClick={() => setAppMode(toolConfig.id)} className={`whitespace-nowrap px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 ${appMode === toolConfig.id ? 'bg-gradient-to-r from-rose-500 to-red-600 text-white shadow-[0_0_15px_rgba(225,29,72,0.3)]' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-800/50'}`}>
-                                                {toolConfig.name}
-                                            </button>
-                                        ))}
+                            <div className="bg-slate-900 rounded-[2rem] overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.5)] border border-slate-800 aspect-[1080/1200] relative group canvas-container touch-none ring-1 ring-white/5">
+                                <canvas 
+                                    ref={canvasRef} 
+                                    className={`w-full h-full object-contain touch-none ${appMode === 't_fixture' || appMode === 'discussion' ? '' : 'cursor-move'}`} 
+                                    onTouchStart={handleTouchStart} 
+                                    onTouchMove={handleTouchMove} 
+                                    onTouchEnd={handleEnd} 
+                                    onMouseDown={handleMouseDown} 
+                                    onMouseMove={handleMouseMove} 
+                                    onMouseUp={handleEnd} 
+                                    onMouseLeave={handleEnd}
+                                ></canvas>
+                                
+                                <div className="absolute top-5 right-5 flex flex-col gap-3 z-50">
+                                    <button onClick={resetImage} className="bg-slate-900/60 text-white p-3 rounded-full backdrop-blur-md hover:bg-rose-600 transition-colors border border-slate-700/50 shadow-lg" title="Reset Image Positions"><IconRefresh /></button>
+                                </div>
+                                
+                                {!bgImage && appMode !== 'discussion' && appMode !== 'squad' && appMode !== 't_fixture' && <div className="absolute inset-0 pointer-events-none flex items-center justify-center bg-slate-950/50 backdrop-blur-sm"><span className="bg-slate-900 border border-slate-700 text-white px-6 py-3 rounded-full text-sm font-bold shadow-2xl flex items-center gap-3"><div className="loader border-t-rose-500 border-white/20"></div> Initializing Canvas...</span></div>}
+                            </div>
+                            
+                            {bgImage && appMode !== 'discussion' && appMode !== 't_fixture' && (
+                                <div className="bg-slate-900 p-5 rounded-3xl shadow-xl border border-slate-800 flex flex-col gap-4 relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
+                                    <div className="flex items-center gap-4 relative z-10">
+                                        <span className="text-[10px] uppercase font-bold text-slate-400 w-16 flex items-center gap-1 bg-slate-950 px-2 py-1.5 rounded-lg border border-slate-800">Img 1 <IconMove className="w-3 h-3 text-rose-500"/></span>
+                                        <IconZoomIn className="text-slate-500" />
+                                        <input type="range" min="0.1" max="5" step="0.05" value={img1Pos.scale} onChange={(e) => setImg1Pos(p => ({ ...p, scale: parseFloat(e.target.value) }))} className="w-full flex-1" />
                                     </div>
-
-                                    <div className="bg-slate-900 rounded-[2rem] overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.5)] border border-slate-800 aspect-[1080/1200] relative group canvas-container touch-none ring-1 ring-white/5">
-                                        <canvas 
-                                            ref={canvasRef} 
-                                            className={`w-full h-full object-contain touch-none ${appMode === 't_fixture' || appMode === 'discussion' ? '' : 'cursor-move'}`} 
-                                            onTouchStart={handleTouchStart} 
-                                            onTouchMove={handleTouchMove} 
-                                            onTouchEnd={handleEnd} 
-                                            onMouseDown={handleMouseDown} 
-                                            onMouseMove={handleMouseMove} 
-                                            onMouseUp={handleEnd} 
-                                            onMouseLeave={handleEnd}
-                                        ></canvas>
-                                        
-                                        <div className="absolute top-5 right-5 flex flex-col gap-3 z-50">
-                                            <button onClick={resetImage} className="bg-slate-900/60 text-white p-3 rounded-full backdrop-blur-md hover:bg-rose-600 transition-colors border border-slate-700/50 shadow-lg" title="Reset Image Positions"><IconRefresh /></button>
+                                    {bgImage2 && appMode !== 'statement' && appMode !== 'squad' && (
+                                        <div className="flex items-center gap-4 relative z-10">
+                                            <span className="text-[10px] uppercase font-bold text-slate-400 w-16 flex items-center gap-1 bg-slate-950 px-2 py-1.5 rounded-lg border border-slate-800">Img 2 <IconMove className="w-3 h-3 text-blue-500"/></span>
+                                            <IconZoomIn className="text-slate-500" />
+                                            <input type="range" min="0.1" max="5" step="0.05" value={img2Pos.scale} onChange={(e) => setImg2Pos(p => ({ ...p, scale: parseFloat(e.target.value) }))} className="w-full flex-1" />
                                         </div>
-                                        
-                                        {!bgImage && appMode !== 'discussion' && appMode !== 'squad' && appMode !== 't_fixture' && <div className="absolute inset-0 pointer-events-none flex items-center justify-center bg-slate-950/50 backdrop-blur-sm"><span className="bg-slate-900 border border-slate-700 text-white px-6 py-3 rounded-full text-sm font-bold shadow-2xl flex items-center gap-3"><div className="loader border-t-rose-500 border-white/20"></div> Initializing Canvas...</span></div>}
+                                    )}
+                                    {avatarImage && appMode === 'statement' && (
+                                        <div className="flex items-center gap-4 relative z-10">
+                                            <span className="text-[10px] uppercase font-bold text-slate-400 w-16 flex items-center gap-1 bg-slate-950 px-2 py-1.5 rounded-lg border border-slate-800">Avatar <IconMove className="w-3 h-3 text-amber-500"/></span>
+                                            <IconZoomIn className="text-slate-500" />
+                                            <input type="range" min="0.1" max="5" step="0.05" value={avatarPos.scale} onChange={(e) => setAvatarPos(p => ({ ...p, scale: parseFloat(e.target.value) }))} className="w-full flex-1" />
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="lg:col-span-7 xl:col-span-7 flex flex-col h-full">
+                            <div className="bg-slate-900 rounded-3xl shadow-xl border border-slate-800 flex flex-col flex-1 relative overflow-hidden h-[calc(100vh-140px)] lg:h-[85vh]">
+                                <div className="p-3 bg-slate-950 border-b border-slate-800 sticky top-0 z-20">
+                                    <div className="flex p-1 bg-slate-900 rounded-2xl border border-slate-800 shadow-inner">
+                                        <button onClick={() => setActiveTab('match')} className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'match' ? 'bg-slate-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-300'}`}>Content</button>
+                                        {(appMode === 'scorecard' || appMode === 'schedule' || appMode === 'f_scorecard') && (
+                                            <button onClick={() => setActiveTab('teams')} className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'teams' ? 'bg-slate-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-300'}`}>Teams</button>
+                                        )}
+                                        <button onClick={() => setActiveTab('style')} className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'style' ? 'bg-slate-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-300'}`}>Style</button>
                                     </div>
-                                    
-                                    {bgImage && appMode !== 'discussion' && appMode !== 't_fixture' && (
-                                        <div className="bg-slate-900 p-5 rounded-3xl shadow-xl border border-slate-800 flex flex-col gap-4 relative overflow-hidden">
-                                            <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
-                                            <div className="flex items-center gap-4 relative z-10">
-                                                <span className="text-[10px] uppercase font-bold text-slate-400 w-16 flex items-center gap-1 bg-slate-950 px-2 py-1.5 rounded-lg border border-slate-800">Img 1 <IconMove className="w-3 h-3 text-rose-500"/></span>
-                                                <IconZoomIn className="text-slate-500" />
-                                                <input type="range" min="0.1" max="5" step="0.05" value={img1Pos.scale} onChange={(e) => setImg1Pos(p => ({ ...p, scale: parseFloat(e.target.value) }))} className="w-full flex-1" />
-                                            </div>
-                                            {bgImage2 && appMode !== 'statement' && appMode !== 'squad' && (
-                                                <div className="flex items-center gap-4 relative z-10">
-                                                    <span className="text-[10px] uppercase font-bold text-slate-400 w-16 flex items-center gap-1 bg-slate-950 px-2 py-1.5 rounded-lg border border-slate-800">Img 2 <IconMove className="w-3 h-3 text-blue-500"/></span>
-                                                    <IconZoomIn className="text-slate-500" />
-                                                    <input type="range" min="0.1" max="5" step="0.05" value={img2Pos.scale} onChange={(e) => setImg2Pos(p => ({ ...p, scale: parseFloat(e.target.value) }))} className="w-full flex-1" />
+                                </div>
+
+                                <div className="p-6 space-y-6 overflow-y-auto custom-scroll flex-1">
+                                    {activeTab === 'match' && (
+                                        <div className="space-y-6">
+                                            {appMode !== 'discussion' && appMode !== 't_fixture' && (
+                                                <div className="flex gap-4">
+                                                    <div className="relative group flex-1">
+                                                        <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, false)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                                                        <div className="border-2 border-dashed border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-slate-950/50 group-hover:bg-slate-800/80 group-hover:border-rose-500/50 transition-all">
+                                                            <div className="bg-slate-800 p-3 rounded-full shadow-lg text-rose-500 group-hover:scale-110 transition-transform"><IconUpload /></div>
+                                                            <span className="text-xs font-bold text-slate-400">Photo 1 (Main)</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="relative group flex-1">
+                                                        {appMode === 'statement' ? (
+                                                            avatarImage ? (
+                                                                <div className="h-full border border-amber-500/30 bg-amber-500/5 rounded-2xl flex flex-col items-center justify-center relative shadow-inner p-4">
+                                                                    <span className="text-xs font-bold text-amber-400 mb-2">Avatar Active</span>
+                                                                    <button onClick={() => setAvatarImage(null)} className="flex items-center justify-center w-full gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 px-3 py-2 rounded-lg text-xs font-bold border border-slate-700 transition-colors z-20 relative"><IconTrash /> Remove</button>
+                                                                </div>
+                                                            ) : (
+                                                                <>
+                                                                    <input type="file" accept="image/*" onChange={(e) => handleAvatarUpload(e)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                                                                    <div className="border-2 border-dashed border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-slate-950/50 group-hover:bg-slate-800/80 group-hover:border-amber-500/50 transition-all">
+                                                                        <div className="bg-slate-800 p-3 rounded-full shadow-lg text-amber-500 group-hover:scale-110 transition-transform"><IconUser /></div>
+                                                                        <span className="text-xs font-bold text-slate-400">Avatar</span>
+                                                                    </div>
+                                                                </>
+                                                            )
+                                                        ) : (
+                                                            (appMode !== 'squad' && bgImage2) ? (
+                                                                <div className="h-full border border-blue-500/30 bg-blue-500/5 rounded-2xl flex flex-col items-center justify-center relative shadow-inner p-4">
+                                                                    <span className="text-xs font-bold text-blue-400 mb-2">Img 2 Active</span>
+                                                                    <button onClick={() => setBgImage2(null)} className="flex items-center justify-center w-full gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 px-3 py-2 rounded-lg text-xs font-bold border border-slate-700 transition-colors z-20 relative"><IconTrash /> Remove</button>
+                                                                </div>
+                                                            ) : (
+                                                                appMode !== 'squad' && (
+                                                                    <>
+                                                                        <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, true)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                                                                        <div className="border-2 border-dashed border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-slate-950/50 group-hover:bg-slate-800/80 group-hover:border-blue-500/50 transition-all">
+                                                                            <div className="bg-slate-800 p-3 rounded-full shadow-lg text-blue-500 group-hover:scale-110 transition-transform"><IconUpload /></div>
+                                                                            <span className="text-xs font-bold text-slate-400">{appMode === 'f_scorecard' ? 'Photo 2 (Inset Circle)' : 'Photo 2 (Opt)'}</span>
+                                                                        </div>
+                                                                    </>
+                                                                )
+                                                            )
+                                                        )}
+                                                    </div>
                                                 </div>
                                             )}
-                                            {avatarImage && appMode === 'statement' && (
-                                                <div className="flex items-center gap-4 relative z-10">
-                                                    <span className="text-[10px] uppercase font-bold text-slate-400 w-16 flex items-center gap-1 bg-slate-950 px-2 py-1.5 rounded-lg border border-slate-800">Avatar <IconMove className="w-3 h-3 text-amber-500"/></span>
-                                                    <IconZoomIn className="text-slate-500" />
-                                                    <input type="range" min="0.1" max="5" step="0.05" value={avatarPos.scale} onChange={(e) => setAvatarPos(p => ({ ...p, scale: parseFloat(e.target.value) }))} className="w-full flex-1" />
+
+                                            <div className="space-y-4">
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Badge Text</label>
+                                                        <input type="text" name="badgeText" value={formData.badgeText} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-medium text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Badge" />
+                                                    </div>
+                                                    {appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone' && appMode !== 'statement' && appMode !== 'discussion' && appMode !== 'multi_result' && appMode !== 'multi_schedule' && appMode !== 'squad' && appMode !== 't_fixture' && appMode !== 'f_scorecard' && (
+                                                        <div>
+                                                            <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Main Title</label>
+                                                            <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-medium text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Tournament Name" />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Footer / Handle</label>
+                                                    <input type="text" name="footerHandle" value={formData.footerHandle} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-medium text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="e.g., @proscorecard_bot" />
+                                                </div>
+                                            </div>
+
+                                            {/* NEW FOOTBALL SCORECARD TOOL EDITOR */}
+                                            {appMode === 'f_scorecard' && (
+                                                <div className="p-5 bg-emerald-500/10 rounded-2xl border-l-4 border-emerald-500 shadow-inner space-y-4">
+                                                    <h4 className="text-sm font-black text-emerald-400 uppercase tracking-wider flex items-center gap-2 mb-4"><IconFootball /> Football PRO Setup</h4>
+                                                    
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-emerald-300 mb-1.5 block ml-1">Tournament Title</label>
+                                                        <input type="text" name="fTourneyTitle" value={formData.fTourneyTitle} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-emerald-300 mb-1.5 block ml-1">Match Status (e.g. ফুল টাইম)</label>
+                                                        <input type="text" name="fMatchStatus" value={formData.fMatchStatus} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {appMode === 't_fixture' && (
+                                                <div className="p-5 bg-orange-500/10 rounded-2xl border-l-4 border-orange-500 shadow-inner space-y-4">
+                                                    <h4 className="text-sm font-black text-orange-400 uppercase tracking-wider flex items-center gap-2 mb-4"><IconLayout /> Tournament Fixtures</h4>
+                                                    
+                                                    {/* Top Headers */}
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-orange-300 mb-1.5 block ml-1">Main Event Title (Use Enter to split lines)</label>
+                                                            <textarea name="fixtureTitle" value={formData.fixtureTitle} onChange={handleChange} rows="2" className="w-full px-4 py-3 bg-slate-900 border border-orange-500/30 rounded-xl text-sm font-bold text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all" placeholder="Title..."></textarea>
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-orange-300 mb-1.5 block ml-1">Subtitle (Round / Season)</label>
+                                                            <input type="text" name="fixtureSubtitle" value={formData.fixtureSubtitle} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-orange-500/30 rounded-xl text-sm font-bold text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all" placeholder="Subtitle" />
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Footers */}
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-orange-300 mb-1.5 block ml-1">Footer 1 (Date / Opening)</label>
+                                                            <input type="text" name="fixtureDateFooter" value={formData.fixtureDateFooter} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-orange-500/30 rounded-xl text-sm font-bold text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all" />
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-orange-300 mb-1.5 block ml-1">Footer 2 (Organizer)</label>
+                                                            <input type="text" name="fixtureOrganizerFooter" value={formData.fixtureOrganizerFooter} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-orange-500/30 rounded-xl text-sm font-bold text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all" />
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Dynamic Matchups Array */}
+                                                    <div className="space-y-4 mt-8 pt-6 border-t border-orange-500/20">
+                                                        <h5 className="text-xs font-black text-slate-300 uppercase tracking-widest text-center">Matchups List</h5>
+                                                        
+                                                        {formData.matchupList.map((match, index) => (
+                                                            <div key={match.id} className="p-4 bg-slate-950 rounded-2xl border border-slate-800 relative group transition-all hover:border-orange-500/30">
+                                                                <div className="absolute -top-3 left-4 bg-slate-800 px-3 py-0.5 rounded text-[10px] font-bold text-slate-300 shadow-sm border border-slate-700">Match {index + 1}</div>
+                                                                <button onClick={() => removeMatchup(match.id)} className="absolute top-2 right-2 p-1.5 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors border border-red-500/20" title="Delete"><IconTrash /></button>
+                                                                
+                                                                <div className="mt-3 mb-2">
+                                                                    <label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Match Date / Info</label>
+                                                                    <input type="text" value={match.date} onChange={(e) => handleMatchupChange(match.id, 'date', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm font-bold text-white focus:border-orange-500 transition-colors" placeholder="e.g. 20 Mar" />
+                                                                </div>
+
+                                                                <div className="grid grid-cols-2 gap-4 mt-2">
+                                                                    <div className="space-y-2">
+                                                                        <div>
+                                                                            <label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Left Team</label>
+                                                                            <input type="text" value={match.t1} onChange={(e) => handleMatchupChange(match.id, 't1', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-white focus:border-orange-500 transition-colors" />
+                                                                        </div>
+                                                                        <div>
+                                                                            <label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Left Sub-Text</label>
+                                                                            <input type="text" value={match.t1Sub} onChange={(e) => handleMatchupChange(match.id, 't1Sub', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-slate-400 focus:border-orange-500 transition-colors" />
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="space-y-2">
+                                                                        <div>
+                                                                            <label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Right Team</label>
+                                                                            <input type="text" value={match.t2} onChange={(e) => handleMatchupChange(match.id, 't2', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-white focus:border-orange-500 transition-colors" />
+                                                                        </div>
+                                                                        <div>
+                                                                            <label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Right Sub-Text</label>
+                                                                            <input type="text" value={match.t2Sub} onChange={(e) => handleMatchupChange(match.id, 't2Sub', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-slate-400 focus:border-orange-500 transition-colors" />
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <button onClick={addMatchup} className="w-full py-4 mt-2 bg-slate-900 hover:bg-slate-800 text-orange-400 rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-dashed border-orange-500/30 hover:border-orange-500/60 transition-all">+ Add Fixture Match</button>
+                                                </div>
+                                            )}
+                                            
+                                            {appMode === 'squad' && (
+                                                <div className="p-5 bg-green-500/10 rounded-2xl border-l-4 border-green-500 shadow-inner space-y-4">
+                                                    <h4 className="text-xs font-black text-green-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconUsers /> Squad Builder</h4>
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-green-300 mb-1.5 block ml-1">Series Title (Red Box)</label>
+                                                        <input type="text" name="squadTitle" value={formData.squadTitle} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-green-500/30 rounded-xl text-sm font-bold text-white focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-green-300 mb-1.5 block ml-1">Player List (Enter names on new lines)</label>
+                                                        <textarea name="squadList" value={formData.squadList} onChange={handleChange} rows="10" className="w-full px-4 py-3 bg-slate-900 border border-green-500/30 rounded-xl text-sm font-medium text-white focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all leading-relaxed whitespace-pre" placeholder="List players here..."></textarea>
+                                                        <p className="text-[10px] text-slate-500 mt-2">💡 Tip: Use <b>(c)</b>, <b>(wk)</b>, or <b>(captain)</b> next to a name to highlight it in yellow.</p>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {appMode === 'multi_result' && (
+                                                <div className="p-5 bg-rose-500/5 rounded-2xl border border-rose-500/20 shadow-inner space-y-4">
+                                                    <h4 className="text-sm font-black text-rose-400 uppercase tracking-wider flex items-center gap-2 mb-4"><IconList /> Results Builder</h4>
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-rose-300 mb-1.5 block ml-1">Main Headline</label>
+                                                        <input type="text" name="multiResultTitle" value={formData.multiResultTitle} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-rose-500/30 rounded-xl text-sm font-bold text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
+                                                    </div>
+                                                    
+                                                    <div className="space-y-4 mt-6">
+                                                        {formData.resultsList.map((res, index) => (
+                                                            <div key={res.id} className="p-5 bg-slate-950 rounded-2xl border border-slate-800 relative group transition-all hover:border-slate-700">
+                                                                <div className="absolute -top-3 left-4 bg-slate-800 px-3 py-0.5 rounded text-[10px] font-bold text-slate-300 shadow-sm border border-slate-700">Match {index + 1}</div>
+                                                                <button onClick={() => removeResult(res.id)} className="absolute top-3 right-3 p-1.5 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors border border-red-500/20" title="Delete"><IconTrash /></button>
+                                                                
+                                                                <div className="grid grid-cols-2 gap-4 mt-2">
+                                                                    <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Left Team</label><input type="text" value={res.team1} onChange={(e) => handleResultChange(res.id, 'team1', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-rose-500 transition-colors" /></div>
+                                                                    <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Right Team</label><input type="text" value={res.team2} onChange={(e) => handleResultChange(res.id, 'team2', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-rose-500 transition-colors" /></div>
+                                                                    <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Left Score</label><input type="text" value={res.score1} onChange={(e) => handleResultChange(res.id, 'score1', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white text-center focus:border-rose-500 transition-colors" /></div>
+                                                                    <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Right Score</label><input type="text" value={res.score2} onChange={(e) => handleResultChange(res.id, 'score2', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white text-center focus:border-rose-500 transition-colors" /></div>
+                                                                </div>
+                                                                <div className="mt-4"><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Tournament</label><input type="text" value={res.tourney} onChange={(e) => handleResultChange(res.id, 'tourney', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-rose-500 transition-colors" /></div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <button onClick={addResult} className="w-full py-4 mt-2 bg-slate-900 hover:bg-slate-800 text-rose-400 rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-dashed border-rose-500/30 hover:border-rose-500/60 transition-all">+ Add Match Result</button>
+                                                </div>
+                                            )}
+
+                                            {appMode === 'multi_schedule' && (
+                                                <div className="p-5 bg-sky-500/5 rounded-2xl border border-sky-500/20 shadow-inner space-y-4">
+                                                    <h4 className="text-sm font-black text-sky-400 uppercase tracking-wider flex items-center gap-2 mb-4"><IconGrid /> Schedule Builder</h4>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-sky-300 mb-1.5 block ml-1">Schedule Date</label>
+                                                            <input type="text" name="multiScheduleDate" value={formData.multiScheduleDate} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-sky-500/30 rounded-xl text-sm font-bold text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all" />
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-sky-300 mb-1.5 block ml-1">Main Headline</label>
+                                                            <input type="text" name="multiScheduleTitle" value={formData.multiScheduleTitle} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-sky-500/30 rounded-xl text-sm font-bold text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all" />
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div className="space-y-4 mt-6">
+                                                        {formData.scheduleList.map((sch, index) => (
+                                                            <div key={sch.id} className="p-5 bg-slate-950 rounded-2xl border border-slate-800 relative group transition-all hover:border-slate-700">
+                                                                <div className="absolute -top-3 left-4 bg-slate-800 px-3 py-0.5 rounded text-[10px] font-bold text-slate-300 shadow-sm border border-slate-700">Fixture {index + 1}</div>
+                                                                <button onClick={() => removeSchedule(sch.id)} className="absolute top-3 right-3 p-1.5 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors border border-red-500/20" title="Delete"><IconTrash /></button>
+                                                                
+                                                                <div className="grid grid-cols-2 gap-4 mt-2">
+                                                                    <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Sport Type</label><input type="text" value={sch.sport} onChange={(e) => handleScheduleChange(sch.id, 'sport', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-sky-500 transition-colors" placeholder="e.g. ফুটবল" /></div>
+                                                                    <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Tournament</label><input type="text" value={sch.tourney} onChange={(e) => handleScheduleChange(sch.id, 'tourney', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-sky-500 transition-colors" /></div>
+                                                                </div>
+                                                                <div className="grid grid-cols-[2fr_1fr] gap-4 mt-4">
+                                                                    <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Match / Teams</label><input type="text" value={sch.match} onChange={(e) => handleScheduleChange(sch.id, 'match', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-sky-500 transition-colors" /></div>
+                                                                    <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Time</label><input type="text" value={sch.time} onChange={(e) => handleScheduleChange(sch.id, 'time', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white text-center focus:border-sky-500 transition-colors" /></div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <button onClick={addSchedule} className="w-full py-4 mt-2 bg-slate-900 hover:bg-slate-800 text-sky-400 rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-dashed border-sky-500/30 hover:border-sky-500/60 transition-all">+ Add Schedule Item</button>
+                                                </div>
+                                            )}
+
+                                            {appMode === 'discussion' && (
+                                                <div className="p-5 bg-emerald-500/5 rounded-2xl border border-emerald-500/20 shadow-inner space-y-4">
+                                                    <h4 className="text-sm font-black text-emerald-400 uppercase tracking-wider flex items-center gap-2 mb-4"><IconHelp /> Q&A / Discussion</h4>
+                                                    <div>
+                                                        <div className="flex justify-between items-center mb-1.5">
+                                                            <label className="text-[10px] uppercase font-bold text-emerald-300 ml-1">Topic / Main Heading</label>
+                                                        </div>
+                                                        <input type="text" name="discTopic" value={formData.discTopic} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
+                                                    </div>
+                                                    <div className="pt-2">
+                                                        <div className="flex justify-between items-center mb-1.5">
+                                                            <label className="text-[10px] uppercase font-bold text-emerald-300 ml-1">Discussion Lines (Auto Wraps)</label>
+                                                        </div>
+                                                        <textarea name="discLine1" value={formData.discLine1} onChange={handleChange} rows="2" className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all mb-3" placeholder="Line 1 (Accent Color)"></textarea>
+                                                        <textarea name="discLine2" value={formData.discLine2} onChange={handleChange} rows="2" className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all mb-3" placeholder="Line 2 (White Color)"></textarea>
+                                                        <textarea name="discLine3" value={formData.discLine3} onChange={handleChange} rows="2" className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" placeholder="Line 3 (Accent Color)"></textarea>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {appMode === 'poll' && (
+                                                <div className="p-5 bg-indigo-500/10 rounded-2xl border-l-4 border-indigo-500 shadow-inner space-y-4">
+                                                    <h4 className="text-xs font-black text-indigo-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconChart /> Reaction Poll Settings</h4>
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-indigo-300 mb-1.5 block ml-1">Poll Question / Headline</label>
+                                                        <input type="text" name="pollQuestion" value={formData.pollQuestion} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-indigo-500/30 rounded-xl text-sm font-bold text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all" />
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-blue-400 mb-1.5 block ml-1">👍 Left Player</label>
+                                                            <input type="text" name="pollPlayer1" value={formData.pollPlayer1} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-blue-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" />
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-rose-400 mb-1.5 block ml-1">❤️ Right Player</label>
+                                                            <input type="text" name="pollPlayer2" value={formData.pollPlayer2} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-rose-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
+                                                        </div>
+                                                    </div>
+                                                    <button onClick={swapTeams} className="w-full py-3 mt-2 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors border border-indigo-500/30"><IconSwap /> Swap Players</button>
+                                                </div>
+                                            )}
+
+                                            {appMode === 'milestone' && (
+                                                <div className="p-5 bg-yellow-500/10 rounded-2xl border-l-4 border-yellow-500 shadow-inner space-y-4">
+                                                    <h4 className="text-xs font-black text-yellow-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconStar /> Birthday & Milestone</h4>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-yellow-300 mb-1.5 block ml-1">Occasion Type</label>
+                                                            <input type="text" name="milestoneOccasion" value={formData.milestoneOccasion} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-yellow-500/30 rounded-xl text-sm font-bold text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all" placeholder="e.g. শুভ জন্মদিন" />
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-yellow-300 mb-1.5 block ml-1">Player Name</label>
+                                                            <input type="text" name="milestoneName" value={formData.milestoneName} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-yellow-500/30 rounded-xl text-sm font-bold text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all" />
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-yellow-300 mb-1.5 block ml-1">Main Highlight (Age / Record)</label>
+                                                        <input type="text" name="milestoneNumber" value={formData.milestoneNumber} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-yellow-500/30 rounded-xl text-xl font-black text-white text-center tracking-wide focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all" placeholder="e.g. ১০,০০০ রান" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-yellow-300 mb-1.5 block ml-1">Sub-Message</label>
+                                                        <textarea name="milestoneMessage" value={formData.milestoneMessage} onChange={handleChange} rows="2" className="w-full px-4 py-3 bg-slate-900 border border-yellow-500/30 rounded-xl text-sm text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all" placeholder="Wishing text..."></textarea>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {appMode === 'scorecard' && (
+                                                <div>
+                                                    <label className="text-[10px] uppercase font-bold text-slate-500 mb-1.5 block ml-1">Match Result Headline</label>
+                                                    <textarea name="result" value={formData.result} onChange={handleChange} rows="2" className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Result Text"></textarea>
+                                                </div>
+                                            )}
+
+                                            {appMode === 'schedule' && (
+                                                <div className="p-5 bg-blue-500/10 rounded-2xl border-l-4 border-blue-500 shadow-inner space-y-4">
+                                                    <h4 className="text-xs font-black text-blue-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconCalendar /> Match Details</h4>
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-blue-300 mb-1.5 block ml-1">Date</label>
+                                                        <input type="text" name="matchDate" value={formData.matchDate} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-blue-500/30 rounded-xl text-sm font-bold text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" placeholder="Date" />
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-blue-300 mb-1.5 block ml-1">Time</label>
+                                                            <input type="text" name="matchTime" value={formData.matchTime} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-blue-500/30 rounded-xl text-sm font-bold text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" placeholder="Time" />
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-blue-300 mb-1.5 block ml-1">Venue</label>
+                                                            <input type="text" name="matchVenue" value={formData.matchVenue} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-blue-500/30 rounded-xl text-sm font-bold text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" placeholder="Venue" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {appMode === 'player' && (
+                                                <div className="p-5 bg-emerald-500/10 rounded-2xl border-l-4 border-emerald-500 shadow-inner space-y-4">
+                                                    <h4 className="text-xs font-black text-emerald-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconUser /> Player Stats</h4>
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-emerald-300 mb-1.5 block ml-1">Player Name</label>
+                                                        <input type="text" name="playerName" value={formData.playerName} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" placeholder="Player Name" />
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-emerald-300 mb-1.5 block ml-1">Primary Stat</label>
+                                                            <input type="text" name="playerStatMain" value={formData.playerStatMain} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-xl font-black text-center text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" placeholder="Run/Wicket" />
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-[10px] uppercase font-bold text-emerald-300 mb-1.5 block ml-1">Sub Stat</label>
+                                                            <input type="text" name="playerStatSub" value={formData.playerStatSub} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-sm font-bold text-center text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" placeholder="Balls/Econ" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {appMode === 'career' && (
+                                                <div className="p-5 bg-cyan-500/10 rounded-2xl border-l-4 border-cyan-500 shadow-inner space-y-4">
+                                                    <h4 className="text-xs font-black text-cyan-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconChart /> Career Statistics</h4>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div><label className="text-[10px] uppercase font-bold text-cyan-300 mb-1.5 block ml-1">Player Name</label><input type="text" name="playerName" value={formData.playerName} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-cyan-500/30 rounded-xl text-sm font-bold text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" /></div>
+                                                        <div><label className="text-[10px] uppercase font-bold text-cyan-300 mb-1.5 block ml-1">Role</label><input type="text" name="playerRole" value={formData.playerRole} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-cyan-500/30 rounded-xl text-sm font-bold text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" /></div>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-4 mt-2">
+                                                        <div><label className="text-[10px] uppercase font-bold text-cyan-300 mb-1.5 block ml-1">Matches</label><input type="text" name="careerMatches" value={formData.careerMatches} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-cyan-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" /></div>
+                                                        <div><label className="text-[10px] uppercase font-bold text-cyan-300 mb-1.5 block ml-1">Total Runs</label><input type="text" name="careerRuns" value={formData.careerRuns} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-cyan-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" /></div>
+                                                        <div><label className="text-[10px] uppercase font-bold text-cyan-300 mb-1.5 block ml-1">100s</label><input type="text" name="careerHundreds" value={formData.careerHundreds} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-cyan-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" /></div>
+                                                        <div><label className="text-[10px] uppercase font-bold text-cyan-300 mb-1.5 block ml-1">50s</label><input type="text" name="careerFifties" value={formData.careerFifties} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-cyan-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" /></div>
+                                                        <div><label className="text-[10px] uppercase font-bold text-cyan-300 mb-1.5 block ml-1">Best Score</label><input type="text" name="careerBest" value={formData.careerBest} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-cyan-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" /></div>
+                                                        <div><label className="text-[10px] uppercase font-bold text-cyan-300 mb-1.5 block ml-1">Wickets</label><input type="text" name="careerWickets" value={formData.careerWickets} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-cyan-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" /></div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            
+                                            {appMode === 'news' && (
+                                                <div className="p-5 bg-red-500/10 rounded-2xl border-l-4 border-red-500 shadow-inner space-y-4">
+                                                    <h4 className="text-xs font-black text-red-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconMegaphone /> Breaking News</h4>
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-red-300 mb-1.5 block ml-1">News Body / Quote Text</label>
+                                                        <textarea name="quoteText" value={formData.quoteText} onChange={handleChange} rows="3" className="w-full px-4 py-3 bg-slate-900 border border-red-500/30 rounded-xl text-sm text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all" placeholder="Enter content..."></textarea>
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-red-300 mb-1.5 block ml-1">Headline / Author / Source</label>
+                                                        <input type="text" name="quoteAuthor" value={formData.quoteAuthor} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-red-500/30 rounded-xl text-sm font-bold text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all" placeholder="Author/Source" />
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {appMode === 'statement' && (
+                                                <div className="p-5 bg-fuchsia-500/10 rounded-2xl border-l-4 border-fuchsia-500 shadow-inner space-y-4">
+                                                    <h4 className="text-xs font-black text-fuchsia-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconMessage /> Statement / Quote Overlay</h4>
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-fuchsia-300 mb-1.5 block ml-1">Statement Text</label>
+                                                        <textarea name="quoteText" value={formData.quoteText} onChange={handleChange} rows="3" className="w-full px-4 py-3 bg-slate-900 border border-fuchsia-500/30 rounded-xl text-sm text-white focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 transition-all" placeholder="Enter statement..."></textarea>
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-fuchsia-300 mb-1.5 block ml-1">Author Name / Credit</label>
+                                                        <input type="text" name="quoteAuthor" value={formData.quoteAuthor} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-fuchsia-500/30 rounded-xl text-sm font-bold text-white focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 transition-all" placeholder="Author name" />
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                    
+                                    {activeTab === 'teams' && (appMode === 'scorecard' || appMode === 'schedule' || appMode === 'f_scorecard') && (
+                                        <div className="space-y-6">
+                                            <button onClick={swapTeams} className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors border border-slate-700 shadow-sm"><IconSwap /> Swap Sides</button>
+                                            
+                                            <div className="bg-slate-950 p-5 rounded-2xl border-l-4 border-emerald-500 shadow-inner space-y-4">
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <h3 className="text-xs font-black text-emerald-400 uppercase tracking-wider">Left Team</h3>
+                                                    <input type="color" name="team1Color" value={formData.team1Color} onChange={handleChange} className="w-8 h-8 rounded-full overflow-hidden border-2 border-slate-800 cursor-pointer shadow-sm" />
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Full Team Name</label>
+                                                    <input type="text" name="team1" value={formData.team1} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
+                                                </div>
+                                                
+                                                {appMode === 'f_scorecard' && (
+                                                    <div>
+                                                        <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Short Name (Badge Text)</label>
+                                                        <input type="text" name="fTeam1Short" value={formData.fTeam1Short} onChange={handleChange} maxLength="4" className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all uppercase" placeholder="e.g. BAN" />
+                                                    </div>
+                                                )}
+
+                                                {(appMode === 'scorecard' || appMode === 'f_scorecard') && (
+                                                    <div className="flex gap-4">
+                                                        <div className="flex-1">
+                                                            <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Score / Goals</label>
+                                                            <input type="text" name="team1Score" value={formData.team1Score} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
+                                                        </div>
+                                                        {appMode === 'scorecard' && (
+                                                            <div className="w-28">
+                                                                <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Overs</label>
+                                                                <input type="text" name="team1Overs" value={formData.team1Overs} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-center" />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            
+                                            <div className="bg-slate-950 p-5 rounded-2xl border-l-4 border-emerald-500 shadow-inner space-y-4">
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <h3 className="text-xs font-black text-emerald-400 uppercase tracking-wider">Right Team</h3>
+                                                    <input type="color" name="team2Color" value={formData.team2Color} onChange={handleChange} className="w-8 h-8 rounded-full overflow-hidden border-2 border-slate-800 cursor-pointer shadow-sm" />
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Full Team Name</label>
+                                                    <input type="text" name="team2" value={formData.team2} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
+                                                </div>
+
+                                                {appMode === 'f_scorecard' && (
+                                                    <div>
+                                                        <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Short Name (Badge Text)</label>
+                                                        <input type="text" name="fTeam2Short" value={formData.fTeam2Short} onChange={handleChange} maxLength="4" className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all uppercase" placeholder="e.g. PAK" />
+                                                    </div>
+                                                )}
+
+                                                {(appMode === 'scorecard' || appMode === 'f_scorecard') && (
+                                                    <div className="flex gap-4">
+                                                        <div className="flex-1">
+                                                            <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Score / Goals</label>
+                                                            <input type="text" name="team2Score" value={formData.team2Score} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
+                                                        </div>
+                                                        {appMode === 'scorecard' && (
+                                                            <div className="w-28">
+                                                                <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Overs</label>
+                                                                <input type="text" name="team2Overs" value={formData.team2Overs} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-center" />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                    
+                                    {activeTab === 'style' && (
+                                        <div className="space-y-6">
+                                            <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-inner">
+                                                <label className="flex items-center gap-2 text-xs font-black text-slate-300 uppercase tracking-wider mb-4"><IconEye className="text-rose-500"/> Background Opacity</label>
+                                                <div className="px-2">
+                                                    <input type="range" min="0" max="1" step="0.05" value={formData.bgOpacity} onChange={(e) => setFormData({...formData, bgOpacity: parseFloat(e.target.value)})} className="w-full" />
+                                                    <div className="flex justify-between text-[10px] font-bold text-slate-500 mt-2 uppercase"><span>Clear</span><span>Dark</span></div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-inner">
+                                                <label className="block text-xs font-black text-slate-300 uppercase tracking-wider mb-4">Colors</label>
+                                                <div className="flex gap-4">
+                                                    <div className="flex-1 space-y-1.5">
+                                                        <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Primary Color</label>
+                                                        <input type="color" name="primaryColor" value={formData.primaryColor} onChange={handleChange} className="h-12 w-full rounded-xl cursor-pointer border-0 p-0 bg-transparent" />
+                                                    </div>
+                                                    <div className="flex-1 space-y-1.5">
+                                                        <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Secondary Color</label>
+                                                        <input type="color" name="secondaryColor" value={formData.secondaryColor} onChange={handleChange} className="h-12 w-full rounded-xl cursor-pointer border-0 p-0 bg-transparent" />
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-4 mt-4">
+                                                    <div className="flex-1 space-y-1.5">
+                                                        <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Accent / Team 1</label>
+                                                        <input type="color" name="team1Color" value={formData.team1Color} onChange={handleChange} className="h-12 w-full rounded-xl cursor-pointer border-0 p-0 bg-transparent" />
+                                                    </div>
+                                                    <div className="flex-1 space-y-1.5">
+                                                        <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Accent / Team 2</label>
+                                                        <input type="color" name="team2Color" value={formData.team2Color} onChange={handleChange} className="h-12 w-full rounded-xl cursor-pointer border-0 p-0 bg-transparent" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            {appMode === 'news' && (
+                                                <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-inner">
+                                                    <label className="flex items-center gap-2 text-xs font-black text-slate-300 uppercase tracking-wider mb-4"><IconHeight className="text-rose-500"/> News Overlay Height</label>
+                                                    <div className="px-2">
+                                                        <input type="range" min="0.2" max="0.9" step="0.05" value={formData.newsGradientHeight} onChange={(e) => setFormData({...formData, newsGradientHeight: parseFloat(e.target.value)})} className="w-full" />
+                                                        <div className="flex justify-between text-[10px] font-bold text-slate-500 mt-2 uppercase"><span>Low</span><span>High</span></div>
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>
                                     )}
                                 </div>
-
-                                <div className="lg:col-span-7 xl:col-span-7 flex flex-col h-full">
-                                    <div className="bg-slate-900 rounded-3xl shadow-xl border border-slate-800 flex flex-col flex-1 relative overflow-hidden h-[calc(100vh-140px)] lg:h-[85vh]">
-                                        <div className="p-3 bg-slate-950 border-b border-slate-800 sticky top-0 z-20">
-                                            <div className="flex p-1 bg-slate-900 rounded-2xl border border-slate-800 shadow-inner">
-                                                <button onClick={() => setActiveTab('match')} className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'match' ? 'bg-slate-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-300'}`}>Content</button>
-                                                {(appMode === 'scorecard' || appMode === 'schedule' || appMode === 'f_scorecard') && (
-                                                    <button onClick={() => setActiveTab('teams')} className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'teams' ? 'bg-slate-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-300'}`}>Teams</button>
-                                                )}
-                                                <button onClick={() => setActiveTab('style')} className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'style' ? 'bg-slate-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-300'}`}>Style</button>
-                                            </div>
-                                        </div>
-
-                                        <div className="p-6 space-y-6 overflow-y-auto custom-scroll flex-1">
-                                            {activeTab === 'match' && (
-                                                <div className="space-y-6">
-                                                    {appMode !== 'discussion' && appMode !== 't_fixture' && (
-                                                        <div className="flex gap-4">
-                                                            <div className="relative group flex-1">
-                                                                <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, false)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                                                                <div className="border-2 border-dashed border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-slate-950/50 group-hover:bg-slate-800/80 group-hover:border-rose-500/50 transition-all">
-                                                                    <div className="bg-slate-800 p-3 rounded-full shadow-lg text-rose-500 group-hover:scale-110 transition-transform"><IconUpload /></div>
-                                                                    <span className="text-xs font-bold text-slate-400">Photo 1 (Main)</span>
-                                                                </div>
-                                                            </div>
-                                                            <div className="relative group flex-1">
-                                                                {appMode === 'statement' ? (
-                                                                    avatarImage ? (
-                                                                        <div className="h-full border border-amber-500/30 bg-amber-500/5 rounded-2xl flex flex-col items-center justify-center relative shadow-inner p-4">
-                                                                            <span className="text-xs font-bold text-amber-400 mb-2">Avatar Active</span>
-                                                                            <button onClick={() => setAvatarImage(null)} className="flex items-center justify-center w-full gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 px-3 py-2 rounded-lg text-xs font-bold border border-slate-700 transition-colors z-20 relative"><IconTrash /> Remove</button>
-                                                                        </div>
-                                                                    ) : (
-                                                                        <>
-                                                                            <input type="file" accept="image/*" onChange={(e) => handleAvatarUpload(e)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                                                                            <div className="border-2 border-dashed border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-slate-950/50 group-hover:bg-slate-800/80 group-hover:border-amber-500/50 transition-all">
-                                                                                <div className="bg-slate-800 p-3 rounded-full shadow-lg text-amber-500 group-hover:scale-110 transition-transform"><IconUser /></div>
-                                                                                <span className="text-xs font-bold text-slate-400">Avatar</span>
-                                                                            </div>
-                                                                        </>
-                                                                    )
-                                                                ) : (
-                                                                    (appMode !== 'squad' && bgImage2) ? (
-                                                                        <div className="h-full border border-blue-500/30 bg-blue-500/5 rounded-2xl flex flex-col items-center justify-center relative shadow-inner p-4">
-                                                                            <span className="text-xs font-bold text-blue-400 mb-2">Img 2 Active</span>
-                                                                            <button onClick={() => setBgImage2(null)} className="flex items-center justify-center w-full gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 px-3 py-2 rounded-lg text-xs font-bold border border-slate-700 transition-colors z-20 relative"><IconTrash /> Remove</button>
-                                                                        </div>
-                                                                    ) : (
-                                                                        appMode !== 'squad' && (
-                                                                            <>
-                                                                                <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, true)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                                                                                <div className="border-2 border-dashed border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-slate-950/50 group-hover:bg-slate-800/80 group-hover:border-blue-500/50 transition-all">
-                                                                                    <div className="bg-slate-800 p-3 rounded-full shadow-lg text-blue-500 group-hover:scale-110 transition-transform"><IconUpload /></div>
-                                                                                    <span className="text-xs font-bold text-slate-400">{appMode === 'f_scorecard' ? 'Photo 2 (Inset Circle)' : 'Photo 2 (Opt)'}</span>
-                                                                                </div>
-                                                                            </>
-                                                                        )
-                                                                    )
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    <div className="space-y-4">
-                                                        <div className="grid grid-cols-2 gap-4">
-                                                            <div>
-                                                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Badge Text</label>
-                                                                <input type="text" name="badgeText" value={formData.badgeText} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-medium text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Badge" />
-                                                            </div>
-                                                            {appMode !== 'news' && appMode !== 'career' && appMode !== 'poll' && appMode !== 'milestone' && appMode !== 'statement' && appMode !== 'discussion' && appMode !== 'multi_result' && appMode !== 'multi_schedule' && appMode !== 'squad' && appMode !== 't_fixture' && appMode !== 'f_scorecard' && (
-                                                                <div>
-                                                                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Main Title</label>
-                                                                    <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-medium text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Tournament Name" />
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <div>
-                                                            <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Footer / Handle</label>
-                                                            <input type="text" name="footerHandle" value={formData.footerHandle} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-medium text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="e.g., @proscorecard_bot" />
-                                                        </div>
-                                                    </div>
-
-                                                    {/* NEW FOOTBALL SCORECARD TOOL EDITOR */}
-                                                    {appMode === 'f_scorecard' && (
-                                                        <div className="p-5 bg-emerald-500/10 rounded-2xl border-l-4 border-emerald-500 shadow-inner space-y-4">
-                                                            <h4 className="text-sm font-black text-emerald-400 uppercase tracking-wider flex items-center gap-2 mb-4"><IconFootball /> Football PRO Setup</h4>
-                                                            
-                                                            <div>
-                                                                <label className="text-[10px] uppercase font-bold text-emerald-300 mb-1.5 block ml-1">Tournament Title</label>
-                                                                <input type="text" name="fTourneyTitle" value={formData.fTourneyTitle} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
-                                                            </div>
-                                                            <div>
-                                                                <label className="text-[10px] uppercase font-bold text-emerald-300 mb-1.5 block ml-1">Match Status (e.g. ফুল টাইম)</label>
-                                                                <input type="text" name="fMatchStatus" value={formData.fMatchStatus} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    {appMode === 't_fixture' && (
-                                                        <div className="p-5 bg-orange-500/10 rounded-2xl border-l-4 border-orange-500 shadow-inner space-y-4">
-                                                            <h4 className="text-sm font-black text-orange-400 uppercase tracking-wider flex items-center gap-2 mb-4"><IconLayout /> Tournament Fixtures</h4>
-                                                            
-                                                            {/* Top Headers */}
-                                                            <div className="space-y-4">
-                                                                <div>
-                                                                    <label className="text-[10px] uppercase font-bold text-orange-300 mb-1.5 block ml-1">Main Event Title (Use Enter to split lines)</label>
-                                                                    <textarea name="fixtureTitle" value={formData.fixtureTitle} onChange={handleChange} rows="2" className="w-full px-4 py-3 bg-slate-900 border border-orange-500/30 rounded-xl text-sm font-bold text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all" placeholder="Title..."></textarea>
-                                                                </div>
-                                                                <div>
-                                                                    <label className="text-[10px] uppercase font-bold text-orange-300 mb-1.5 block ml-1">Subtitle (Round / Season)</label>
-                                                                    <input type="text" name="fixtureSubtitle" value={formData.fixtureSubtitle} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-orange-500/30 rounded-xl text-sm font-bold text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all" placeholder="Subtitle" />
-                                                                </div>
-                                                            </div>
-
-                                                            {/* Footers */}
-                                                            <div className="grid grid-cols-2 gap-4">
-                                                                <div>
-                                                                    <label className="text-[10px] uppercase font-bold text-orange-300 mb-1.5 block ml-1">Footer 1 (Date / Opening)</label>
-                                                                    <input type="text" name="fixtureDateFooter" value={formData.fixtureDateFooter} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-orange-500/30 rounded-xl text-sm font-bold text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all" />
-                                                                </div>
-                                                                <div>
-                                                                    <label className="text-[10px] uppercase font-bold text-orange-300 mb-1.5 block ml-1">Footer 2 (Organizer)</label>
-                                                                    <input type="text" name="fixtureOrganizerFooter" value={formData.fixtureOrganizerFooter} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-orange-500/30 rounded-xl text-sm font-bold text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all" />
-                                                                </div>
-                                                            </div>
-
-                                                            {/* Dynamic Matchups Array */}
-                                                            <div className="space-y-4 mt-8 pt-6 border-t border-orange-500/20">
-                                                                <h5 className="text-xs font-black text-slate-300 uppercase tracking-widest text-center">Matchups List</h5>
-                                                                
-                                                                {formData.matchupList.map((match, index) => (
-                                                                    <div key={match.id} className="p-4 bg-slate-950 rounded-2xl border border-slate-800 relative group transition-all hover:border-orange-500/30">
-                                                                        <div className="absolute -top-3 left-4 bg-slate-800 px-3 py-0.5 rounded text-[10px] font-bold text-slate-300 shadow-sm border border-slate-700">Match {index + 1}</div>
-                                                                        <button onClick={() => removeMatchup(match.id)} className="absolute top-2 right-2 p-1.5 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors border border-red-500/20" title="Delete"><IconTrash /></button>
-                                                                        
-                                                                        <div className="mt-3 mb-2">
-                                                                            <label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Match Date / Info</label>
-                                                                            <input type="text" value={match.date} onChange={(e) => handleMatchupChange(match.id, 'date', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm font-bold text-white focus:border-orange-500 transition-colors" placeholder="e.g. 20 Mar" />
-                                                                        </div>
-
-                                                                        <div className="grid grid-cols-2 gap-4 mt-2">
-                                                                            <div className="space-y-2">
-                                                                                <div>
-                                                                                    <label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Left Team</label>
-                                                                                    <input type="text" value={match.t1} onChange={(e) => handleMatchupChange(match.id, 't1', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-white focus:border-orange-500 transition-colors" />
-                                                                                </div>
-                                                                                <div>
-                                                                                    <label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Left Sub-Text</label>
-                                                                                    <input type="text" value={match.t1Sub} onChange={(e) => handleMatchupChange(match.id, 't1Sub', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-slate-400 focus:border-orange-500 transition-colors" />
-                                                                                </div>
-                                                                            </div>
-                                                                            <div className="space-y-2">
-                                                                                <div>
-                                                                                    <label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Right Team</label>
-                                                                                    <input type="text" value={match.t2} onChange={(e) => handleMatchupChange(match.id, 't2', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-white focus:border-orange-500 transition-colors" />
-                                                                                </div>
-                                                                                <div>
-                                                                                    <label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Right Sub-Text</label>
-                                                                                    <input type="text" value={match.t2Sub} onChange={(e) => handleMatchupChange(match.id, 't2Sub', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-slate-400 focus:border-orange-500 transition-colors" />
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                            <button onClick={addMatchup} className="w-full py-4 mt-2 bg-slate-900 hover:bg-slate-800 text-orange-400 rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-dashed border-orange-500/30 hover:border-orange-500/60 transition-all">+ Add Fixture Match</button>
-                                                        </div>
-                                                    )}
-                                                    
-                                                    {appMode === 'squad' && (
-                                                        <div className="p-5 bg-green-500/10 rounded-2xl border-l-4 border-green-500 shadow-inner space-y-4">
-                                                            <h4 className="text-xs font-black text-green-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconUsers /> Squad Builder</h4>
-                                                            <div>
-                                                                <label className="text-[10px] uppercase font-bold text-green-300 mb-1.5 block ml-1">Series Title (Red Box)</label>
-                                                                <input type="text" name="squadTitle" value={formData.squadTitle} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-green-500/30 rounded-xl text-sm font-bold text-white focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
-                                                            </div>
-                                                            <div>
-                                                                <label className="text-[10px] uppercase font-bold text-green-300 mb-1.5 block ml-1">Player List (Enter names on new lines)</label>
-                                                                <textarea name="squadList" value={formData.squadList} onChange={handleChange} rows="10" className="w-full px-4 py-3 bg-slate-900 border border-green-500/30 rounded-xl text-sm font-medium text-white focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all leading-relaxed whitespace-pre" placeholder="List players here..."></textarea>
-                                                                <p className="text-[10px] text-slate-500 mt-2">💡 Tip: Use <b>(c)</b>, <b>(wk)</b>, or <b>(captain)</b> next to a name to highlight it in yellow.</p>
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    {appMode === 'multi_result' && (
-                                                        <div className="p-5 bg-rose-500/5 rounded-2xl border border-rose-500/20 shadow-inner space-y-4">
-                                                            <h4 className="text-sm font-black text-rose-400 uppercase tracking-wider flex items-center gap-2 mb-4"><IconList /> Results Builder</h4>
-                                                            <div>
-                                                                <label className="text-[10px] uppercase font-bold text-rose-300 mb-1.5 block ml-1">Main Headline</label>
-                                                                <input type="text" name="multiResultTitle" value={formData.multiResultTitle} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-rose-500/30 rounded-xl text-sm font-bold text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
-                                                            </div>
-                                                            
-                                                            <div className="space-y-4 mt-6">
-                                                                {formData.resultsList.map((res, index) => (
-                                                                    <div key={res.id} className="p-5 bg-slate-950 rounded-2xl border border-slate-800 relative group transition-all hover:border-slate-700">
-                                                                        <div className="absolute -top-3 left-4 bg-slate-800 px-3 py-0.5 rounded text-[10px] font-bold text-slate-300 shadow-sm border border-slate-700">Match {index + 1}</div>
-                                                                        <button onClick={() => removeResult(res.id)} className="absolute top-3 right-3 p-1.5 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors border border-red-500/20" title="Delete"><IconTrash /></button>
-                                                                        
-                                                                        <div className="grid grid-cols-2 gap-4 mt-2">
-                                                                            <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Left Team</label><input type="text" value={res.team1} onChange={(e) => handleResultChange(res.id, 'team1', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-rose-500 transition-colors" /></div>
-                                                                            <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Right Team</label><input type="text" value={res.team2} onChange={(e) => handleResultChange(res.id, 'team2', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-rose-500 transition-colors" /></div>
-                                                                            <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Left Score</label><input type="text" value={res.score1} onChange={(e) => handleResultChange(res.id, 'score1', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white text-center focus:border-rose-500 transition-colors" /></div>
-                                                                            <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Right Score</label><input type="text" value={res.score2} onChange={(e) => handleResultChange(res.id, 'score2', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white text-center focus:border-rose-500 transition-colors" /></div>
-                                                                        </div>
-                                                                        <div className="mt-4"><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Tournament</label><input type="text" value={res.tourney} onChange={(e) => handleResultChange(res.id, 'tourney', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-rose-500 transition-colors" /></div>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                            <button onClick={addResult} className="w-full py-4 mt-2 bg-slate-900 hover:bg-slate-800 text-rose-400 rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-dashed border-rose-500/30 hover:border-rose-500/60 transition-all">+ Add Match Result</button>
-                                                        </div>
-                                                    )}
-
-                                                    {appMode === 'multi_schedule' && (
-                                                        <div className="p-5 bg-sky-500/5 rounded-2xl border border-sky-500/20 shadow-inner space-y-4">
-                                                            <h4 className="text-sm font-black text-sky-400 uppercase tracking-wider flex items-center gap-2 mb-4"><IconGrid /> Schedule Builder</h4>
-                                                            <div className="grid grid-cols-2 gap-4">
-                                                                <div>
-                                                                    <label className="text-[10px] uppercase font-bold text-sky-300 mb-1.5 block ml-1">Schedule Date</label>
-                                                                    <input type="text" name="multiScheduleDate" value={formData.multiScheduleDate} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-sky-500/30 rounded-xl text-sm font-bold text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all" />
-                                                                </div>
-                                                                <div>
-                                                                    <label className="text-[10px] uppercase font-bold text-sky-300 mb-1.5 block ml-1">Main Headline</label>
-                                                                    <input type="text" name="multiScheduleTitle" value={formData.multiScheduleTitle} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-sky-500/30 rounded-xl text-sm font-bold text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all" />
-                                                                </div>
-                                                            </div>
-                                                            
-                                                            <div className="space-y-4 mt-6">
-                                                                {formData.scheduleList.map((sch, index) => (
-                                                                    <div key={sch.id} className="p-5 bg-slate-950 rounded-2xl border border-slate-800 relative group transition-all hover:border-slate-700">
-                                                                        <div className="absolute -top-3 left-4 bg-slate-800 px-3 py-0.5 rounded text-[10px] font-bold text-slate-300 shadow-sm border border-slate-700">Fixture {index + 1}</div>
-                                                                        <button onClick={() => removeSchedule(sch.id)} className="absolute top-3 right-3 p-1.5 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors border border-red-500/20" title="Delete"><IconTrash /></button>
-                                                                        
-                                                                        <div className="grid grid-cols-2 gap-4 mt-2">
-                                                                            <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Sport Type</label><input type="text" value={sch.sport} onChange={(e) => handleScheduleChange(sch.id, 'sport', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-sky-500 transition-colors" placeholder="e.g. ফুটবল" /></div>
-                                                                            <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Tournament</label><input type="text" value={sch.tourney} onChange={(e) => handleScheduleChange(sch.id, 'tourney', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-sky-500 transition-colors" /></div>
-                                                                        </div>
-                                                                        <div className="grid grid-cols-[2fr_1fr] gap-4 mt-4">
-                                                                            <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Match / Teams</label><input type="text" value={sch.match} onChange={(e) => handleScheduleChange(sch.id, 'match', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-sky-500 transition-colors" /></div>
-                                                                            <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Time</label><input type="text" value={sch.time} onChange={(e) => handleScheduleChange(sch.id, 'time', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white text-center focus:border-sky-500 transition-colors" /></div>
-                                                                        </div>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                            <button onClick={addSchedule} className="w-full py-4 mt-2 bg-slate-900 hover:bg-slate-800 text-sky-400 rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-dashed border-sky-500/30 hover:border-sky-500/60 transition-all">+ Add Schedule Item</button>
-                                                        </div>
-                                                    )}
-
-                                                    {appMode === 'discussion' && (
-                                                        <div className="p-5 bg-emerald-500/5 rounded-2xl border border-emerald-500/20 shadow-inner space-y-4">
-                                                            <h4 className="text-sm font-black text-emerald-400 uppercase tracking-wider flex items-center gap-2 mb-4"><IconHelp /> Q&A / Discussion</h4>
-                                                            <div>
-                                                                <div className="flex justify-between items-center mb-1.5">
-                                                                    <label className="text-[10px] uppercase font-bold text-emerald-300 ml-1">Topic / Main Heading</label>
-                                                                </div>
-                                                                <input type="text" name="discTopic" value={formData.discTopic} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
-                                                            </div>
-                                                            <div className="pt-2">
-                                                                <div className="flex justify-between items-center mb-1.5">
-                                                                    <label className="text-[10px] uppercase font-bold text-emerald-300 ml-1">Discussion Lines (Auto Wraps)</label>
-                                                                </div>
-                                                                <textarea name="discLine1" value={formData.discLine1} onChange={handleChange} rows="2" className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all mb-3" placeholder="Line 1 (Accent Color)"></textarea>
-                                                                <textarea name="discLine2" value={formData.discLine2} onChange={handleChange} rows="2" className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all mb-3" placeholder="Line 2 (White Color)"></textarea>
-                                                                <textarea name="discLine3" value={formData.discLine3} onChange={handleChange} rows="2" className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" placeholder="Line 3 (Accent Color)"></textarea>
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    {appMode === 'poll' && (
-                                                        <div className="p-5 bg-indigo-500/10 rounded-2xl border-l-4 border-indigo-500 shadow-inner space-y-4">
-                                                            <h4 className="text-xs font-black text-indigo-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconChart /> Reaction Poll Settings</h4>
-                                                            <div>
-                                                                <label className="text-[10px] uppercase font-bold text-indigo-300 mb-1.5 block ml-1">Poll Question / Headline</label>
-                                                                <input type="text" name="pollQuestion" value={formData.pollQuestion} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-indigo-500/30 rounded-xl text-sm font-bold text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all" />
-                                                            </div>
-                                                            <div className="grid grid-cols-2 gap-4">
-                                                                <div>
-                                                                    <label className="text-[10px] uppercase font-bold text-blue-400 mb-1.5 block ml-1">👍 Left Player</label>
-                                                                    <input type="text" name="pollPlayer1" value={formData.pollPlayer1} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-blue-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" />
-                                                                </div>
-                                                                <div>
-                                                                    <label className="text-[10px] uppercase font-bold text-rose-400 mb-1.5 block ml-1">❤️ Right Player</label>
-                                                                    <input type="text" name="pollPlayer2" value={formData.pollPlayer2} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-rose-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
-                                                                </div>
-                                                            </div>
-                                                            <button onClick={swapTeams} className="w-full py-3 mt-2 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors border border-indigo-500/30"><IconSwap /> Swap Players</button>
-                                                        </div>
-                                                    )}
-
-                                                    {appMode === 'milestone' && (
-                                                        <div className="p-5 bg-yellow-500/10 rounded-2xl border-l-4 border-yellow-500 shadow-inner space-y-4">
-                                                            <h4 className="text-xs font-black text-yellow-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconStar /> Birthday & Milestone</h4>
-                                                            <div className="grid grid-cols-2 gap-4">
-                                                                <div>
-                                                                    <label className="text-[10px] uppercase font-bold text-yellow-300 mb-1.5 block ml-1">Occasion Type</label>
-                                                                    <input type="text" name="milestoneOccasion" value={formData.milestoneOccasion} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-yellow-500/30 rounded-xl text-sm font-bold text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all" placeholder="e.g. শুভ জন্মদিন" />
-                                                                </div>
-                                                                <div>
-                                                                    <label className="text-[10px] uppercase font-bold text-yellow-300 mb-1.5 block ml-1">Player Name</label>
-                                                                    <input type="text" name="milestoneName" value={formData.milestoneName} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-yellow-500/30 rounded-xl text-sm font-bold text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all" />
-                                                                </div>
-                                                            </div>
-                                                            <div>
-                                                                <label className="text-[10px] uppercase font-bold text-yellow-300 mb-1.5 block ml-1">Main Highlight (Age / Record)</label>
-                                                                <input type="text" name="milestoneNumber" value={formData.milestoneNumber} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-yellow-500/30 rounded-xl text-xl font-black text-white text-center tracking-wide focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all" placeholder="e.g. ১০,০০০ রান" />
-                                                            </div>
-                                                            <div>
-                                                                <label className="text-[10px] uppercase font-bold text-yellow-300 mb-1.5 block ml-1">Sub-Message</label>
-                                                                <textarea name="milestoneMessage" value={formData.milestoneMessage} onChange={handleChange} rows="2" className="w-full px-4 py-3 bg-slate-900 border border-yellow-500/30 rounded-xl text-sm text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all" placeholder="Wishing text..."></textarea>
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    {appMode === 'scorecard' && (
-                                                        <div>
-                                                            <label className="text-[10px] uppercase font-bold text-slate-500 mb-1.5 block ml-1">Match Result Headline</label>
-                                                            <textarea name="result" value={formData.result} onChange={handleChange} rows="2" className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" placeholder="Result Text"></textarea>
-                                                        </div>
-                                                    )}
-
-                                                    {appMode === 'schedule' && (
-                                                        <div className="p-5 bg-blue-500/10 rounded-2xl border-l-4 border-blue-500 shadow-inner space-y-4">
-                                                            <h4 className="text-xs font-black text-blue-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconCalendar /> Match Details</h4>
-                                                            <div>
-                                                                <label className="text-[10px] uppercase font-bold text-blue-300 mb-1.5 block ml-1">Date</label>
-                                                                <input type="text" name="matchDate" value={formData.matchDate} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-blue-500/30 rounded-xl text-sm font-bold text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" placeholder="Date" />
-                                                            </div>
-                                                            <div className="grid grid-cols-2 gap-4">
-                                                                <div>
-                                                                    <label className="text-[10px] uppercase font-bold text-blue-300 mb-1.5 block ml-1">Time</label>
-                                                                    <input type="text" name="matchTime" value={formData.matchTime} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-blue-500/30 rounded-xl text-sm font-bold text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" placeholder="Time" />
-                                                                </div>
-                                                                <div>
-                                                                    <label className="text-[10px] uppercase font-bold text-blue-300 mb-1.5 block ml-1">Venue</label>
-                                                                    <input type="text" name="matchVenue" value={formData.matchVenue} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-blue-500/30 rounded-xl text-sm font-bold text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" placeholder="Venue" />
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    {appMode === 'player' && (
-                                                        <div className="p-5 bg-emerald-500/10 rounded-2xl border-l-4 border-emerald-500 shadow-inner space-y-4">
-                                                            <h4 className="text-xs font-black text-emerald-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconUser /> Player Stats</h4>
-                                                            <div>
-                                                                <label className="text-[10px] uppercase font-bold text-emerald-300 mb-1.5 block ml-1">Player Name</label>
-                                                                <input type="text" name="playerName" value={formData.playerName} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" placeholder="Player Name" />
-                                                            </div>
-                                                            <div className="grid grid-cols-2 gap-4">
-                                                                <div>
-                                                                    <label className="text-[10px] uppercase font-bold text-emerald-300 mb-1.5 block ml-1">Primary Stat</label>
-                                                                    <input type="text" name="playerStatMain" value={formData.playerStatMain} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-xl font-black text-center text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" placeholder="Run/Wicket" />
-                                                                </div>
-                                                                <div>
-                                                                    <label className="text-[10px] uppercase font-bold text-emerald-300 mb-1.5 block ml-1">Sub Stat</label>
-                                                                    <input type="text" name="playerStatSub" value={formData.playerStatSub} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-sm font-bold text-center text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" placeholder="Balls/Econ" />
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    {appMode === 'career' && (
-                                                        <div className="p-5 bg-cyan-500/10 rounded-2xl border-l-4 border-cyan-500 shadow-inner space-y-4">
-                                                            <h4 className="text-xs font-black text-cyan-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconChart /> Career Statistics</h4>
-                                                            <div className="grid grid-cols-2 gap-4">
-                                                                <div><label className="text-[10px] uppercase font-bold text-cyan-300 mb-1.5 block ml-1">Player Name</label><input type="text" name="playerName" value={formData.playerName} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-cyan-500/30 rounded-xl text-sm font-bold text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" /></div>
-                                                                <div><label className="text-[10px] uppercase font-bold text-cyan-300 mb-1.5 block ml-1">Role</label><input type="text" name="playerRole" value={formData.playerRole} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-cyan-500/30 rounded-xl text-sm font-bold text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" /></div>
-                                                            </div>
-                                                            <div className="grid grid-cols-2 gap-4 mt-2">
-                                                                <div><label className="text-[10px] uppercase font-bold text-cyan-300 mb-1.5 block ml-1">Matches</label><input type="text" name="careerMatches" value={formData.careerMatches} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-cyan-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" /></div>
-                                                                <div><label className="text-[10px] uppercase font-bold text-cyan-300 mb-1.5 block ml-1">Total Runs</label><input type="text" name="careerRuns" value={formData.careerRuns} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-cyan-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" /></div>
-                                                                <div><label className="text-[10px] uppercase font-bold text-cyan-300 mb-1.5 block ml-1">100s</label><input type="text" name="careerHundreds" value={formData.careerHundreds} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-cyan-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" /></div>
-                                                                <div><label className="text-[10px] uppercase font-bold text-cyan-300 mb-1.5 block ml-1">50s</label><input type="text" name="careerFifties" value={formData.careerFifties} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-cyan-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" /></div>
-                                                                <div><label className="text-[10px] uppercase font-bold text-cyan-300 mb-1.5 block ml-1">Best Score</label><input type="text" name="careerBest" value={formData.careerBest} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-cyan-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" /></div>
-                                                                <div><label className="text-[10px] uppercase font-bold text-cyan-300 mb-1.5 block ml-1">Wickets</label><input type="text" name="careerWickets" value={formData.careerWickets} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-cyan-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all" /></div>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                    
-                                                    {appMode === 'news' && (
-                                                        <div className="p-5 bg-red-500/10 rounded-2xl border-l-4 border-red-500 shadow-inner space-y-4">
-                                                            <h4 className="text-xs font-black text-red-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconMegaphone /> Breaking News</h4>
-                                                            <div>
-                                                                <label className="text-[10px] uppercase font-bold text-red-300 mb-1.5 block ml-1">News Body / Quote Text</label>
-                                                                <textarea name="quoteText" value={formData.quoteText} onChange={handleChange} rows="3" className="w-full px-4 py-3 bg-slate-900 border border-red-500/30 rounded-xl text-sm text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all" placeholder="Enter content..."></textarea>
-                                                            </div>
-                                                            <div>
-                                                                <label className="text-[10px] uppercase font-bold text-red-300 mb-1.5 block ml-1">Headline / Author / Source</label>
-                                                                <input type="text" name="quoteAuthor" value={formData.quoteAuthor} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-red-500/30 rounded-xl text-sm font-bold text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all" placeholder="Author/Source" />
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    {appMode === 'statement' && (
-                                                        <div className="p-5 bg-fuchsia-500/10 rounded-2xl border-l-4 border-fuchsia-500 shadow-inner space-y-4">
-                                                            <h4 className="text-xs font-black text-fuchsia-400 uppercase tracking-wider flex items-center gap-2 mb-2"><IconMessage /> Statement / Quote Overlay</h4>
-                                                            <div>
-                                                                <label className="text-[10px] uppercase font-bold text-fuchsia-300 mb-1.5 block ml-1">Statement Text</label>
-                                                                <textarea name="quoteText" value={formData.quoteText} onChange={handleChange} rows="3" className="w-full px-4 py-3 bg-slate-900 border border-fuchsia-500/30 rounded-xl text-sm text-white focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 transition-all" placeholder="Enter statement..."></textarea>
-                                                            </div>
-                                                            <div>
-                                                                <label className="text-[10px] uppercase font-bold text-fuchsia-300 mb-1.5 block ml-1">Author Name / Credit</label>
-                                                                <input type="text" name="quoteAuthor" value={formData.quoteAuthor} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-fuchsia-500/30 rounded-xl text-sm font-bold text-white focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 transition-all" placeholder="Author name" />
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-                                            
-                                            {activeTab === 'teams' && (appMode === 'scorecard' || appMode === 'schedule' || appMode === 'f_scorecard') && (
-                                                <div className="space-y-6">
-                                                    <button onClick={swapTeams} className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors border border-slate-700 shadow-sm"><IconSwap /> Swap Sides</button>
-                                                    
-                                                    <div className="bg-slate-950 p-5 rounded-2xl border-l-4 border-emerald-500 shadow-inner space-y-4">
-                                                        <div className="flex justify-between items-center mb-2">
-                                                            <h3 className="text-xs font-black text-emerald-400 uppercase tracking-wider">Left Team</h3>
-                                                            <input type="color" name="team1Color" value={formData.team1Color} onChange={handleChange} className="w-8 h-8 rounded-full overflow-hidden border-2 border-slate-800 cursor-pointer shadow-sm" />
-                                                        </div>
-                                                        <div>
-                                                            <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Full Team Name</label>
-                                                            <input type="text" name="team1" value={formData.team1} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
-                                                        </div>
-                                                        
-                                                        {appMode === 'f_scorecard' && (
-                                                            <div>
-                                                                <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Short Name (Badge Text)</label>
-                                                                <input type="text" name="fTeam1Short" value={formData.fTeam1Short} onChange={handleChange} maxLength="4" className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all uppercase" placeholder="e.g. BAN" />
-                                                            </div>
-                                                        )}
-
-                                                        {(appMode === 'scorecard' || appMode === 'f_scorecard') && (
-                                                            <div className="flex gap-4">
-                                                                <div className="flex-1">
-                                                                    <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Score / Goals</label>
-                                                                    <input type="text" name="team1Score" value={formData.team1Score} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
-                                                                </div>
-                                                                {appMode === 'scorecard' && (
-                                                                    <div className="w-28">
-                                                                        <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Overs</label>
-                                                                        <input type="text" name="team1Overs" value={formData.team1Overs} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-center" />
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    
-                                                    <div className="bg-slate-950 p-5 rounded-2xl border-l-4 border-emerald-500 shadow-inner space-y-4">
-                                                        <div className="flex justify-between items-center mb-2">
-                                                            <h3 className="text-xs font-black text-emerald-400 uppercase tracking-wider">Right Team</h3>
-                                                            <input type="color" name="team2Color" value={formData.team2Color} onChange={handleChange} className="w-8 h-8 rounded-full overflow-hidden border-2 border-slate-800 cursor-pointer shadow-sm" />
-                                                        </div>
-                                                        <div>
-                                                            <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Full Team Name</label>
-                                                            <input type="text" name="team2" value={formData.team2} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
-                                                        </div>
-
-                                                        {appMode === 'f_scorecard' && (
-                                                            <div>
-                                                                <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Short Name (Badge Text)</label>
-                                                                <input type="text" name="fTeam2Short" value={formData.fTeam2Short} onChange={handleChange} maxLength="4" className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all uppercase" placeholder="e.g. PAK" />
-                                                            </div>
-                                                        )}
-
-                                                        {(appMode === 'scorecard' || appMode === 'f_scorecard') && (
-                                                            <div className="flex gap-4">
-                                                                <div className="flex-1">
-                                                                    <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Score / Goals</label>
-                                                                    <input type="text" name="team2Score" value={formData.team2Score} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
-                                                                </div>
-                                                                {appMode === 'scorecard' && (
-                                                                    <div className="w-28">
-                                                                        <label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block ml-1">Overs</label>
-                                                                        <input type="text" name="team2Overs" value={formData.team2Overs} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-center" />
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )}
-                                            
-                                            {activeTab === 'style' && (
-                                                <div className="space-y-6">
-                                                    <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-inner">
-                                                        <label className="flex items-center gap-2 text-xs font-black text-slate-300 uppercase tracking-wider mb-4"><IconEye className="text-rose-500"/> Background Opacity</label>
-                                                        <div className="px-2">
-                                                            <input type="range" min="0" max="1" step="0.05" value={formData.bgOpacity} onChange={(e) => setFormData({...formData, bgOpacity: parseFloat(e.target.value)})} className="w-full" />
-                                                            <div className="flex justify-between text-[10px] font-bold text-slate-500 mt-2 uppercase"><span>Clear</span><span>Dark</span></div>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-inner">
-                                                        <label className="block text-xs font-black text-slate-300 uppercase tracking-wider mb-4">Colors</label>
-                                                        <div className="flex gap-4">
-                                                            <div className="flex-1 space-y-1.5">
-                                                                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Primary Color</label>
-                                                                <input type="color" name="primaryColor" value={formData.primaryColor} onChange={handleChange} className="h-12 w-full rounded-xl cursor-pointer border-0 p-0 bg-transparent" />
-                                                            </div>
-                                                            <div className="flex-1 space-y-1.5">
-                                                                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Secondary Color</label>
-                                                                <input type="color" name="secondaryColor" value={formData.secondaryColor} onChange={handleChange} className="h-12 w-full rounded-xl cursor-pointer border-0 p-0 bg-transparent" />
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex gap-4 mt-4">
-                                                            <div className="flex-1 space-y-1.5">
-                                                                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Accent / Team 1</label>
-                                                                <input type="color" name="team1Color" value={formData.team1Color} onChange={handleChange} className="h-12 w-full rounded-xl cursor-pointer border-0 p-0 bg-transparent" />
-                                                            </div>
-                                                            <div className="flex-1 space-y-1.5">
-                                                                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Accent / Team 2</label>
-                                                                <input type="color" name="team2Color" value={formData.team2Color} onChange={handleChange} className="h-12 w-full rounded-xl cursor-pointer border-0 p-0 bg-transparent" />
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    {appMode === 'news' && (
-                                                        <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-inner">
-                                                            <label className="flex items-center gap-2 text-xs font-black text-slate-300 uppercase tracking-wider mb-4"><IconHeight className="text-rose-500"/> News Overlay Height</label>
-                                                            <div className="px-2">
-                                                                <input type="range" min="0.2" max="0.9" step="0.05" value={formData.newsGradientHeight} onChange={(e) => setFormData({...formData, newsGradientHeight: parseFloat(e.target.value)})} className="w-full" />
-                                                                <div className="flex justify-between text-[10px] font-bold text-slate-500 mt-2 uppercase"><span>Low</span><span>High</span></div>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </main>
-
-                    <footer className="bg-slate-950 text-slate-500 py-10 border-t border-slate-900 mt-auto z-10 relative">
-                        <div className="max-w-7xl mx-auto px-4 text-center space-y-4">
-                            <div className="flex justify-center mb-4">
-                                <div className="bg-slate-900 p-3 rounded-2xl shadow-inner border border-slate-800">
-                                    <IconLogo className="text-slate-600 w-6 h-6" />
-                                </div>
-                            </div>
-                            <p className="text-sm font-bold text-slate-300 tracking-wide">© {new Date().getFullYear()} Poster Bot Pro</p>
-                            <p className="text-xs font-medium text-slate-600 max-w-sm mx-auto">Premium sports graphic generator for professional creators.</p>
-                            <div className="flex justify-center gap-6 pt-6 text-xs font-bold uppercase tracking-wider">
-                                <a href="https://t.me/Mizan0072" target="_blank" rel="noreferrer" className="hover:text-rose-400 transition-colors flex items-center gap-2"><IconTg className="w-4 h-4" /> Support & Contact</a>
                             </div>
                         </div>
-                    </footer>
-                </>
-            )}
+                    </div>
+                )}
+            </main>
+
+            <footer className="bg-slate-950 text-slate-500 py-10 border-t border-slate-900 mt-auto z-10 relative">
+                <div className="max-w-7xl mx-auto px-4 text-center space-y-4">
+                    <div className="flex justify-center mb-4">
+                        <div className="bg-slate-900 p-3 rounded-2xl shadow-inner border border-slate-800">
+                            <IconLogo className="text-slate-600 w-6 h-6" />
+                        </div>
+                    </div>
+                    <p className="text-sm font-bold text-slate-300 tracking-wide">© {new Date().getFullYear()} Poster Bot Pro</p>
+                    <p className="text-xs font-medium text-slate-600 max-w-sm mx-auto">Premium sports graphic generator for professional creators.</p>
+                    <div className="flex justify-center gap-6 pt-6 text-xs font-bold uppercase tracking-wider">
+                        <a href="https://t.me/Mizan0072" target="_blank" rel="noreferrer" className="hover:text-rose-400 transition-colors flex items-center gap-2"><IconTg className="w-4 h-4" /> Support & Contact</a>
+                    </div>
+                </div>
+            </footer>
         </div>
     );
 }
