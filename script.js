@@ -35,40 +35,40 @@ const IconUsers = ({className}) => <svg className={className || "w-6 h-6"} xmlns
 const IconLayout = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>;
 const IconFootball = ({className}) => <svg className={className || "w-6 h-6"} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="12 6 15.5 8.5 14.5 13.5 9.5 13.5 8.5 8.5 12 6"></polygon><line x1="12" y1="6" x2="12" y2="2"></line><line x1="15.5" y1="8.5" x2="20.5" y2="7"></line><line x1="14.5" y1="13.5" x2="18.5" y2="18"></line><line x1="9.5" y1="13.5" x2="5.5" y2="18"></line><line x1="8.5" y1="8.5" x2="3.5" y2="7"></line></svg>;
 
-// --- TOOL CATEGORIES ---
+// --- TOOL CATEGORIES ( Midnight & Gold Theme Implemented) ---
 const TOOL_CATEGORIES = [
     {
         name: "Pre-Match & Fixtures",
         tools: [
-            { id: 't_fixture', name: 'Tournament Fixture', desc: 'Knockout/Round match list', icon: IconLayout, color: 'text-orange-400', bg: 'bg-orange-400/10', border: 'border-orange-400/20' },
-            { id: 'schedule', name: 'Single Schedule', desc: 'Upcoming fixture and venue', icon: IconCalendar, color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/20' },
-            { id: 'multi_schedule', name: 'All-Day Schedule', desc: 'Grid schedule of matches', icon: IconGrid, color: 'text-sky-400', bg: 'bg-sky-400/10', border: 'border-sky-400/20' },
-            { id: 'squad', name: 'Squad List', desc: 'Two-column team player list', icon: IconUsers, color: 'text-green-400', bg: 'bg-green-400/10', border: 'border-green-400/20' }
+            { id: 't_fixture', name: 'Tournament Fixture', desc: 'Knockout/Round match list', icon: IconLayout, color: 'text-[#f97316]', bg: 'bg-[#f97316]/10', border: 'border-[#f97316]/20' },
+            { id: 'schedule', name: 'Single Schedule', desc: 'Upcoming fixture and venue', icon: IconCalendar, color: 'text-[#a855f7]', bg: 'bg-[#a855f7]/10', border: 'border-[#a855f7]/20' },
+            { id: 'multi_schedule', name: 'All-Day Schedule', desc: 'Grid schedule of matches', icon: IconGrid, color: 'text-[#fcd34d]', bg: 'bg-[#fcd34d]/10', border: 'border-[#fcd34d]/20' },
+            { id: 'squad', name: 'Squad List', desc: 'Two-column team player list', icon: IconUsers, color: 'text-[#f97316]', bg: 'bg-[#f97316]/10', border: 'border-[#f97316]/20' }
         ]
     },
     {
         name: "Live & Match Results",
         tools: [
-            { id: 'f_scorecard', name: 'Football PRO', desc: 'Photo-rich football result', icon: IconFootball, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
-            { id: 'scorecard', name: 'Match Scorecard', desc: 'Classic Match score updates', icon: IconTrophy, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
-            { id: 'multi_result', name: 'Multi Results', desc: 'List of match scores', icon: IconList, color: 'text-rose-400', bg: 'bg-rose-400/10', border: 'border-rose-400/20' },
-            { id: 'poll', name: 'Reaction Poll', desc: 'Facebook-style reaction polls', icon: IconSwap, color: 'text-indigo-400', bg: 'bg-indigo-400/10', border: 'border-indigo-400/20' }
+            { id: 'f_scorecard', name: 'Football PRO', desc: 'Photo-rich football result', icon: IconFootball, color: 'text-[#fcd34d]', bg: 'bg-[#fcd34d]/10', border: 'border-[#fcd34d]/20' },
+            { id: 'scorecard', name: 'Match Scorecard', desc: 'Classic Match score updates', icon: IconTrophy, color: 'text-[#a855f7]', bg: 'bg-[#a855f7]/10', border: 'border-[#a855f7]/20' },
+            { id: 'multi_result', name: 'Multi Results', desc: 'List of match scores', icon: IconList, color: 'text-[#4ade80]', bg: 'bg-[#4ade80]/10', border: 'border-[#4ade80]/20' },
+            { id: 'poll', name: 'Reaction Poll', desc: 'Facebook-style reaction polls', icon: IconSwap, color: 'text-[#a855f7]', bg: 'bg-[#a855f7]/10', border: 'border-[#a855f7]/20' }
         ]
     },
     {
         name: "Player & Milestones",
         tools: [
-            { id: 'player', name: 'Player Profile', desc: 'Highlight player performance', icon: IconUser, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
-            { id: 'career', name: 'Career Stats', desc: 'Overall career statistics', icon: IconChart, color: 'text-cyan-400', bg: 'bg-cyan-400/10', border: 'border-cyan-400/20' },
-            { id: 'milestone', name: 'Milestones', desc: 'Birthdays and records', icon: IconStar, color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/20' }
+            { id: 'player', name: 'Player Profile', desc: 'Highlight player performance', icon: IconUser, color: 'text-[#f97316]', bg: 'bg-[#f97316]/10', border: 'border-[#f97316]/20' },
+            { id: 'career', name: 'Career Stats', desc: 'Overall career statistics', icon: IconChart, color: 'text-[#a855f7]', bg: 'bg-[#a855f7]/10', border: 'border-[#a855f7]/20' },
+            { id: 'milestone', name: 'Milestones', desc: 'Birthdays and records', icon: IconStar, color: 'text-[#fcd34d]', bg: 'bg-[#fcd34d]/10', border: 'border-[#fcd34d]/20' }
         ]
     },
     {
         name: "Media & Engagement",
         tools: [
-            { id: 'news', name: 'Breaking News', desc: 'Urgent updates and headlines', icon: IconMegaphone, color: 'text-red-500', bg: 'bg-red-500/10', border: 'border-red-500/20' },
-            { id: 'discussion', name: 'Q&A / Discussion', desc: 'Text-heavy engagement posts', icon: IconHelp, color: 'text-violet-400', bg: 'bg-violet-400/10', border: 'border-violet-400/20' },
-            { id: 'statement', name: 'Quote Overlay', desc: 'Player quotes with avatar cutout', icon: IconMessage, color: 'text-fuchsia-400', bg: 'bg-fuchsia-400/10', border: 'border-fuchsia-400/20' }
+            { id: 'news', name: 'Breaking News', desc: 'Urgent updates and headlines', icon: IconMegaphone, color: 'text-[#fcd34d]', bg: 'bg-[#fcd34d]/10', border: 'border-[#fcd34d]/20' },
+            { id: 'discussion', name: 'Q&A / Discussion', desc: 'Text-heavy engagement posts', icon: IconHelp, color: 'text-[#a855f7]', bg: 'bg-[#a855f7]/10', border: 'border-[#a855f7]/20' },
+            { id: 'statement', name: 'Quote Overlay', desc: 'Player quotes with avatar cutout', icon: IconMessage, color: 'text-[#a855f7]', bg: 'bg-[#a855f7]/10', border: 'border-[#a855f7]/20' }
         ]
     }
 ];
@@ -116,7 +116,7 @@ function App() {
         result: 'বাংলাদেশ ১৪ রানে জয়ী', resultColor: '#ffffff', 
         matchDate: '২০ অক্টোবর, ২০২৬', matchTime: 'রাত ৮:০০টা', matchVenue: 'মিরপুর স্টেডিয়াম',
         playerName: 'সাকিব আল হাসান', playerStatMain: '৮২*', playerStatSub: 'রান (৪৫ বল)', playerRole: 'ব্যাটসম্যান', 
-        careerMatches: '২৫৪', careerRuns: '৭৫৬২', careerHundreds: '১৪', careerFifties: '৪২', careerBest: '১১৪*', careerWickets: '৩১২', 
+        careerMatches: '২৫ফার', careerRuns: '৭৫৬২', careerHundreds: '১৪', careerFifties: '৪২', careerBest: '১১৪*', careerWickets: '৩১২', 
         pollQuestion: 'আজকের ম্যাচের সেরা খেলোয়াড় কে?', pollPlayer1: 'সাকিব আল হাসান', pollPlayer2: 'বিরাট কোহলি',
         milestoneOccasion: 'শুভ জন্মদিন', milestoneName: 'সাকিব আল হাসান', milestoneNumber: '৩৭ তম', milestoneMessage: 'বাংলাদেশ ক্রিকেটের জান, বাংলাদেশ ক্রিকেটের প্রাণ! শুভকামনা রইলো।',
         discTopic: 'ম্যাচ বিশ্লেষণ', discLine1: 'পাওয়ার প্লে-তে কে বেশি রান করবে?', discLine2: 'আজকের পিচ কাদের জন্য সহায়ক?', discLine3: 'সেরা বোলার কে হতে পারে?',
@@ -766,7 +766,7 @@ function App() {
                                                                         </div>
                                                                         <div>
                                                                             <label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Right Sub-Text</label>
-                                                                            <input type="text" value={match.t2Sub} onChange={(e) => handleMatchupChange(match.id, 't2Sub', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-slate-400 focus:border-orange-500 transition-colors" />
+                                                                            <input type="text" value={match.t2Sub} onChange={(e) => handleMatchupChange(match.id, 't2Sub', e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-orange-500 transition-colors" />
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -812,7 +812,7 @@ function App() {
                                                                     <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Left Score</label><input type="text" value={res.score1} onChange={(e) => handleResultChange(res.id, 'score1', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white text-center focus:border-rose-500 transition-colors" /></div>
                                                                     <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Right Score</label><input type="text" value={res.score2} onChange={(e) => handleResultChange(res.id, 'score2', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white text-center focus:border-rose-500 transition-colors" /></div>
                                                                 </div>
-                                                                <div className="mt-4"><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Tournament</label><input type="text" value={res.tourney} onChange={(e) => handleResultChange(res.id, 'tourney', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-rose-500 transition-colors" /></div>
+                                                                <div className="mt-4"><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Tournament</label><input type="text" value={res.tourney} onChange={(e) => handleResultChange(res.id, 'tourney', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-rose-500 transition-colors" /></div>
                                                             </div>
                                                         ))}
                                                     </div>
@@ -842,11 +842,11 @@ function App() {
                                                                 
                                                                 <div className="grid grid-cols-2 gap-4 mt-2">
                                                                     <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Sport Type</label><input type="text" value={sch.sport} onChange={(e) => handleScheduleChange(sch.id, 'sport', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-sky-500 transition-colors" placeholder="e.g. ফুটবল" /></div>
-                                                                    <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Tournament</label><input type="text" value={sch.tourney} onChange={(e) => handleScheduleChange(sch.id, 'tourney', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:border-sky-500 transition-colors" /></div>
+                                                                    <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Tournament</label><input type="text" value={sch.tourney} onChange={(e) => handleScheduleChange(sch.id, 'tourney', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-sky-500 transition-colors" /></div>
                                                                 </div>
                                                                 <div className="grid grid-cols-[2fr_1fr] gap-4 mt-4">
                                                                     <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Match / Teams</label><input type="text" value={sch.match} onChange={(e) => handleScheduleChange(sch.id, 'match', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white focus:border-sky-500 transition-colors" /></div>
-                                                                    <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Time</label><input type="text" value={sch.time} onChange={(e) => handleScheduleChange(sch.id, 'time', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-white text-center focus:border-sky-500 transition-colors" /></div>
+                                                                    <div><label className="text-[9px] uppercase font-bold text-slate-500 mb-1 block ml-1">Time</label><input type="text" value={sch.time} onChange={(e) => handleScheduleChange(sch.id, 'time', e.target.value)} className="w-full px-4 py-2.5 bg-slate-900 border border-sky-500 transition-colors" /></div>
                                                                 </div>
                                                             </div>
                                                         ))}
@@ -889,7 +889,7 @@ function App() {
                                                         </div>
                                                         <div>
                                                             <label className="text-[10px] uppercase font-bold text-rose-400 mb-1.5 block ml-1">❤️ Right Player</label>
-                                                            <input type="text" name="pollPlayer2" value={formData.pollPlayer2} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-rose-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
+                                                            <input type="text" name="pollPlayer2" value={formData.pollPlayer2} onChange={handleChange} className="w-full px-4 py-3 bg-slate-900 border border-indigo-500/30 rounded-xl text-sm font-bold text-white text-center focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all" />
                                                         </div>
                                                     </div>
                                                     <button onClick={swapTeams} className="w-full py-3 mt-2 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors border border-indigo-500/30"><IconSwap /> Swap Players</button>
