@@ -40,35 +40,35 @@ const TOOL_CATEGORIES = [
     {
         name: "Pre-Match & Fixtures",
         tools: [
-            { id: 't_fixture', name: 'Tournament Fixture', desc: 'Knockout/Round match list', icon: IconLayout, color: 'text-[#f97316]', bg: 'bg-[#f97316]/10', border: 'border-[#f97316]/20' },
-            { id: 'schedule', name: 'Single Schedule', desc: 'Upcoming fixture and venue', icon: IconCalendar, color: 'text-[#a855f7]', bg: 'bg-[#a855f7]/10', border: 'border-[#a855f7]/20' },
-            { id: 'multi_schedule', name: 'All-Day Schedule', desc: 'Grid schedule of matches', icon: IconGrid, color: 'text-[#fcd34d]', bg: 'bg-[#fcd34d]/10', border: 'border-[#fcd34d]/20' },
-            { id: 'squad', name: 'Squad List', desc: 'Two-column team player list', icon: IconUsers, color: 'text-[#f97316]', bg: 'bg-[#f97316]/10', border: 'border-[#f97316]/20' }
+            { id: 't_fixture', name: 'Tournament Fixture', desc: 'Knockout/Round match list', icon: IconLayout, color: 'text-[#fe5252]', bg: 'bg-[#fe5252]/10', border: 'border-[#fe5252]/20' },
+            { id: 'schedule', name: 'Single Schedule', desc: 'Upcoming fixture and venue', icon: IconCalendar, color: 'text-[#fe5252]', bg: 'bg-[#fe5252]/10', border: 'border-[#fe5252]/20' },
+            { id: 'multi_schedule', name: 'All-Day Schedule', desc: 'Grid schedule of matches', icon: IconGrid, color: 'text-[#fe5252]', bg: 'bg-[#fe5252]/10', border: 'border-[#fe5252]/20' },
+            { id: 'squad', name: 'Squad List', desc: 'Two-column team player list', icon: IconUsers, color: 'text-[#fe5252]', bg: 'bg-[#fe5252]/10', border: 'border-[#fe5252]/20' }
         ]
     },
     {
         name: "Live & Match Results",
         tools: [
-            { id: 'f_scorecard', name: 'Football PRO', desc: 'Photo-rich football result', icon: IconFootball, color: 'text-[#fcd34d]', bg: 'bg-[#fcd34d]/10', border: 'border-[#fcd34d]/20' },
-            { id: 'scorecard', name: 'Match Scorecard', desc: 'Classic Match score updates', icon: IconTrophy, color: 'text-[#a855f7]', bg: 'bg-[#a855f7]/10', border: 'border-[#a855f7]/20' },
-            { id: 'multi_result', name: 'Multi Results', desc: 'List of match scores', icon: IconList, color: 'text-[#4ade80]', bg: 'bg-[#4ade80]/10', border: 'border-[#4ade80]/20' },
-            { id: 'poll', name: 'Reaction Poll', desc: 'Facebook-style reaction polls', icon: IconSwap, color: 'text-[#a855f7]', bg: 'bg-[#a855f7]/10', border: 'border-[#a855f7]/20' }
+            { id: 'f_scorecard', name: 'Football PRO', desc: 'Photo-rich football result', icon: IconFootball, color: 'text-[#fe5252]', bg: 'bg-[#fe5252]/10', border: 'border-[#fe5252]/20' },
+            { id: 'scorecard', name: 'Match Scorecard', desc: 'Classic Match score updates', icon: IconTrophy, color: 'text-[#fe5252]', bg: 'bg-[#fe5252]/10', border: 'border-[#fe5252]/20' },
+            { id: 'multi_result', name: 'Multi Results', desc: 'List of match scores', icon: IconList, color: 'text-[#fe5252]', bg: 'bg-[#fe5252]/10', border: 'border-[#fe5252]/20' },
+            { id: 'poll', name: 'Reaction Poll', desc: 'Facebook-style reaction polls', icon: IconSwap, color: 'text-[#fe5252]', bg: 'bg-[#fe5252]/10', border: 'border-[#fe5252]/20' }
         ]
     },
     {
         name: "Player & Milestones",
         tools: [
-            { id: 'player', name: 'Player Profile', desc: 'Highlight player performance', icon: IconUser, color: 'text-[#f97316]', bg: 'bg-[#f97316]/10', border: 'border-[#f97316]/20' },
-            { id: 'career', name: 'Career Stats', desc: 'Overall career statistics', icon: IconChart, color: 'text-[#a855f7]', bg: 'bg-[#a855f7]/10', border: 'border-[#a855f7]/20' },
-            { id: 'milestone', name: 'Milestones', desc: 'Birthdays and records', icon: IconStar, color: 'text-[#fcd34d]', bg: 'bg-[#fcd34d]/10', border: 'border-[#fcd34d]/20' }
+            { id: 'player', name: 'Player Profile', desc: 'Highlight player performance', icon: IconUser, color: 'text-[#fe5252]', bg: 'bg-[#fe5252]/10', border: 'border-[#fe5252]/20' },
+            { id: 'career', name: 'Career Stats', desc: 'Overall career statistics', icon: IconChart, color: 'text-[#fe5252]', bg: 'bg-[#fe5252]/10', border: 'border-[#fe5252]/20' },
+            { id: 'milestone', name: 'Milestones', desc: 'Birthdays and records', icon: IconStar, color: 'text-[#fe5252]', bg: 'bg-[#fe5252]/10', border: 'border-[#fe5252]/20' }
         ]
     },
     {
         name: "Media & Engagement",
         tools: [
-            { id: 'news', name: 'Breaking News', desc: 'Urgent updates and headlines', icon: IconMegaphone, color: 'text-[#fcd34d]', bg: 'bg-[#fcd34d]/10', border: 'border-[#fcd34d]/20' },
-            { id: 'discussion', name: 'Q&A / Discussion', desc: 'Text-heavy engagement posts', icon: IconHelp, color: 'text-[#a855f7]', bg: 'bg-[#a855f7]/10', border: 'border-[#a855f7]/20' },
-            { id: 'statement', name: 'Quote Overlay', desc: 'Player quotes with avatar cutout', icon: IconMessage, color: 'text-[#a855f7]', bg: 'bg-[#a855f7]/10', border: 'border-[#a855f7]/20' }
+            { id: 'news', name: 'Breaking News', desc: 'Urgent updates and headlines', icon: IconMegaphone, color: 'text-[#fe5252]', bg: 'bg-[#fe5252]/10', border: 'border-[#fe5252]/20' },
+            { id: 'discussion', name: 'Q&A / Discussion', desc: 'Text-heavy engagement posts', icon: IconHelp, color: 'text-[#fe5252]', bg: 'bg-[#fe5252]/10', border: 'border-[#fe5252]/20' },
+            { id: 'statement', name: 'Quote Overlay', desc: 'Player quotes with avatar cutout', icon: IconMessage, color: 'text-[#fe5252]', bg: 'bg-[#fe5252]/10', border: 'border-[#fe5252]/20' }
         ]
     }
 ];
@@ -542,7 +542,7 @@ function App() {
                                             <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-5 ${tool.bg} ${tool.color} border ${tool.border} group-hover:scale-110 transition-transform shadow-inner [&>svg]:w-7 [&>svg]:h-7 relative z-10`}>
                                                 <tool.icon />
                                             </div>
-                                            <h3 className="text-lg font-bold text-white mb-1.5 group-hover:text-rose-400 transition-colors relative z-10">{tool.name}</h3>
+                                            <h3 className="text-lg font-bold text-white mb-1.5 group-hover:text-[#fe5252] transition-colors relative z-10">{tool.name}</h3>
                                             <p className="text-xs text-slate-400 font-medium leading-relaxed relative z-10">{tool.desc}</p>
                                         </div>
                                     ))}
