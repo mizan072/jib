@@ -2,11 +2,13 @@
 // Handles the tabs (Content, Teams, Style) and all the dynamic form inputs.
 
 window.EditorSidebar = function(props) {
-    // Destructure icons
+    // FIX: Correctly map the exact icon names from config.js to the names used in this component
     const { 
-        IconUpload, IconUser, IconTrash, IconSwap, IconFootball, IconLayout, 
-        IconUsers, IconList, IconGrid, IconHelp, IconChart, IconStar, 
-        IconCalendar, IconEye, IconHeight, IconMegaphone, IconMessage 
+        Upload: IconUpload, User: IconUser, Trash: IconTrash, Swap: IconSwap, 
+        Football: IconFootball, Layout: IconLayout, Users: IconUsers, List: IconList, 
+        Grid: IconGrid, Help: IconHelp, Chart: IconChart, Star: IconStar, 
+        Calendar: IconCalendar, Eye: IconEye, Height: IconHeight, 
+        Megaphone: IconMegaphone, Message: IconMessage 
     } = window.AppIcons;
 
     const { formData, appMode, activeTab, setActiveTab } = props;
