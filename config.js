@@ -36,60 +36,60 @@ window.AppIcons = {
 };
 
 // 2. TOOL CATEGORIES
-// Colors updated to match the Premium Maroon/Gold/Orange/Purple Theme
+// Colors updated to match the Deep Maroon (#8C0D17) and Yellow (#FFEB00) Theme
 window.AppCategories = [
     {
         name: "Video & Motion",
         tools: [
-            { id: 'viral_video', name: 'Viral Shorts Pro', desc: 'Animated sports videos', icon: window.AppIcons.Video, color: 'text-[#f59e0b]', bg: 'bg-[#f59e0b]/10', border: 'border-[#f59e0b]/20' }
+            { id: 'viral_video', name: 'Viral Shorts Pro', desc: 'Animated sports videos', icon: window.AppIcons.Video, color: 'text-[#FFEB00]', bg: 'bg-[#FFEB00]/10', border: 'border-[#FFEB00]/20' }
         ]
     },
     {
         name: "Pre-Match & Fixtures",
         tools: [
-            { id: 't_fixture', name: 'Tournament Fixture', desc: 'Knockout/Round match list', icon: window.AppIcons.Layout, color: 'text-[#ea580c]', bg: 'bg-[#ea580c]/10', border: 'border-[#ea580c]/20' },
-            { id: 'schedule', name: 'Single Schedule', desc: 'Upcoming fixture and venue', icon: window.AppIcons.Calendar, color: 'text-[#9333ea]', bg: 'bg-[#9333ea]/10', border: 'border-[#9333ea]/20' },
-            { id: 'multi_schedule', name: 'All-Day Schedule', desc: 'Grid schedule of matches', icon: window.AppIcons.Grid, color: 'text-[#facc15]', bg: 'bg-[#facc15]/10', border: 'border-[#facc15]/20' },
-            { id: 'squad', name: 'Squad List', desc: 'Two-column team player list', icon: window.AppIcons.Users, color: 'text-[#ea580c]', bg: 'bg-[#ea580c]/10', border: 'border-[#ea580c]/20' }
+            { id: 't_fixture', name: 'Tournament Fixture', desc: 'Knockout/Round match list', icon: window.AppIcons.Layout, color: 'text-[#8C0D17]', bg: 'bg-[#8C0D17]/10', border: 'border-[#8C0D17]/20' },
+            { id: 'schedule', name: 'Single Schedule', desc: 'Upcoming fixture and venue', icon: window.AppIcons.Calendar, color: 'text-[#FFEB00]', bg: 'bg-[#FFEB00]/10', border: 'border-[#FFEB00]/20' },
+            { id: 'multi_schedule', name: 'All-Day Schedule', desc: 'Grid schedule of matches', icon: window.AppIcons.Grid, color: 'text-[#8C0D17]', bg: 'bg-[#8C0D17]/10', border: 'border-[#8C0D17]/20' },
+            { id: 'squad', name: 'Squad List', desc: 'Two-column team player list', icon: window.AppIcons.Users, color: 'text-[#FFEB00]', bg: 'bg-[#FFEB00]/10', border: 'border-[#FFEB00]/20' }
         ]
     },
     {
         name: "Live & Match Results",
         tools: [
-            { id: 'f_scorecard', name: 'Football PRO', desc: 'Photo-rich football result', icon: window.AppIcons.Football, color: 'text-[#facc15]', bg: 'bg-[#facc15]/10', border: 'border-[#facc15]/20' },
-            { id: 'scorecard', name: 'Match Scorecard', desc: 'Classic Match score updates', icon: window.AppIcons.Trophy, color: 'text-[#9333ea]', bg: 'bg-[#9333ea]/10', border: 'border-[#9333ea]/20' },
-            { id: 'multi_result', name: 'Multi Results', desc: 'List of match scores', icon: window.AppIcons.List, color: 'text-[#f59e0b]', bg: 'bg-[#f59e0b]/10', border: 'border-[#f59e0b]/20' },
-            { id: 'poll', name: 'Reaction Poll', desc: 'Facebook-style reaction polls', icon: window.AppIcons.Swap, color: 'text-[#9333ea]', bg: 'bg-[#9333ea]/10', border: 'border-[#9333ea]/20' }
+            { id: 'f_scorecard', name: 'Football PRO', desc: 'Photo-rich football result', icon: window.AppIcons.Football, color: 'text-[#8C0D17]', bg: 'bg-[#8C0D17]/10', border: 'border-[#8C0D17]/20' },
+            { id: 'scorecard', name: 'Match Scorecard', desc: 'Classic Match score updates', icon: window.AppIcons.Trophy, color: 'text-[#FFEB00]', bg: 'bg-[#FFEB00]/10', border: 'border-[#FFEB00]/20' },
+            { id: 'multi_result', name: 'Multi Results', desc: 'List of match scores', icon: window.AppIcons.List, color: 'text-[#8C0D17]', bg: 'bg-[#8C0D17]/10', border: 'border-[#8C0D17]/20' },
+            { id: 'poll', name: 'Reaction Poll', desc: 'Facebook-style reaction polls', icon: window.AppIcons.Swap, color: 'text-[#FFEB00]', bg: 'bg-[#FFEB00]/10', border: 'border-[#FFEB00]/20' }
         ]
     },
     {
         name: "Player & Milestones",
         tools: [
-            { id: 'player', name: 'Player Profile', desc: 'Highlight player performance', icon: window.AppIcons.User, color: 'text-[#ea580c]', bg: 'bg-[#ea580c]/10', border: 'border-[#ea580c]/20' },
-            { id: 'career', name: 'Career Stats', desc: 'Overall career statistics', icon: window.AppIcons.Chart, color: 'text-[#9333ea]', bg: 'bg-[#9333ea]/10', border: 'border-[#9333ea]/20' },
-            { id: 'milestone', name: 'Milestones', desc: 'Birthdays and records', icon: window.AppIcons.Star, color: 'text-[#facc15]', bg: 'bg-[#facc15]/10', border: 'border-[#facc15]/20' }
+            { id: 'player', name: 'Player Profile', desc: 'Highlight player performance', icon: window.AppIcons.User, color: 'text-[#8C0D17]', bg: 'bg-[#8C0D17]/10', border: 'border-[#8C0D17]/20' },
+            { id: 'career', name: 'Career Stats', desc: 'Overall career statistics', icon: window.AppIcons.Chart, color: 'text-[#FFEB00]', bg: 'bg-[#FFEB00]/10', border: 'border-[#FFEB00]/20' },
+            { id: 'milestone', name: 'Milestones', desc: 'Birthdays and records', icon: window.AppIcons.Star, color: 'text-[#8C0D17]', bg: 'bg-[#8C0D17]/10', border: 'border-[#8C0D17]/20' }
         ]
     },
     {
         name: "Media & Engagement",
         tools: [
-            { id: 'news', name: 'Breaking News', desc: 'Urgent updates and headlines', icon: window.AppIcons.Megaphone, color: 'text-[#facc15]', bg: 'bg-[#facc15]/10', border: 'border-[#facc15]/20' },
-            { id: 'discussion', name: 'Q&A / Discussion', desc: 'Text-heavy engagement posts', icon: window.AppIcons.Help, color: 'text-[#9333ea]', bg: 'bg-[#9333ea]/10', border: 'border-[#9333ea]/20' },
-            { id: 'statement', name: 'Quote Overlay', desc: 'Player quotes with avatar cutout', icon: window.AppIcons.Message, color: 'text-[#9333ea]', bg: 'bg-[#9333ea]/10', border: 'border-[#9333ea]/20' }
+            { id: 'news', name: 'Breaking News', desc: 'Urgent updates and headlines', icon: window.AppIcons.Megaphone, color: 'text-[#FFEB00]', bg: 'bg-[#FFEB00]/10', border: 'border-[#FFEB00]/20' },
+            { id: 'discussion', name: 'Q&A / Discussion', desc: 'Text-heavy engagement posts', icon: window.AppIcons.Help, color: 'text-[#8C0D17]', bg: 'bg-[#8C0D17]/10', border: 'border-[#8C0D17]/20' },
+            { id: 'statement', name: 'Quote Overlay', desc: 'Player quotes with avatar cutout', icon: window.AppIcons.Message, color: 'text-[#FFEB00]', bg: 'bg-[#FFEB00]/10', border: 'border-[#FFEB00]/20' }
         ]
     }
 ];
 
 // 3. DEFAULT FORM DATA
-// Default theme updated to match the requested Maroon & Gold aesthetic
+// Default theme updated to match the Deep Maroon & Yellow aesthetic
 window.AppDefaultFormData = {
     badgeText: 'ProSports', title: 'ওয়ার্ল্ড চ্যাম্পিয়নশিপ ২০২৬', footerHandle: '@ViralSportsEdits',
-    primaryColor: '#ffb700', // Vibrant Gold
-    secondaryColor: '#700015', // Deep Maroon for Gradients
+    primaryColor: '#FFEB00',   // Vibrant Yellow (Text & Highlights)
+    secondaryColor: '#8C0D17', // Deep Maroon/Red (Backgrounds & Gradients)
     bgOpacity: 0.85, newsGradientHeight: 0.6,
     
-    team1: 'রাওয়ালপিন্ডি', team1Color: '#ffb700', // Gold
-    team2: 'লাহোর', team2Color: '#9333ea', // Purple
+    team1: 'রাওয়ালপিন্ডি', team1Color: '#FFEB00', // Yellow
+    team2: 'লাহোর', team2Color: '#8C0D17', // Maroon
     team1Score: '2', team1Overs: '(২০ ওভার)', team2Score: '0', team2Overs: '(২০ ওভার)',
     result: 'একাদশে নেই রিশাদ হোসেন', resultColor: '#ffffff', 
     matchDate: '২০ অক্টোবর, ২০২৬', matchTime: 'রাত ৮:০০টা', matchVenue: 'মিরপুর স্টেডিয়াম',
