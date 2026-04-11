@@ -2,7 +2,7 @@
 // Handles the tabs (Content, Teams, Style) and all the dynamic form inputs.
 
 window.EditorSidebar = function(props) {
-    // FIX: Correctly map the exact icon names from config.js to the names used in this component
+    // FIX: Correctly map the exact icon names from config.js
     const { 
         Upload: IconUpload, User: IconUser, Trash: IconTrash, Swap: IconSwap, 
         Football: IconFootball, Layout: IconLayout, Users: IconUsers, List: IconList, 
@@ -125,7 +125,7 @@ window.EditorSidebar = function(props) {
 
                         {/* --- Tool Specific Forms --- */}
 
-                        {/* ---> NEW 3V3 CLASH UI <--- */}
+                        {/* ---> NEW 3V3 CLASH UI (Player Names Removed) <--- */}
                         {appMode === 'h2h_3v3' && (
                             <div className="p-5 bg-amber-500/10 rounded-2xl border-l-4 border-amber-500 shadow-inner space-y-4">
                                 <h4 className="text-sm font-black text-amber-400 uppercase tracking-wider flex items-center gap-2 mb-4"><IconUsers /> 3v3 Clash Setup</h4>
@@ -168,7 +168,7 @@ window.EditorSidebar = function(props) {
                                                         <IconUpload className="w-5 h-5 text-slate-400" />
                                                     )}
                                                 </label>
-                                                <input type="text" name={`h2hT1P${num}`} value={formData[`h2hT1P${num}`]} onChange={props.onChange} placeholder={`Player ${num}`} className="w-full bg-transparent border-0 text-sm font-bold text-white focus:ring-0 p-1" />
+                                                <span className="text-sm font-bold text-slate-400 p-1">Player {num} Photo</span>
                                             </div>
                                         ))}
                                     </div>
@@ -189,7 +189,7 @@ window.EditorSidebar = function(props) {
                                                         <IconUpload className="w-5 h-5 text-slate-400" />
                                                     )}
                                                 </label>
-                                                <input type="text" name={`h2hT2P${num}`} value={formData[`h2hT2P${num}`]} onChange={props.onChange} placeholder={`Player ${num}`} className="w-full bg-transparent border-0 text-sm font-bold text-white focus:ring-0 p-1" />
+                                                <span className="text-sm font-bold text-slate-400 p-1">Player {num} Photo</span>
                                             </div>
                                         ))}
                                     </div>
