@@ -2,9 +2,11 @@
 // Handles the welcome banner and the dashboard grid of all available tools.
 
 window.ToolGrid = function(props) {
-    // Pull the categories and the Star icon from our global config
+    // Pull the categories from our global config
     const CATEGORIES = window.AppCategories;
-    const { IconStar } = window.AppIcons;
+    
+    // FIX: Correctly map the exact icon names from config.js
+    const { Star: IconStar } = window.AppIcons;
 
     return (
         <div className="space-y-12 animation-fadeIn">
