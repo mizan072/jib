@@ -1,5 +1,4 @@
-// --- ADVANCED 8K RENDERING ENGINE v5 (3v3 CLASH EDITION) ---
-// Handles Auto-Color Grading, Bulletproof Text Wrapping, Premium Colors, and 3v3 Slanted Roster Cutouts
+// --- ADVANCED 8K RENDERING ENGINE v5.1 (3v3 CLASH - CLEAN PHOTOS) ---
 
 window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions, isExport = false) {
     const splitY = 700;
@@ -224,8 +223,8 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
             
             ctx.beginPath(); ctx.moveTo(W/2 - 200, 210); ctx.lineTo(W/2 + 200, 210); ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth=3; ctx.stroke();
 
-            // Player Card Drawing Function (Slanted Parallelograms)
-            const drawClashCard = (img, pos, name, x, y, w, h, color, isLeft) => {
+            // Player Card Drawing Function (Slanted Parallelograms, NO NAMES)
+            const drawClashCard = (img, pos, x, y, w, h, color, isLeft) => {
                 ctx.save();
                 const slant = 40;
                 
@@ -260,34 +259,20 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
                 ctx.strokeStyle = color;
                 ctx.stroke();
 
-                // Add Name Badge at bottom of card
-                const tagY = y + h - 15;
-                ctx.fillStyle = color;
-                ctx.beginPath(); ctx.roundRect(x + 10, tagY - 45, w - 20, 50, 10); ctx.fill();
-                
-                // Determine text color based on team color brightness (simplified for now)
-                drawResponsiveText(name, x + w/2, tagY - 10, w - 30, 28, '#000000', 'center', '900');
-                
                 ctx.restore();
             };
 
             const cW = 260; const cH = 450; const cY = 300;
             
             // Draw Team 1 (Left Side - Overlapping Back to Front)
-            // P3 (Back)
-            drawClashCard(assets.clashImages?.t1p3, positions.clashPos?.t1p3 || {x:0, y:0, scale:1}, formData.h2hT1P3, 30, cY+60, cW, cH, formData.team1Color, true);
-            // P2 (Middle)
-            drawClashCard(assets.clashImages?.t1p2, positions.clashPos?.t1p2 || {x:0, y:0, scale:1}, formData.h2hT1P2, 130, cY+30, cW, cH, formData.team1Color, true);
-            // P1 (Front/Captain)
-            drawClashCard(assets.clashImages?.t1p1, positions.clashPos?.t1p1 || {x:0, y:0, scale:1}, formData.h2hT1P1, 230, cY, cW, cH, formData.team1Color, true);
+            drawClashCard(assets.clashImages?.t1p3, positions.clashPos?.t1p3 || {x:0, y:0, scale:1}, 30, cY+60, cW, cH, formData.team1Color, true);
+            drawClashCard(assets.clashImages?.t1p2, positions.clashPos?.t1p2 || {x:0, y:0, scale:1}, 130, cY+30, cW, cH, formData.team1Color, true);
+            drawClashCard(assets.clashImages?.t1p1, positions.clashPos?.t1p1 || {x:0, y:0, scale:1}, 230, cY, cW, cH, formData.team1Color, true);
 
             // Draw Team 2 (Right Side - Overlapping Back to Front)
-            // P3 (Back)
-            drawClashCard(assets.clashImages?.t2p3, positions.clashPos?.t2p3 || {x:0, y:0, scale:1}, formData.h2hT2P3, W-30-cW, cY+60, cW, cH, formData.team2Color, false);
-            // P2 (Middle)
-            drawClashCard(assets.clashImages?.t2p2, positions.clashPos?.t2p2 || {x:0, y:0, scale:1}, formData.h2hT2P2, W-130-cW, cY+30, cW, cH, formData.team2Color, false);
-            // P1 (Front/Captain)
-            drawClashCard(assets.clashImages?.t2p1, positions.clashPos?.t2p1 || {x:0, y:0, scale:1}, formData.h2hT2P1, W-230-cW, cY, cW, cH, formData.team2Color, false);
+            drawClashCard(assets.clashImages?.t2p3, positions.clashPos?.t2p3 || {x:0, y:0, scale:1}, W-30-cW, cY+60, cW, cH, formData.team2Color, false);
+            drawClashCard(assets.clashImages?.t2p2, positions.clashPos?.t2p2 || {x:0, y:0, scale:1}, W-130-cW, cY+30, cW, cH, formData.team2Color, false);
+            drawClashCard(assets.clashImages?.t2p1, positions.clashPos?.t2p1 || {x:0, y:0, scale:1}, W-230-cW, cY, cW, cH, formData.team2Color, false);
 
             // Big "VS" Logo in Center Over Everything
             ctx.beginPath(); ctx.arc(W/2, cY + cH/2, 60, 0, Math.PI*2); 
