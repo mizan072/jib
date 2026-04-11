@@ -1,5 +1,4 @@
 // --- GLOBAL APP CONFIGURATION & DATA ---
-// This file stores all icons, tool categories, and default form data.
 
 // 1. SVG ICONS
 window.AppIcons = {
@@ -36,7 +35,6 @@ window.AppIcons = {
 };
 
 // 2. TOOL CATEGORIES
-// Colors updated to match the Deep Maroon (#8C0D17) and Yellow (#FFEB00) Theme
 window.AppCategories = [
     {
         name: "Video & Motion",
@@ -47,6 +45,9 @@ window.AppCategories = [
     {
         name: "Pre-Match & Fixtures",
         tools: [
+            // ---> NEW 3v3 TOOL ADDED HERE <---
+            { id: 'h2h_3v3', name: '3v3 Player Clash', desc: 'Team vs Team key players', icon: window.AppIcons.Users, color: 'text-[#FFEB00]', bg: 'bg-[#FFEB00]/10', border: 'border-[#FFEB00]/20' },
+            
             { id: 't_fixture', name: 'Tournament Fixture', desc: 'Knockout/Round match list', icon: window.AppIcons.Layout, color: 'text-[#8C0D17]', bg: 'bg-[#8C0D17]/10', border: 'border-[#8C0D17]/20' },
             { id: 'schedule', name: 'Single Schedule', desc: 'Upcoming fixture and venue', icon: window.AppIcons.Calendar, color: 'text-[#FFEB00]', bg: 'bg-[#FFEB00]/10', border: 'border-[#FFEB00]/20' },
             { id: 'multi_schedule', name: 'All-Day Schedule', desc: 'Grid schedule of matches', icon: window.AppIcons.Grid, color: 'text-[#8C0D17]', bg: 'bg-[#8C0D17]/10', border: 'border-[#8C0D17]/20' },
@@ -81,38 +82,39 @@ window.AppCategories = [
 ];
 
 // 3. DEFAULT FORM DATA
-// Default theme updated to match the Deep Maroon & Yellow aesthetic
 window.AppDefaultFormData = {
     badgeText: 'ProSports', title: 'ওয়ার্ল্ড চ্যাম্পিয়নশিপ ২০২৬', footerHandle: '@ViralSportsEdits',
-    primaryColor: '#FFEB00',   // Vibrant Yellow (Text & Highlights)
-    secondaryColor: '#8C0D17', // Deep Maroon/Red (Backgrounds & Gradients)
-    bgOpacity: 0.85, newsGradientHeight: 0.6,
+    primaryColor: '#FFEB00', secondaryColor: '#8C0D17', bgOpacity: 0.85, newsGradientHeight: 0.6,
     
-    team1: 'রাওয়ালপিন্ডি', team1Color: '#FFEB00', // Yellow
-    team2: 'লাহোর', team2Color: '#8C0D17', // Maroon
+    // ---> NEW 3V3 DEFAULT DATA <---
+    h2hTournament: 'প্রিমিয়ার লিগ ২০২৬',
+    h2hDate: '১৫ নভেম্বর',
+    h2hDay: 'শুক্রবার',
+    h2hTime: 'রাত ৮:০০ টা',
+    h2hTeam1Name: 'ঢাকা গ্যাডিয়েটর্স',
+    h2hTeam2Name: 'বরিশাল বুলস',
+    h2hT1P1: 'সাকিব', h2hT1P2: 'তামিম', h2hT1P3: 'মুশফিক',
+    h2hT2P1: 'রিয়াদ', h2hT2P2: 'মাশরাফি', h2hT2P3: 'শান্ত',
+    
+    team1: 'রাওয়ালপিন্ডি', team1Color: '#FFEB00', team2: 'লাহোর', team2Color: '#8C0D17',
     team1Score: '2', team1Overs: '(২০ ওভার)', team2Score: '0', team2Overs: '(২০ ওভার)',
     result: 'একাদশে নেই রিশাদ হোসেন', resultColor: '#ffffff', 
     matchDate: '২০ অক্টোবর, ২০২৬', matchTime: 'রাত ৮:০০টা', matchVenue: 'মিরপুর স্টেডিয়াম',
-    
     playerName: 'রিশাদ হোসেন', playerStatMain: '৮২*', playerStatSub: 'রান (৪৫ বল)', playerRole: 'লেগ স্পিনার', 
     careerMatches: '২৫৪', careerRuns: '৭৫৬২', careerHundreds: '১৪', careerFifties: '৪২', careerBest: '১১৪*', careerWickets: '৩১২', 
-    
     pollQuestion: 'আজকের ম্যাচের সেরা খেলোয়াড় কে?', pollPlayer1: 'রিশাদ হোসেন', pollPlayer2: 'বিরাট কোহলি',
     milestoneOccasion: 'শুভ জন্মদিন', milestoneName: 'রিশাদ হোসেন', milestoneNumber: '৩৭ তম', milestoneMessage: 'বাংলাদেশ ক্রিকেটের জান, বাংলাদেশ ক্রিকেটের প্রাণ! শুভকামনা রইলো।',
     discTopic: 'ম্যাচ বিশ্লেষণ', discLine1: 'পাওয়ার প্লে-তে কে বেশি রান করবে?', discLine2: 'আজকের পিচ কাদের জন্য সহায়ক?', discLine3: 'সেরা বোলার কে হতে পারে?',
     quoteText: 'রাওয়ালপিন্ডির একাদশে নেই রিশাদ হোসেন, এটা দলের জন্য বড় ধাক্কা।', quoteAuthor: 'ম্যানেজমেন্ট',
-    
     fTourneyTitle: 'সাফ চ্যাম্পিয়নশিপ', fMatchStatus: 'ফুল টাইম',
     squadTitle: 'রাওয়ালপিন্ডির একাদশ ঘোষণা',
     squadList: 'শাহিন শাহ আফ্রিদি (অধিনায়ক)\nমোহাম্মদ ওয়াসিম জুনিয়র\nসাহিবজাদা ফারহান\nমোহাম্মদ গাজী ঘুরি\nআবরার আহমেদ\nশাদ মাসুদ\nফাহিম আশরাফ\nআব্দুল সামাদ\nফাইসাল আকরাম\nসালমান আলী আগা\nহারিস রউফ\nশামিল হুসেন\nহুসাইন তালাত\nমাআজ সাদাকাত\nমোহাম্মদ রিজওয়ান (উইকেটকিপার)',
-    
     multiResultTitle: 'আজকের সকল ম্যাচের ফলাফল',
     resultsList: [
         { id: 1, team1: 'বার্সেলোনা', team2: 'রিয়াল মাদ্রিদ', score1: '৩', score2: '১', tourney: 'লা লিগা' },
         { id: 2, team1: 'আর্সেনাল', team2: 'চেলসি', score1: '২', score2: '২', tourney: 'ইপিএল' },
         { id: 3, team1: 'বায়ার্ন', team2: 'ডর্টমুন্ড', score1: '১', score2: '০', tourney: 'বুন্দেসলিগা' }
     ],
-    
     multiScheduleDate: '১৫ নভেম্বর ২০২৬',
     multiScheduleTitle: 'আজকের খেলার সময়সূচী',
     scheduleList: [
@@ -121,16 +123,10 @@ window.AppDefaultFormData = {
         { id: 3, sport: 'ফুটবল', tourney: 'ইংলিশ প্রিমিয়ার লিগ', match: 'ম্যান সিটি বনাম আর্সেনাল', time: 'রাত ১০:৩০ মি.' },
         { id: 4, sport: 'ক্রিকেট', tourney: 'টি-টোয়েন্টি বিশ্বকাপ', match: 'অস্ট্রেলিয়া বনাম ইংল্যান্ড', time: 'বিকেল ৪:০০ টা' }
     ],
-    
     fixtureTitle: 'গোপালনগর ক্রিকেট\nটুর্নামেন্ট ২০২৫', fixtureSubtitle: 'সিজন - ৪ | ১ম রাউন্ড', fixtureDateFooter: 'উদ্বোধনী ম্যাচ: ঈদের ৩য় দিন', fixtureOrganizerFooter: 'আয়োজনে: গোপালনগর ইয়ং বয়েজ',
     matchupList: [
         { id: 1, date: '২০ মার্চ', t1: 'আদমপুর', t1Sub: '১নং ওয়ার্ড', t2: 'মণিরামপুর', t2Sub: '১নং ওয়ার্ড' },
         { id: 2, date: '২১ মার্চ', t1: 'ফতেপুর', t1Sub: 'মমিন ট্রের্ডাস', t2: 'বাউবাডিয়া', t2Sub: 'একাদশ' },
-        { id: 3, date: '২২ মার্চ', t1: 'শোলমারী', t1Sub: 'কাউন্সিল বয়েজ', t2: 'চেংগারা', t2Sub: 'একাদশ, গাংনী' },
-        { id: 4, date: '২৩ মার্চ', t1: 'বারাদি', t1Sub: '৩নং ওয়ার্ড', t2: 'গৌরিনাথপুর', t2Sub: 'একাদশ, মেহেরপুর' },
-        { id: 5, date: '২৪ মার্চ', t1: 'শিবপুর', t1Sub: 'সমাজকল্যাণ ক্লাব', t2: 'শুভরাজপুর', t2Sub: 'বর্ডার বয়েজ' },
-        { id: 6, date: '২৫ মার্চ', t1: 'গোপালনগর', t1Sub: 'ইয়ং বয়েজ', t2: 'রামনগর', t2Sub: 'একাদশ' },
-        { id: 7, date: '২৬ মার্চ', t1: 'বিশ্বনাথপুর', t1Sub: 'একাদশ', t2: 'ভবানীপুর', t2Sub: 'একাদশ' },
-        { id: 8, date: '২৭ মার্চ', t1: 'শিবপুর', t1Sub: 'স্টারস', t2: 'গোপালনগর', t2Sub: 'জুনিয়র টাইগার্স' }
+        { id: 3, date: '২২ মার্চ', t1: 'শোলমারী', t1Sub: 'কাউন্সিল বয়েজ', t2: 'চেংগারা', t2Sub: 'একাদশ, গাংনী' }
     ]
 };
