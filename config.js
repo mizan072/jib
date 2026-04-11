@@ -37,17 +37,9 @@ window.AppIcons = {
 // 2. TOOL CATEGORIES
 window.AppCategories = [
     {
-        name: "Video & Motion",
-        tools: [
-            { id: 'viral_video', name: 'Viral Shorts Pro', desc: 'Animated sports videos', icon: window.AppIcons.Video, color: 'text-[#FFEB00]', bg: 'bg-[#FFEB00]/10', border: 'border-[#FFEB00]/20' }
-        ]
-    },
-    {
         name: "Pre-Match & Fixtures",
         tools: [
-            // ---> NEW 3v3 TOOL ADDED HERE <---
             { id: 'h2h_3v3', name: '3v3 Player Clash', desc: 'Team vs Team key players', icon: window.AppIcons.Users, color: 'text-[#FFEB00]', bg: 'bg-[#FFEB00]/10', border: 'border-[#FFEB00]/20' },
-            
             { id: 't_fixture', name: 'Tournament Fixture', desc: 'Knockout/Round match list', icon: window.AppIcons.Layout, color: 'text-[#8C0D17]', bg: 'bg-[#8C0D17]/10', border: 'border-[#8C0D17]/20' },
             { id: 'schedule', name: 'Single Schedule', desc: 'Upcoming fixture and venue', icon: window.AppIcons.Calendar, color: 'text-[#FFEB00]', bg: 'bg-[#FFEB00]/10', border: 'border-[#FFEB00]/20' },
             { id: 'multi_schedule', name: 'All-Day Schedule', desc: 'Grid schedule of matches', icon: window.AppIcons.Grid, color: 'text-[#8C0D17]', bg: 'bg-[#8C0D17]/10', border: 'border-[#8C0D17]/20' },
@@ -86,15 +78,13 @@ window.AppDefaultFormData = {
     badgeText: 'ProSports', title: 'ওয়ার্ল্ড চ্যাম্পিয়নশিপ ২০২৬', footerHandle: '@ViralSportsEdits',
     primaryColor: '#FFEB00', secondaryColor: '#8C0D17', bgOpacity: 0.85, newsGradientHeight: 0.6,
     
-    // ---> NEW 3V3 DEFAULT DATA <---
+    // 3V3 DEFAULT DATA
     h2hTournament: 'প্রিমিয়ার লিগ ২০২৬',
     h2hDate: '১৫ নভেম্বর',
     h2hDay: 'শুক্রবার',
     h2hTime: 'রাত ৮:০০ টা',
     h2hTeam1Name: 'ঢাকা গ্যাডিয়েটর্স',
     h2hTeam2Name: 'বরিশাল বুলস',
-    h2hT1P1: 'সাকিব', h2hT1P2: 'তামিম', h2hT1P3: 'মুশফিক',
-    h2hT2P1: 'রিয়াদ', h2hT2P2: 'মাশরাফি', h2hT2P3: 'শান্ত',
     
     team1: 'রাওয়ালপিন্ডি', team1Color: '#FFEB00', team2: 'লাহোর', team2Color: '#8C0D17',
     team1Score: '2', team1Overs: '(২০ ওভার)', team2Score: '0', team2Overs: '(২০ ওভার)',
