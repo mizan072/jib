@@ -2,8 +2,8 @@
 // Handles the Toast notifications, App Announcements, and the "Get Points" purchasing modal.
 
 window.Modals = function(props) {
-    // Destructure the icons we need from our global config
-    const { IconClose, IconCopy, IconTg } = window.AppIcons;
+    // FIX: Correctly map the exact icon names from config.js to the names used in this component
+    const { Close: IconClose, Copy: IconCopy, Tg: IconTg } = window.AppIcons;
 
     return (
         <>
