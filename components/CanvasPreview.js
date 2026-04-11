@@ -3,10 +3,62 @@
 
 window.CanvasPreview = function(props) {
     const { useRef } = React;
-    const { IconRefresh } = window.AppIcons;
+    
+    // FIX: Correctly map the exact icon names from config.js
+    const { Refresh: IconRefresh } = window.AppIcons;
     
     // We keep the gesture tracking internal to this component!
     const gestureStart = useRef({ mode: null, target: null, x: 0, y: 0, dist: 0, scale: 1, imgX: 0, imgY: 0 });
+
+    // Helper to dynamically get the right coordinate state
+    const getTargetPos = (target) => {
+        if (['t1p1','t1p2','t1p3','t2p1','t2p2','t2p3'].includes(target)) return props.clashPos[target];
+        if (target === 'img2') return props.img2Pos;
+        if (target === 'avatar') return props.avatarPos;
+        return props.img1Pos;
+    };
+
+    // Helper to dynamically update the right coordinate state
+    const updateTargetPos = (target, newVals) => {
+        if (['t1p1','t1p2','t1p3','t2p1','t2p2','t2p3'].includes(target)) {
+            props.setClashPos(prev => ({ ...prev, [target]: { ...prev[target], ...newVals } }));
+        } else if (target === 'img2') {
+            props.setImg2Pos(prev => ({ ...prev, ...newVals }));
+        } else if (target === 'avatar') {
+            props.setAvatarPos(prev => ({ ...prev, ...newVals }));
+        } else {
+            props.setImg1Pos(prev => ({ ...prev, ...newVals }));
+        }
+    };
+
+    // Helper to detect which image the user is clicking on based on canvas math
+    const detectTarget = (touchX, touchY, rectWidth) => {
+        let targetImg = 'img1'; 
+        const s = 1080 / rectWidth;
+        const canvasX = touchX * s; const canvasY = touchY * s;
+
+        if (props.appMode === 'h2h_3v3') {
+            const cW = 260, cH = 450, cY = 300, W = 1080;
+            // Hit boxes for the 6 players (front to back)
+            const hits = [
+                { id: 't1p1', x: 230, y: cY }, { id: 't2p1', x: W-230-cW, y: cY },
+                { id: 't1p2', x: 130, y: cY+30 }, { id: 't2p2', x: W-130-cW, y: cY+30 },
+                { id: 't1p3', x: 30, y: cY+60 }, { id: 't2p3', x: W-30-cW, y: cY+60 }
+            ];
+            for(let box of hits) {
+                if(canvasX >= box.x && canvasX <= box.x + cW && canvasY >= box.y && canvasY <= box.y + cH) {
+                    targetImg = box.id; break;
+                }
+            }
+        } else if (props.appMode === 'statement' && props.hasAvatar && Math.hypot(canvasX - 1080/2, canvasY - 750) < 160) {
+            targetImg = 'avatar';
+        } else if (props.appMode === 'f_scorecard' && props.hasBgImage2 && Math.hypot(canvasX - 830, canvasY - 360) < 180) {
+            targetImg = 'img2';
+        } else if (props.hasBgImage2 && touchX > rectWidth / 2 && props.appMode !== 'statement' && props.appMode !== 'f_scorecard') {
+            targetImg = 'img2';
+        }
+        return targetImg;
+    };
 
     // --- INTERACTION HANDLERS ---
     const handleTouchStart = (e) => { 
@@ -14,19 +66,9 @@ window.CanvasPreview = function(props) {
         const t = e.touches; const rect = e.target.getBoundingClientRect(); 
         const touchX = t[0].clientX - rect.left; const touchY = t[0].clientY - rect.top;
         
-        let targetImg = 'img1'; 
-        const s = 1080 / rect.width;
-        const canvasX = touchX * s; const canvasY = touchY * s;
+        const targetImg = detectTarget(touchX, touchY, rect.width);
+        const currentPos = getTargetPos(targetImg);
 
-        if (props.appMode === 'statement' && props.hasAvatar && Math.hypot(canvasX - 1080/2, canvasY - 750) < 160) {
-            targetImg = 'avatar';
-        } else if (props.appMode === 'f_scorecard' && props.hasBgImage2 && Math.hypot(canvasX - 830, canvasY - 360) < 180) {
-            targetImg = 'img2';
-        } else if (props.hasBgImage2 && touchX > rect.width / 2 && props.appMode !== 'statement' && props.appMode !== 'f_scorecard') {
-            targetImg = 'img2';
-        }
-        
-        const currentPos = targetImg === 'img1' ? props.img1Pos : (targetImg === 'img2' ? props.img2Pos : props.avatarPos);
         if (t.length === 1) { 
             gestureStart.current = { mode: 'pan', target: targetImg, x: t[0].clientX, y: t[0].clientY, imgX: currentPos.x, imgY: currentPos.y }; 
         } else if (t.length === 2) { 
@@ -38,13 +80,12 @@ window.CanvasPreview = function(props) {
         if (!gestureStart.current.mode) return; e.preventDefault(); 
         const s = 1080 / e.target.getBoundingClientRect().width; const t = e.touches; 
         const { target, imgX, x, imgY, y, scale, dist } = gestureStart.current;
-        const setPos = target === 'img1' ? props.setImg1Pos : (target === 'img2' ? props.setImg2Pos : props.setAvatarPos);
         
         if (t.length === 1 && gestureStart.current.mode === 'pan') { 
-            setPos(prev => ({ ...prev, x: imgX + (t[0].clientX - x) * s, y: imgY + (t[0].clientY - y) * s })); 
+            updateTargetPos(target, { x: imgX + (t[0].clientX - x) * s, y: imgY + (t[0].clientY - y) * s });
         } else if (t.length === 2 && gestureStart.current.mode === 'zoom') { 
             const d = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); 
-            setPos(prev => ({ ...prev, scale: scale * (d / dist) })); 
+            updateTargetPos(target, { scale: scale * (d / dist) });
         } 
     };
 
@@ -53,19 +94,9 @@ window.CanvasPreview = function(props) {
         const rect = e.target.getBoundingClientRect(); 
         const touchX = e.clientX - rect.left; const touchY = e.clientY - rect.top;
         
-        let targetImg = 'img1'; 
-        const s = 1080 / rect.width;
-        const canvasX = touchX * s; const canvasY = touchY * s;
-
-        if (props.appMode === 'statement' && props.hasAvatar && Math.hypot(canvasX - 1080/2, canvasY - 750) < 160) {
-            targetImg = 'avatar';
-        } else if (props.appMode === 'f_scorecard' && props.hasBgImage2 && Math.hypot(canvasX - 830, canvasY - 360) < 180) {
-            targetImg = 'img2';
-        } else if (props.hasBgImage2 && touchX > rect.width / 2 && props.appMode !== 'statement' && props.appMode !== 'f_scorecard') {
-            targetImg = 'img2';
-        }
+        const targetImg = detectTarget(touchX, touchY, rect.width);
+        const currentPos = getTargetPos(targetImg);
         
-        const currentPos = targetImg === 'img1' ? props.img1Pos : (targetImg === 'img2' ? props.img2Pos : props.avatarPos);
         gestureStart.current = { mode: 'pan', target: targetImg, x: e.clientX, y: e.clientY, imgX: currentPos.x, imgY: currentPos.y };
     };
 
@@ -73,8 +104,7 @@ window.CanvasPreview = function(props) {
         if (gestureStart.current.mode === 'pan') {
             const s = 1080 / e.target.getBoundingClientRect().width; 
             const { target, imgX, x, imgY, y } = gestureStart.current;
-            const setPos = target === 'img1' ? props.setImg1Pos : (target === 'img2' ? props.setImg2Pos : props.setAvatarPos);
-            setPos(p => ({...p, x: imgX + (e.clientX - x) * s, y: imgY + (e.clientY - y) * s}));
+            updateTargetPos(target, { x: imgX + (e.clientX - x) * s, y: imgY + (e.clientY - y) * s });
         }
     };
     
@@ -107,7 +137,7 @@ window.CanvasPreview = function(props) {
             </div>
             
             {/* Loading / Initialize Placeholder */}
-            {!props.hasBgImage && props.appMode !== 'discussion' && props.appMode !== 'squad' && props.appMode !== 't_fixture' && (
+            {!props.hasBgImage && props.appMode !== 'discussion' && props.appMode !== 'squad' && props.appMode !== 't_fixture' && props.appMode !== 'h2h_3v3' && (
                 <div className="absolute inset-0 pointer-events-none flex items-center justify-center bg-slate-950/50 backdrop-blur-sm">
                     <span className="bg-slate-900 border border-slate-700 text-white px-6 py-3 rounded-full text-sm font-bold shadow-2xl flex items-center gap-3">
                         <div className="loader border-t-rose-500 border-white/20"></div> Initializing Canvas...
