@@ -1,4 +1,4 @@
-// --- ADVANCED 8K RENDERING ENGINE v5.1 (3v3 CLASH - CLEAN PHOTOS) ---
+// --- ADVANCED 8K RENDERING ENGINE v5.2 (3v3 CLASH - RESIZED & UNIFIED COLORS) ---
 
 window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions, isExport = false) {
     const splitY = 700;
@@ -132,7 +132,7 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
             ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
             if (assets.bgImage) {
                 ctx.save(); 
-                ctx.globalAlpha = formData.bgOpacity * 0.5; // Slightly darker for 3v3 pop
+                ctx.globalAlpha = formData.bgOpacity * 0.5; 
                 ctx.translate(positions.img1Pos.x, positions.img1Pos.y); ctx.scale(positions.img1Pos.scale, positions.img1Pos.scale); 
                 ctx.drawImage(assets.bgImage, 0, 0); 
                 ctx.restore();
@@ -217,16 +217,16 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
         // ---> NEW 3V3 CLASH RENDERER <---
         // ==========================================
         if (appMode === 'h2h_3v3') {
-            // Header Info
-            drawResponsiveText(formData.h2hTournament, W/2, 120, 900, 70, formData.primaryColor, 'center', '900');
-            drawResponsiveText(`${formData.h2hDay}, ${formData.h2hDate} | ${formData.h2hTime}`, W/2, 175, 900, 35, '#ffffff', 'center', 'bold');
+            // Header Info - REDUCED FONT SIZES
+            drawResponsiveText(formData.h2hTournament, W/2, 120, 900, 55, formData.primaryColor, 'center', '900');
+            drawResponsiveText(`${formData.h2hDay}, ${formData.h2hDate} | ${formData.h2hTime}`, W/2, 170, 900, 28, '#ffffff', 'center', 'bold');
             
-            ctx.beginPath(); ctx.moveTo(W/2 - 200, 210); ctx.lineTo(W/2 + 200, 210); ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth=3; ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(W/2 - 200, 200); ctx.lineTo(W/2 + 200, 200); ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth=3; ctx.stroke();
 
             // Player Card Drawing Function (Slanted Parallelograms, NO NAMES)
             const drawClashCard = (img, pos, x, y, w, h, color, isLeft) => {
                 ctx.save();
-                const slant = 40;
+                const slant = 35; // Slightly reduced slant for smaller cards
                 
                 // Draw the Slanted Shape Path
                 ctx.beginPath();
@@ -247,48 +247,50 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
                 
                 // Draw the actual uploaded image
                 if (img) {
-                    // Center anchor point for scaling/panning logic
                     ctx.translate(x + w/2 + pos.x, y + h/2 + pos.y); 
                     ctx.scale(pos.scale, pos.scale);
                     ctx.drawImage(img, -img.width/2, -img.height/2);
                 }
-                ctx.restore(); // Remove clip
+                ctx.restore(); 
                 
                 // Add Outer Border
-                ctx.lineWidth = 6;
+                ctx.lineWidth = 5; // Slightly thinner border for smaller cards
                 ctx.strokeStyle = color;
                 ctx.stroke();
 
                 ctx.restore();
             };
 
-            const cW = 260; const cH = 450; const cY = 300;
+            // RESIZED CARDS - Equally smaller dimensions
+            const cW = 220; 
+            const cH = 380; 
+            const cY = 320; // Pushed slightly down
             
             // Draw Team 1 (Left Side - Overlapping Back to Front)
-            drawClashCard(assets.clashImages?.t1p3, positions.clashPos?.t1p3 || {x:0, y:0, scale:1}, 30, cY+60, cW, cH, formData.team1Color, true);
-            drawClashCard(assets.clashImages?.t1p2, positions.clashPos?.t1p2 || {x:0, y:0, scale:1}, 130, cY+30, cW, cH, formData.team1Color, true);
-            drawClashCard(assets.clashImages?.t1p1, positions.clashPos?.t1p1 || {x:0, y:0, scale:1}, 230, cY, cW, cH, formData.team1Color, true);
+            drawClashCard(assets.clashImages?.t1p3, positions.clashPos?.t1p3 || {x:0, y:0, scale:1}, 40, cY+50, cW, cH, formData.team1Color, true);
+            drawClashCard(assets.clashImages?.t1p2, positions.clashPos?.t1p2 || {x:0, y:0, scale:1}, 140, cY+25, cW, cH, formData.team1Color, true);
+            drawClashCard(assets.clashImages?.t1p1, positions.clashPos?.t1p1 || {x:0, y:0, scale:1}, 240, cY, cW, cH, formData.team1Color, true);
 
             // Draw Team 2 (Right Side - Overlapping Back to Front)
-            drawClashCard(assets.clashImages?.t2p3, positions.clashPos?.t2p3 || {x:0, y:0, scale:1}, W-30-cW, cY+60, cW, cH, formData.team2Color, false);
-            drawClashCard(assets.clashImages?.t2p2, positions.clashPos?.t2p2 || {x:0, y:0, scale:1}, W-130-cW, cY+30, cW, cH, formData.team2Color, false);
-            drawClashCard(assets.clashImages?.t2p1, positions.clashPos?.t2p1 || {x:0, y:0, scale:1}, W-230-cW, cY, cW, cH, formData.team2Color, false);
+            drawClashCard(assets.clashImages?.t2p3, positions.clashPos?.t2p3 || {x:0, y:0, scale:1}, W-40-cW, cY+50, cW, cH, formData.team2Color, false);
+            drawClashCard(assets.clashImages?.t2p2, positions.clashPos?.t2p2 || {x:0, y:0, scale:1}, W-140-cW, cY+25, cW, cH, formData.team2Color, false);
+            drawClashCard(assets.clashImages?.t2p1, positions.clashPos?.t2p1 || {x:0, y:0, scale:1}, W-240-cW, cY, cW, cH, formData.team2Color, false);
 
             // Big "VS" Logo in Center Over Everything
-            ctx.beginPath(); ctx.arc(W/2, cY + cH/2, 60, 0, Math.PI*2); 
+            ctx.beginPath(); ctx.arc(W/2, cY + cH/2, 55, 0, Math.PI*2); 
             ctx.fillStyle = formData.secondaryColor; ctx.fill();
-            ctx.lineWidth = 6; ctx.strokeStyle = formData.primaryColor; ctx.stroke();
-            drawText("VS", W/2, cY + cH/2 + 20, 50, formData.primaryColor, 'center', '900');
+            ctx.lineWidth = 5; ctx.strokeStyle = formData.primaryColor; ctx.stroke();
+            drawText("VS", W/2, cY + cH/2 + 18, 45, formData.primaryColor, 'center', '900');
 
-            // Bottom Team Names Box
-            drawPremiumGlassBox(60, 850, W-120, 140, 20, 1, formData.primaryColor);
+            // Bottom Team Names Box (Reduced Size)
+            drawPremiumGlassBox(60, 820, W-120, 120, 20, 1, formData.primaryColor);
             
-            // Team Names
-            drawResponsiveText(formData.h2hTeam1Name, W/4 + 30, 935, 380, 60, formData.team1Color, 'center', '900');
-            drawResponsiveText(formData.h2hTeam2Name, (3*W/4) - 30, 935, 380, 60, formData.team2Color, 'center', '900');
+            // Team Names (Reduced Font Size & UNIFIED COLOR to pure white)
+            drawResponsiveText(formData.h2hTeam1Name, W/4 + 30, 892, 380, 50, '#ffffff', 'center', '900');
+            drawResponsiveText(formData.h2hTeam2Name, (3*W/4) - 30, 892, 380, 50, '#ffffff', 'center', '900');
             
             // Center Divider Line inside Team Names Box
-            ctx.beginPath(); ctx.moveTo(W/2, 870); ctx.lineTo(W/2, 970); ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 3; ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(W/2, 840); ctx.lineTo(W/2, 920); ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 3; ctx.stroke();
         }
         else if (appMode === 'f_scorecard') {
             const darkGradient = ctx.createLinearGradient(0, 450, 0, H);
