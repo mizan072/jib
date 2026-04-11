@@ -1,5 +1,5 @@
-// --- ADVANCED 8K RENDERING ENGINE v4 (SOLID BACKGROUND FIX) ---
-// Handles Auto-Color Grading, Bulletproof Text Wrapping, and Premium Broadcast Colors
+// --- ADVANCED 8K RENDERING ENGINE v5 (3v3 CLASH EDITION) ---
+// Handles Auto-Color Grading, Bulletproof Text Wrapping, Premium Colors, and 3v3 Slanted Roster Cutouts
 
 window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions, isExport = false) {
     const splitY = 700;
@@ -99,35 +99,25 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
     const drawPremiumGlassBox = (x, y, w, h, radius, alpha, accentColor) => {
         ctx.save(); 
         ctx.globalAlpha = alpha;
-        
-        // Deep base using the requested Maroon theme
         ctx.fillStyle = formData.secondaryColor;
         ctx.beginPath(); ctx.roundRect(x, y, w, h, radius); ctx.fill(); 
-        
-        // Subtle Overlay to create depth (Removed heavy black so maroon shines)
         const grad = ctx.createLinearGradient(x, y, x, y + h);
         grad.addColorStop(0, 'rgba(255,255,255,0.1)'); 
         grad.addColorStop(1, 'transparent');
         ctx.fillStyle = grad; ctx.fill(); 
-        
-        // Premium Border
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
         ctx.lineWidth = 1.5;
         ctx.stroke();
-
-        // Accent Glow if provided
         if (accentColor) {
             ctx.strokeStyle = accentColor;
             ctx.lineWidth = 2;
             ctx.beginPath(); ctx.roundRect(x, y, w, h, radius); ctx.stroke();
         }
-        
         ctx.restore();
     };
 
     // --- CORE RENDER PIPELINE ---
     try {
-        // Start with pure black so colors don't mix muddily
         ctx.fillStyle = '#000000'; 
         ctx.fillRect(0, 0, W, H);
 
@@ -137,13 +127,13 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
             grad.addColorStop(0, '#000000'); grad.addColorStop(1, formData.secondaryColor);
             ctx.fillStyle = grad; ctx.globalAlpha = formData.bgOpacity; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1.0;
             ctx.font = "bold 600px serif"; ctx.fillStyle = "rgba(255,255,255,0.03)"; ctx.textAlign = "center"; ctx.fillText("❝", W/2, H/2 + 100);
-        } else if (appMode === 't_fixture') {
+        } else if (appMode === 't_fixture' || appMode === 'h2h_3v3') {
             const grad = ctx.createLinearGradient(0, 0, 0, H);
             grad.addColorStop(0, '#000000'); grad.addColorStop(1, formData.secondaryColor);
             ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
             if (assets.bgImage) {
                 ctx.save(); 
-                ctx.globalAlpha = formData.bgOpacity * 0.4;
+                ctx.globalAlpha = formData.bgOpacity * 0.5; // Slightly darker for 3v3 pop
                 ctx.translate(positions.img1Pos.x, positions.img1Pos.y); ctx.scale(positions.img1Pos.scale, positions.img1Pos.scale); 
                 ctx.drawImage(assets.bgImage, 0, 0); 
                 ctx.restore();
@@ -200,25 +190,18 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
         ctx.save();
         
         if (appMode === 'news') { 
-            const h = H * formData.newsGradientHeight; 
-            const startY = H - h;
-            // Transition fade
+            const h = H * formData.newsGradientHeight; const startY = H - h;
             const gradient = ctx.createLinearGradient(0, startY, 0, startY + 150);
-            gradient.addColorStop(0, 'transparent'); 
-            gradient.addColorStop(1, formData.secondaryColor);
+            gradient.addColorStop(0, 'transparent'); gradient.addColorStop(1, formData.secondaryColor);
             ctx.fillStyle = gradient; ctx.fillRect(0, startY, W, 150); 
-            // SOLID 100% MAROON BOTTOM
             ctx.fillStyle = formData.secondaryColor; ctx.fillRect(0, startY + 150, W, H - (startY + 150));
         } else if (appMode === 'multi_result' || appMode === 'multi_schedule') {
-            ctx.fillStyle = formData.secondaryColor; 
-            ctx.fillRect(0, 0, W, H);
+            ctx.fillStyle = formData.secondaryColor; ctx.fillRect(0, 0, W, H);
         } else if (['scorecard', 'schedule', 'player', 'career', 'poll', 'milestone'].includes(appMode)) { 
             const startY = splitY - 150;
             const gradient = ctx.createLinearGradient(0, startY, 0, startY + 200);
-            gradient.addColorStop(0, 'transparent'); 
-            gradient.addColorStop(1, formData.secondaryColor);
+            gradient.addColorStop(0, 'transparent'); gradient.addColorStop(1, formData.secondaryColor);
             ctx.fillStyle = gradient; ctx.fillRect(0, startY, W, 200); 
-            // SOLID 100% MAROON BOTTOM
             ctx.fillStyle = formData.secondaryColor; ctx.fillRect(0, startY + 200, W, H - (startY + 200));
         }
         
@@ -230,22 +213,108 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
         ctx.restore(); 
 
         // 3. Module Rendering
-        if (appMode === 'f_scorecard') {
+        
+        // ==========================================
+        // ---> NEW 3V3 CLASH RENDERER <---
+        // ==========================================
+        if (appMode === 'h2h_3v3') {
+            // Header Info
+            drawResponsiveText(formData.h2hTournament, W/2, 120, 900, 70, formData.primaryColor, 'center', '900');
+            drawResponsiveText(`${formData.h2hDay}, ${formData.h2hDate} | ${formData.h2hTime}`, W/2, 175, 900, 35, '#ffffff', 'center', 'bold');
+            
+            ctx.beginPath(); ctx.moveTo(W/2 - 200, 210); ctx.lineTo(W/2 + 200, 210); ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth=3; ctx.stroke();
+
+            // Player Card Drawing Function (Slanted Parallelograms)
+            const drawClashCard = (img, pos, name, x, y, w, h, color, isLeft) => {
+                ctx.save();
+                const slant = 40;
+                
+                // Draw the Slanted Shape Path
+                ctx.beginPath();
+                if(isLeft) {
+                    ctx.moveTo(x, y + slant); ctx.lineTo(x + w, y);
+                    ctx.lineTo(x + w, y + h - slant); ctx.lineTo(x, y + h);
+                } else {
+                    ctx.moveTo(x, y); ctx.lineTo(x + w, y + slant);
+                    ctx.lineTo(x + w, y + h); ctx.lineTo(x, y + h - slant);
+                }
+                ctx.closePath();
+                
+                // Clip canvas to this shape
+                ctx.save();
+                ctx.clip();
+                ctx.fillStyle = formData.secondaryColor; 
+                ctx.fill();
+                
+                // Draw the actual uploaded image
+                if (img) {
+                    // Center anchor point for scaling/panning logic
+                    ctx.translate(x + w/2 + pos.x, y + h/2 + pos.y); 
+                    ctx.scale(pos.scale, pos.scale);
+                    ctx.drawImage(img, -img.width/2, -img.height/2);
+                }
+                ctx.restore(); // Remove clip
+                
+                // Add Outer Border
+                ctx.lineWidth = 6;
+                ctx.strokeStyle = color;
+                ctx.stroke();
+
+                // Add Name Badge at bottom of card
+                const tagY = y + h - 15;
+                ctx.fillStyle = color;
+                ctx.beginPath(); ctx.roundRect(x + 10, tagY - 45, w - 20, 50, 10); ctx.fill();
+                
+                // Determine text color based on team color brightness (simplified for now)
+                drawResponsiveText(name, x + w/2, tagY - 10, w - 30, 28, '#000000', 'center', '900');
+                
+                ctx.restore();
+            };
+
+            const cW = 260; const cH = 450; const cY = 300;
+            
+            // Draw Team 1 (Left Side - Overlapping Back to Front)
+            // P3 (Back)
+            drawClashCard(assets.clashImages?.t1p3, positions.clashPos?.t1p3 || {x:0, y:0, scale:1}, formData.h2hT1P3, 30, cY+60, cW, cH, formData.team1Color, true);
+            // P2 (Middle)
+            drawClashCard(assets.clashImages?.t1p2, positions.clashPos?.t1p2 || {x:0, y:0, scale:1}, formData.h2hT1P2, 130, cY+30, cW, cH, formData.team1Color, true);
+            // P1 (Front/Captain)
+            drawClashCard(assets.clashImages?.t1p1, positions.clashPos?.t1p1 || {x:0, y:0, scale:1}, formData.h2hT1P1, 230, cY, cW, cH, formData.team1Color, true);
+
+            // Draw Team 2 (Right Side - Overlapping Back to Front)
+            // P3 (Back)
+            drawClashCard(assets.clashImages?.t2p3, positions.clashPos?.t2p3 || {x:0, y:0, scale:1}, formData.h2hT2P3, W-30-cW, cY+60, cW, cH, formData.team2Color, false);
+            // P2 (Middle)
+            drawClashCard(assets.clashImages?.t2p2, positions.clashPos?.t2p2 || {x:0, y:0, scale:1}, formData.h2hT2P2, W-130-cW, cY+30, cW, cH, formData.team2Color, false);
+            // P1 (Front/Captain)
+            drawClashCard(assets.clashImages?.t2p1, positions.clashPos?.t2p1 || {x:0, y:0, scale:1}, formData.h2hT2P1, W-230-cW, cY, cW, cH, formData.team2Color, false);
+
+            // Big "VS" Logo in Center Over Everything
+            ctx.beginPath(); ctx.arc(W/2, cY + cH/2, 60, 0, Math.PI*2); 
+            ctx.fillStyle = formData.secondaryColor; ctx.fill();
+            ctx.lineWidth = 6; ctx.strokeStyle = formData.primaryColor; ctx.stroke();
+            drawText("VS", W/2, cY + cH/2 + 20, 50, formData.primaryColor, 'center', '900');
+
+            // Bottom Team Names Box
+            drawPremiumGlassBox(60, 850, W-120, 140, 20, 1, formData.primaryColor);
+            
+            // Team Names
+            drawResponsiveText(formData.h2hTeam1Name, W/4 + 30, 935, 380, 60, formData.team1Color, 'center', '900');
+            drawResponsiveText(formData.h2hTeam2Name, (3*W/4) - 30, 935, 380, 60, formData.team2Color, 'center', '900');
+            
+            // Center Divider Line inside Team Names Box
+            ctx.beginPath(); ctx.moveTo(W/2, 870); ctx.lineTo(W/2, 970); ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 3; ctx.stroke();
+        }
+        else if (appMode === 'f_scorecard') {
             const darkGradient = ctx.createLinearGradient(0, 450, 0, H);
-            darkGradient.addColorStop(0, 'transparent'); 
-            darkGradient.addColorStop(0.35, formData.secondaryColor);
-            darkGradient.addColorStop(1, formData.secondaryColor);
+            darkGradient.addColorStop(0, 'transparent'); darkGradient.addColorStop(0.35, formData.secondaryColor); darkGradient.addColorStop(1, formData.secondaryColor);
             ctx.fillStyle = darkGradient; ctx.fillRect(0, 450, W, H - 450);
 
             const panelY = 740; const panelH = H - panelY - footerH;
-            
-            // Solid Maroon panel inside the football tool
             ctx.fillStyle = formData.secondaryColor; ctx.beginPath(); 
             if(ctx.roundRect) ctx.roundRect(40, panelY, W - 80, panelH, 24); else ctx.fillRect(40, panelY, W - 80, panelH); ctx.fill();
 
-            // Accent Top Border
-            const tGrad = ctx.createLinearGradient(40, 0, W-80, 0);
-            tGrad.addColorStop(0, formData.team1Color); tGrad.addColorStop(1, formData.team2Color);
+            const tGrad = ctx.createLinearGradient(40, 0, W-80, 0); tGrad.addColorStop(0, formData.team1Color); tGrad.addColorStop(1, formData.team2Color);
             ctx.fillStyle = tGrad; ctx.beginPath(); 
             if(ctx.roundRect) ctx.roundRect(40, panelY, W - 80, 12, [24, 24, 0, 0]); else ctx.fillRect(40, panelY, W - 80, 12); ctx.fill();
 
@@ -259,11 +328,8 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
             ctx.strokeStyle = formData.primaryColor; ctx.lineWidth = 2; ctx.stroke();
             
             drawText(formData.team1Score + " - " + formData.team2Score, W/2, scoreBoxY + 100, 100, formData.primaryColor, 'center', '900');
-
             const nameY = scoreBoxY + 85; 
-            drawResponsiveText(formData.team1, W/2 - 280, nameY, 280, 60, '#ffffff', 'center', '900');
-            drawResponsiveText(formData.team2, W/2 + 280, nameY, 280, 60, '#ffffff', 'center', '900');
-
+            drawResponsiveText(formData.team1, W/2 - 280, nameY, 280, 60, '#ffffff', 'center', '900'); drawResponsiveText(formData.team2, W/2 + 280, nameY, 280, 60, '#ffffff', 'center', '900');
             drawResponsiveText(formData.fMatchStatus, W/2, panelY + 340, 300, 32, formData.primaryColor, 'center', 'bold');
         }
         else if (appMode === 't_fixture') {
@@ -277,46 +343,23 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
             const spacingY = availableH / rowCount; const boxH = Math.min(110, spacingY * 0.85); const boxW = 460; const startX = (W - (boxW * 2 + 20)) / 2;
 
             list.forEach((match, i) => {
-                const col = i % colCount; const row = Math.floor(i / colCount);
-                const x = startX + (col * (boxW + 20)); const y = currentY + (row * spacingY);
-
+                const col = i % colCount; const row = Math.floor(i / colCount); const x = startX + (col * (boxW + 20)); const y = currentY + (row * spacingY);
                 ctx.fillStyle = '#ffffff'; drawRoundedRect(x, y, boxW, boxH, 16);
                 const pillarW = 95; ctx.fillStyle = formData.secondaryColor;
                 if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(x, y, pillarW, boxH, [16, 0, 0, 16]); ctx.fill(); } else { ctx.fillRect(x, y, pillarW, boxH); }
                 drawResponsiveText(match.date, x + pillarW/2, y + boxH/2 + 8, pillarW - 10, 24, formData.primaryColor, 'center', '900');
-
                 const vsX = x + pillarW + (boxW - pillarW) / 2;
-                ctx.beginPath(); ctx.arc(vsX, y + boxH/2, 26, 0, Math.PI*2); ctx.fillStyle = formData.primaryColor; ctx.fill();
-                ctx.lineWidth = 4; ctx.strokeStyle = formData.secondaryColor; ctx.stroke(); drawText("VS", vsX, y + boxH/2 + 8, 22, formData.secondaryColor, 'center', '900');
-
-                const t1W = (vsX - 26) - (x + pillarW) - 10; const t1X = (x + pillarW) + t1W/2 + 5;
-                drawResponsiveText(match.t1, t1X, y + boxH/2 - 2, t1W, 26, '#000000', 'center', '900');
-                drawResponsiveText(match.t1Sub, t1X, y + boxH/2 + 22, t1W, 18, formData.secondaryColor, 'center', 'bold');
-
-                const t2W = (x + boxW) - (vsX + 26) - 10; const t2X = (vsX + 26) + t2W/2 + 5;
-                drawResponsiveText(match.t2, t2X, y + boxH/2 - 2, t2W, 26, '#000000', 'center', '900');
-                drawResponsiveText(match.t2Sub, t2X, y + boxH/2 + 22, t2W, 18, formData.secondaryColor, 'center', 'bold');
+                ctx.beginPath(); ctx.arc(vsX, y + boxH/2, 26, 0, Math.PI*2); ctx.fillStyle = formData.primaryColor; ctx.fill(); ctx.lineWidth = 4; ctx.strokeStyle = '#000000'; ctx.stroke(); drawText("VS", vsX, y + boxH/2 + 8, 22, formData.secondaryColor, 'center', '900');
+                const t1W = (vsX - 26) - (x + pillarW) - 10; const t1X = (x + pillarW) + t1W/2 + 5; drawResponsiveText(match.t1, t1X, y + boxH/2 - 2, t1W, 26, '#000000', 'center', '900'); drawResponsiveText(match.t1Sub, t1X, y + boxH/2 + 22, t1W, 18, formData.secondaryColor, 'center', 'bold');
+                const t2W = (x + boxW) - (vsX + 26) - 10; const t2X = (vsX + 26) + t2W/2 + 5; drawResponsiveText(match.t2, t2X, y + boxH/2 - 2, t2W, 26, '#000000', 'center', '900'); drawResponsiveText(match.t2Sub, t2X, y + boxH/2 + 22, t2W, 18, formData.secondaryColor, 'center', 'bold');
             });
 
-            const footY1 = H - footerH - 220;
-            ctx.fillStyle = 'rgba(0,0,0, 0.3)'; ctx.strokeStyle = formData.primaryColor; ctx.lineWidth = 3;
-            drawRoundedRect(W/2 - 280, footY1, 560, 70, 35); ctx.stroke();
-            drawText("📅 " + formData.fixtureDateFooter, W/2, footY1 + 46, 30, formData.primaryColor, 'center', 'bold');
-
-            const footY2 = footY1 + 95; ctx.fillStyle = 'rgba(0,0,0, 0.5)'; ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-            drawRoundedRect(W/2 - 320, footY2, 640, 60, 30); ctx.stroke();
-            drawText("🛡️ " + formData.fixtureOrganizerFooter, W/2, footY2 + 40, 26, '#ffffff', 'center', 'bold');
+            const footY1 = H - footerH - 220; ctx.fillStyle = 'rgba(0,0,0, 0.3)'; ctx.strokeStyle = formData.primaryColor; ctx.lineWidth = 3; drawRoundedRect(W/2 - 280, footY1, 560, 70, 35); ctx.stroke(); drawText("📅 " + formData.fixtureDateFooter, W/2, footY1 + 46, 30, formData.primaryColor, 'center', 'bold');
+            const footY2 = footY1 + 95; ctx.fillStyle = 'rgba(0,0,0, 0.5)'; ctx.strokeStyle = 'rgba(255,255,255,0.1)'; drawRoundedRect(W/2 - 320, footY2, 640, 60, 30); ctx.stroke(); drawText("🛡️ " + formData.fixtureOrganizerFooter, W/2, footY2 + 40, 26, '#ffffff', 'center', 'bold');
         } else if (appMode === 'squad') {
-            const topH = H * 0.38; 
-            const titleBarH = 150; 
-            
-            const tGrad = ctx.createLinearGradient(0, topH - 30, W, topH - 30); 
-            tGrad.addColorStop(0, '#000000'); tGrad.addColorStop(1, 'rgba(0,0,0,0.5)'); 
-            ctx.fillStyle = tGrad; 
-            
-            ctx.beginPath(); ctx.roundRect(40, topH - 30, W - 80, titleBarH, 20); ctx.fill(); 
-            ctx.strokeStyle = formData.primaryColor; ctx.lineWidth = 3; ctx.stroke();
-            
+            const topH = H * 0.38; const titleBarH = 150; 
+            const tGrad = ctx.createLinearGradient(0, topH - 30, W, topH - 30); tGrad.addColorStop(0, '#000000'); tGrad.addColorStop(1, 'rgba(0,0,0,0.5)'); ctx.fillStyle = tGrad; 
+            ctx.beginPath(); ctx.roundRect(40, topH - 30, W - 80, titleBarH, 20); ctx.fill(); ctx.strokeStyle = formData.primaryColor; ctx.lineWidth = 3; ctx.stroke();
             drawSmartText(formData.squadTitle, W/2, topH + titleBarH/2 - 30, W-120, titleBarH - 30, 50, 18, formData.primaryColor, 'center', 'bold');
 
             const gridY = topH + titleBarH + 20; const gridH = H - footerH - gridY - 20; const gridW = W - 60; const gridX = 30;
@@ -350,12 +393,8 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
 
             ctx.beginPath(); ctx.arc(W/2, topY + boxH/2, 40, 0, Math.PI*2); ctx.fillStyle = formData.secondaryColor; ctx.fill(); ctx.lineWidth = 4; ctx.strokeStyle = formData.primaryColor; ctx.stroke(); drawText("VS", W/2, topY + boxH/2 + 12, 32, formData.primaryColor, 'center', '900');
         } else if (appMode === 'milestone') {
-            const py = splitY + 40; 
-            drawPremiumGlassBox(100, py, W - 200, 240, 24, 1, formData.primaryColor);
-            drawResponsiveText(formData.milestoneOccasion, W/2, py + 55, W-250, 35, '#ffffff', 'center', 'bold'); 
-            drawResponsiveText(formData.milestoneNumber, W/2, py + 140, W-250, 90, formData.primaryColor, 'center', 'bold'); 
-            drawResponsiveText(formData.milestoneName, W/2, py + 210, W-250, 50, '#ffffff', 'center', 'bold'); 
-            drawText(formData.milestoneMessage, W/2, py + 300, 28, formData.primaryColor, 'center', 'normal');
+            const py = splitY + 40; drawPremiumGlassBox(100, py, W - 200, 240, 24, 1, formData.primaryColor);
+            drawResponsiveText(formData.milestoneOccasion, W/2, py + 55, W-250, 35, '#ffffff', 'center', 'bold'); drawResponsiveText(formData.milestoneNumber, W/2, py + 140, W-250, 90, formData.primaryColor, 'center', 'bold'); drawResponsiveText(formData.milestoneName, W/2, py + 210, W-250, 50, '#ffffff', 'center', 'bold'); drawText(formData.milestoneMessage, W/2, py + 300, 28, formData.primaryColor, 'center', 'normal');
         } else if (appMode === 'scorecard') {
             drawResponsiveText(formData.team1, leftCenter, scoresY, 400, 65, '#ffffff', 'center', 'bold');
             const t1w = measureText(formData.team1Score, 60, 'bold'), t1o = measureText(formData.team1Overs, 35, 'normal'); const t1x = leftCenter - ((t1w + 15 + t1o) / 2);
@@ -372,22 +411,14 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
         } else if (appMode === 'player') {
             const py = scoresY - 20; drawResponsiveText(formData.playerStatMain, W/2, py + 40, 800, 130, formData.primaryColor, 'center', 'bold'); drawResponsiveText(formData.playerStatSub, W/2, py + 90, 800, 40, '#ffffff', 'center', 'normal'); ctx.beginPath(); ctx.moveTo(W/2-150, py+120); ctx.lineTo(W/2+150, py+120); ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=2; ctx.stroke(); drawResponsiveText(formData.playerName, W/2, py + 180, 800, 60, formData.primaryColor, 'center', 'bold');
         } else if (appMode === 'career') {
-            const py = splitY + 40; 
-            drawSmartText(formData.playerName, W/2, py, 800, 70, 60, 35, formData.primaryColor, 'center', 'bold'); 
-            
-            drawText(formData.playerRole, W/2, py + 45, 22, '#ffffff', 'center', 'bold'); 
-            ctx.beginPath(); ctx.moveTo(W/2-250, py+65); ctx.lineTo(W/2+250, py+65); ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=2; ctx.stroke();
-            
+            const py = splitY + 40; drawSmartText(formData.playerName, W/2, py, 800, 70, 60, 35, formData.primaryColor, 'center', 'bold'); drawText(formData.playerRole, W/2, py + 45, 22, '#ffffff', 'center', 'bold'); ctx.beginPath(); ctx.moveTo(W/2-250, py+65); ctx.lineTo(W/2+250, py+65); ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=2; ctx.stroke();
             const boxW = 400; const boxH = 90; const gap = 15; const leftX = W/2 - boxW - gap/2; const rightX = W/2 + gap/2; const topY = py + 85; const midY = topY + boxH + gap; const botY = midY + boxH + gap;
-            const drawStatBox = (label, val, x, y) => { 
-                drawPremiumGlassBox(x, y, boxW, boxH, 15, 1, formData.primaryColor);
-                drawText(label, x + boxW/2, y + 35, 20, '#ffffff', 'center', 'bold'); drawResponsiveText(val, x + boxW/2, y + 75, 380, 45, formData.primaryColor, 'center', 'bold'); 
-            };
+            const drawStatBox = (label, val, x, y) => { drawPremiumGlassBox(x, y, boxW, boxH, 15, 1, formData.primaryColor); drawText(label, x + boxW/2, y + 35, 20, '#ffffff', 'center', 'bold'); drawResponsiveText(val, x + boxW/2, y + 75, 380, 45, formData.primaryColor, 'center', 'bold'); };
             drawStatBox("ম্যাচ (MATCHES)", formData.careerMatches, leftX, topY); drawStatBox("রান (RUNS)", formData.careerRuns, rightX, topY); drawStatBox("সেঞ্চুরি (100s)", formData.careerHundreds, leftX, midY); drawStatBox("ফিফটি (50s)", formData.careerFifties, rightX, midY); drawStatBox("সর্বোচ্চ (BEST SCORE)", formData.careerBest, leftX, botY); drawStatBox("উইকেট (WICKETS)", formData.careerWickets, rightX, botY);
         } else if (appMode === 'news') {
             const h = H * formData.newsGradientHeight; const nsy = H - h; const csy = nsy + 60; const nw = 880;
             ctx.fillStyle = '#000000'; drawRoundedRect(W/2 - 150, csy - 90, 300, 55, 10); drawText("ব্রেকিং নিউজ", W/2, csy - 48, 36, formData.primaryColor, 'center', 'bold');
-            ctx.font = "140px serif"; ctx.fillStyle = "rgba(255,255,255,0.1)"; ctx.textAlign = "center"; ctx.fillText("❝", W/2, csy + 30);
+            ctx.font = "140px serif"; ctx.fillStyle = "rgba(255,255,255,0.05)"; ctx.textAlign = "center"; ctx.fillText("❝", W/2, csy + 30);
             const authorZoneH = 120; const safeBottomY = footerY - authorZoneH; const textStartY = csy + 110; const newsBoxH = Math.max(100, safeBottomY - textStartY); 
             drawSmartText(formData.quoteText, W/2, textStartY + (newsBoxH/2), nw, newsBoxH, 55, 20, formData.primaryColor, 'center', 'bold');
             const ay = footerY - 90; ctx.beginPath(); ctx.moveTo(W/2 - 120, ay); ctx.lineTo(W/2 + 120, ay); ctx.strokeStyle = formData.primaryColor; ctx.lineWidth = 5; ctx.stroke(); drawResponsiveText(formData.quoteAuthor, W/2, ay + 60, 900, 38, '#ffffff', 'center', 'bold');
@@ -438,7 +469,6 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
         
         // 4. Draw Branding & Footer
         if (appMode !== 't_fixture') {
-            // Draw secondaryColor as footer bar
             ctx.fillStyle = formData.secondaryColor; ctx.fillRect(0, footerY, W, footerH); 
             drawText(formData.footerHandle, W / 2, footerY + 40, 24, '#ffffff', 'center', 'bold');
         }
