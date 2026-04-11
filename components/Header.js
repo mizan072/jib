@@ -2,8 +2,13 @@
 // Handles top navigation, branding, points display, and the export button.
 
 window.Header = function(props) {
-    // Destructure the icons we need from our global config
-    const { IconArrowLeft, IconLogo, IconCoin, IconDownload } = window.AppIcons;
+    // FIX: Correctly map the exact icon names from config.js to the names used in this component
+    const { 
+        ArrowLeft: IconArrowLeft, 
+        Logo: IconLogo, 
+        Coin: IconCoin, 
+        Download: IconDownload 
+    } = window.AppIcons;
     
     // Dynamically find the name of the currently active tool to display in the header
     const activeToolName = props.currentView === 'editor' 
