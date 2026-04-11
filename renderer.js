@@ -1,4 +1,4 @@
-// --- ADVANCED 8K RENDERING ENGINE v3 (PREMIUM THEME EDITION) ---
+// --- ADVANCED 8K RENDERING ENGINE v4 (SOLID BACKGROUND FIX) ---
 // Handles Auto-Color Grading, Bulletproof Text Wrapping, and Premium Broadcast Colors
 
 window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions, isExport = false) {
@@ -104,10 +104,10 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
         ctx.fillStyle = formData.secondaryColor;
         ctx.beginPath(); ctx.roundRect(x, y, w, h, radius); ctx.fill(); 
         
-        // Subtle Overlay to create depth
+        // Subtle Overlay to create depth (Removed heavy black so maroon shines)
         const grad = ctx.createLinearGradient(x, y, x, y + h);
-        grad.addColorStop(0, 'rgba(0,0,0,0.2)'); 
-        grad.addColorStop(1, 'rgba(0,0,0,0.6)');
+        grad.addColorStop(0, 'rgba(255,255,255,0.1)'); 
+        grad.addColorStop(1, 'transparent');
         ctx.fillStyle = grad; ctx.fill(); 
         
         // Premium Border
@@ -127,7 +127,8 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
 
     // --- CORE RENDER PIPELINE ---
     try {
-        ctx.fillStyle = '#0f172a'; 
+        // Start with pure black so colors don't mix muddily
+        ctx.fillStyle = '#000000'; 
         ctx.fillRect(0, 0, W, H);
 
         // 1. Draw Backgrounds & Auto Color Grading
@@ -155,8 +156,8 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
                 ctx.drawImage(assets.bgImage, 0, 0); 
                 ctx.restore();
             } else {
-                const grd = ctx.createLinearGradient(0, 0, 0, splitY); grd.addColorStop(0, '#000000'); grd.addColorStop(1, formData.secondaryColor);
-                ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H); drawText("Loading Image 1...", W/2, H/3, 50, "#ffffff", "center", "bold");
+                ctx.fillStyle = '#000000'; ctx.fillRect(0, 0, W, H); 
+                drawText("Loading Image 1...", W/2, H/3, 50, "#ffffff", "center", "bold");
             }
             if (assets.bgImage2) {
                 ctx.save();
@@ -187,25 +188,26 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
             } else if (assets.bgImage) {
                 ctx.save(); ctx.filter = 'contrast(1.2) saturate(0.9) brightness(0.9)'; ctx.translate(positions.img1Pos.x, positions.img1Pos.y); ctx.scale(positions.img1Pos.scale, positions.img1Pos.scale); ctx.drawImage(assets.bgImage, 0, 0); ctx.restore();
             } else {
-                const grd = ctx.createLinearGradient(0, 0, 0, splitY); grd.addColorStop(0, '#000000'); grd.addColorStop(1, formData.secondaryColor);
-                ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H); drawText("Loading Image...", W/2, H/2, 50, "#ffffff", "center", "bold");
+                ctx.fillStyle = '#000000'; ctx.fillRect(0, 0, W, H); 
+                drawText("Loading Image...", W/2, H/2, 50, "#ffffff", "center", "bold");
             }
         }
 
         const titleBoxY = splitY + 40; const titleBoxW = 800; const titleBoxH = 90; const titleBoxX = (W - titleBoxW) / 2;
         const scoresY = titleBoxY + 160; const leftCenter = W * 0.25; const rightCenter = W * 0.75; const footerH = 60; const footerY = H - footerH;
 
-        // 2. Overlays - Designed exactly like the uploaded image (Solid color bottoms)
+        // 2. Overlays - 100% Solid Color Bottoms (Removed Opacity constraint)
         ctx.save();
-        ctx.globalAlpha = formData.bgOpacity; 
         
         if (appMode === 'news') { 
             const h = H * formData.newsGradientHeight; 
             const startY = H - h;
+            // Transition fade
             const gradient = ctx.createLinearGradient(0, startY, 0, startY + 150);
             gradient.addColorStop(0, 'transparent'); 
             gradient.addColorStop(1, formData.secondaryColor);
             ctx.fillStyle = gradient; ctx.fillRect(0, startY, W, 150); 
+            // SOLID 100% MAROON BOTTOM
             ctx.fillStyle = formData.secondaryColor; ctx.fillRect(0, startY + 150, W, H - (startY + 150));
         } else if (appMode === 'multi_result' || appMode === 'multi_schedule') {
             ctx.fillStyle = formData.secondaryColor; 
@@ -216,6 +218,7 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
             gradient.addColorStop(0, 'transparent'); 
             gradient.addColorStop(1, formData.secondaryColor);
             ctx.fillStyle = gradient; ctx.fillRect(0, startY, W, 200); 
+            // SOLID 100% MAROON BOTTOM
             ctx.fillStyle = formData.secondaryColor; ctx.fillRect(0, startY + 200, W, H - (startY + 200));
         }
         
@@ -235,7 +238,9 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
             ctx.fillStyle = darkGradient; ctx.fillRect(0, 450, W, H - 450);
 
             const panelY = 740; const panelH = H - panelY - footerH;
-            ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); 
+            
+            // Solid Maroon panel inside the football tool
+            ctx.fillStyle = formData.secondaryColor; ctx.beginPath(); 
             if(ctx.roundRect) ctx.roundRect(40, panelY, W - 80, panelH, 24); else ctx.fillRect(40, panelY, W - 80, panelH); ctx.fill();
 
             // Accent Top Border
@@ -276,13 +281,13 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
                 const x = startX + (col * (boxW + 20)); const y = currentY + (row * spacingY);
 
                 ctx.fillStyle = '#ffffff'; drawRoundedRect(x, y, boxW, boxH, 16);
-                const pillarW = 95; ctx.fillStyle = '#000000';
+                const pillarW = 95; ctx.fillStyle = formData.secondaryColor;
                 if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(x, y, pillarW, boxH, [16, 0, 0, 16]); ctx.fill(); } else { ctx.fillRect(x, y, pillarW, boxH); }
                 drawResponsiveText(match.date, x + pillarW/2, y + boxH/2 + 8, pillarW - 10, 24, formData.primaryColor, 'center', '900');
 
                 const vsX = x + pillarW + (boxW - pillarW) / 2;
                 ctx.beginPath(); ctx.arc(vsX, y + boxH/2, 26, 0, Math.PI*2); ctx.fillStyle = formData.primaryColor; ctx.fill();
-                ctx.lineWidth = 4; ctx.strokeStyle = '#000000'; ctx.stroke(); drawText("VS", vsX, y + boxH/2 + 8, 22, '#000000', 'center', '900');
+                ctx.lineWidth = 4; ctx.strokeStyle = formData.secondaryColor; ctx.stroke(); drawText("VS", vsX, y + boxH/2 + 8, 22, formData.secondaryColor, 'center', '900');
 
                 const t1W = (vsX - 26) - (x + pillarW) - 10; const t1X = (x + pillarW) + t1W/2 + 5;
                 drawResponsiveText(match.t1, t1X, y + boxH/2 - 2, t1W, 26, '#000000', 'center', '900');
@@ -294,11 +299,11 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
             });
 
             const footY1 = H - footerH - 220;
-            ctx.fillStyle = 'rgba(0,0,0, 0.5)'; ctx.strokeStyle = formData.primaryColor; ctx.lineWidth = 3;
+            ctx.fillStyle = 'rgba(0,0,0, 0.3)'; ctx.strokeStyle = formData.primaryColor; ctx.lineWidth = 3;
             drawRoundedRect(W/2 - 280, footY1, 560, 70, 35); ctx.stroke();
             drawText("📅 " + formData.fixtureDateFooter, W/2, footY1 + 46, 30, formData.primaryColor, 'center', 'bold');
 
-            const footY2 = footY1 + 95; ctx.fillStyle = 'rgba(0,0,0, 0.7)'; ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            const footY2 = footY1 + 95; ctx.fillStyle = 'rgba(0,0,0, 0.5)'; ctx.strokeStyle = 'rgba(255,255,255,0.1)';
             drawRoundedRect(W/2 - 320, footY2, 640, 60, 30); ctx.stroke();
             drawText("🛡️ " + formData.fixtureOrganizerFooter, W/2, footY2 + 40, 26, '#ffffff', 'center', 'bold');
         } else if (appMode === 'squad') {
@@ -343,7 +348,7 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
             ctx.save(); ctx.translate(rightX + 80, topY + 70); ctx.beginPath(); ctx.arc(0, 0, 75 / 2, 0, Math.PI * 2); ctx.fillStyle = '#ff0000'; ctx.fill(); ctx.fillStyle = '#ffffff'; const scale = 75 / 40; ctx.scale(scale, scale); ctx.translate(-12, -12); ctx.fill(new Path2D('M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z')); ctx.restore();
             drawText("লাভ (LOVE)", rightX + boxW/2 + 20, topY + 60, 26, '#ff0000', 'center', 'bold'); drawResponsiveText(formData.pollPlayer2, rightX + boxW/2 + 20, topY + 105, 300, 40, '#ffffff', 'center', 'bold');
 
-            ctx.beginPath(); ctx.arc(W/2, topY + boxH/2, 40, 0, Math.PI*2); ctx.fillStyle = '#000000'; ctx.fill(); ctx.lineWidth = 4; ctx.strokeStyle = formData.primaryColor; ctx.stroke(); drawText("VS", W/2, topY + boxH/2 + 12, 32, formData.primaryColor, 'center', '900');
+            ctx.beginPath(); ctx.arc(W/2, topY + boxH/2, 40, 0, Math.PI*2); ctx.fillStyle = formData.secondaryColor; ctx.fill(); ctx.lineWidth = 4; ctx.strokeStyle = formData.primaryColor; ctx.stroke(); drawText("VS", W/2, topY + boxH/2 + 12, 32, formData.primaryColor, 'center', '900');
         } else if (appMode === 'milestone') {
             const py = splitY + 40; 
             drawPremiumGlassBox(100, py, W - 200, 240, 24, 1, formData.primaryColor);
@@ -382,7 +387,7 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
         } else if (appMode === 'news') {
             const h = H * formData.newsGradientHeight; const nsy = H - h; const csy = nsy + 60; const nw = 880;
             ctx.fillStyle = '#000000'; drawRoundedRect(W/2 - 150, csy - 90, 300, 55, 10); drawText("ব্রেকিং নিউজ", W/2, csy - 48, 36, formData.primaryColor, 'center', 'bold');
-            ctx.font = "140px serif"; ctx.fillStyle = "rgba(255,255,255,0.05)"; ctx.textAlign = "center"; ctx.fillText("❝", W/2, csy + 30);
+            ctx.font = "140px serif"; ctx.fillStyle = "rgba(255,255,255,0.1)"; ctx.textAlign = "center"; ctx.fillText("❝", W/2, csy + 30);
             const authorZoneH = 120; const safeBottomY = footerY - authorZoneH; const textStartY = csy + 110; const newsBoxH = Math.max(100, safeBottomY - textStartY); 
             drawSmartText(formData.quoteText, W/2, textStartY + (newsBoxH/2), nw, newsBoxH, 55, 20, formData.primaryColor, 'center', 'bold');
             const ay = footerY - 90; ctx.beginPath(); ctx.moveTo(W/2 - 120, ay); ctx.lineTo(W/2 + 120, ay); ctx.strokeStyle = formData.primaryColor; ctx.lineWidth = 5; ctx.stroke(); drawResponsiveText(formData.quoteAuthor, W/2, ay + 60, 900, 38, '#ffffff', 'center', 'bold');
@@ -390,8 +395,8 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
             const sy = 750; ctx.save(); ctx.globalAlpha = 1.0; 
             const grad = ctx.createLinearGradient(0, sy, 0, H); grad.addColorStop(0, 'transparent'); grad.addColorStop(0.2, formData.secondaryColor); grad.addColorStop(1, formData.secondaryColor); 
             ctx.fillStyle = grad; ctx.fillRect(0, sy - 150, W, H - sy + 150); ctx.fillStyle = formData.primaryColor; ctx.fillRect(0, sy - 10, W, 10);
-            const cx = W / 2, cy = sy; const r = 160; ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.closePath(); ctx.fillStyle = '#0f172a'; ctx.fill(); ctx.clip();
-            if (assets.avatarImage) { ctx.translate(cx - r + positions.avatarPos.x, cy - r + positions.avatarPos.y); ctx.scale(positions.avatarPos.scale, positions.avatarPos.scale); ctx.drawImage(assets.avatarImage, 0, 0); } else { drawText("Upload Avatar", cx, cy + 10, 30, "#64748b", "center", "bold"); }
+            const cx = W / 2, cy = sy; const r = 160; ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.closePath(); ctx.fillStyle = formData.secondaryColor; ctx.fill(); ctx.clip();
+            if (assets.avatarImage) { ctx.translate(cx - r + positions.avatarPos.x, cy - r + positions.avatarPos.y); ctx.scale(positions.avatarPos.scale, positions.avatarPos.scale); ctx.drawImage(assets.avatarImage, 0, 0); } else { drawText("Upload Avatar", cx, cy + 10, 30, "#ffffff", "center", "bold"); }
             ctx.restore(); ctx.lineWidth = 12; ctx.strokeStyle = formData.primaryColor; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
             const quoteBoxH = 250; drawSmartText(`“${formData.quoteText}”`, W/2, sy + r + 130, 960, quoteBoxH, 55, 24, formData.primaryColor, 'center', 'bold');
             const authorY = sy + r + quoteBoxH + 60; drawResponsiveText(`— ${formData.quoteAuthor}`, W/2, authorY, 900, 45, '#ffffff', 'center', 'bold'); ctx.beginPath(); ctx.moveTo(W/2 - 250, authorY + 40); ctx.lineTo(W/2 + 250, authorY + 40); ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 3; ctx.stroke(); ctx.restore();
@@ -433,13 +438,14 @@ window.PosterRenderer = function(ctx, W, H, appMode, formData, assets, positions
         
         // 4. Draw Branding & Footer
         if (appMode !== 't_fixture') {
-            ctx.fillStyle = '#000000'; ctx.fillRect(0, footerY, W, footerH); 
-            drawText(formData.footerHandle, W / 2, footerY + 40, 24, '#ffffff', 'center', 'normal');
+            // Draw secondaryColor as footer bar
+            ctx.fillStyle = formData.secondaryColor; ctx.fillRect(0, footerY, W, footerH); 
+            drawText(formData.footerHandle, W / 2, footerY + 40, 24, '#ffffff', 'center', 'bold');
         }
 
         ctx.save(); ctx.font = 'bold 30px "Hind Siliguri", sans-serif'; const fwText = ctx.measureText(formData.badgeText).width; const pillW = fwText + 90; const pillX = W - pillW - 40; const pillY = 40;
         drawPremiumGlassBox(pillX, pillY, pillW, 60, 30, 1, formData.primaryColor);
-        drawFBIcon(pillX + 30, pillY + 41, 40); drawText(formData.badgeText, pillX + 65, pillY + 41, 30, '#fff', 'left', 'bold'); ctx.restore();
+        drawFBIcon(pillX + 30, pillY + 30, 40); drawText(formData.badgeText, pillX + 65, pillY + 41, 30, '#fff', 'left', 'bold'); ctx.restore();
 
         if (!isExport) {
             ctx.save(); ctx.translate(W/2, H/2); ctx.rotate(-Math.PI / 6);
