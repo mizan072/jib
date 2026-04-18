@@ -51,6 +51,7 @@ window.AppCategories = [
         tools: [
             { id: 'f_scorecard', name: 'Football PRO', desc: 'Photo-rich football result', icon: window.AppIcons.Football, color: 'text-[#8C0D17]', bg: 'bg-[#8C0D17]/10', border: 'border-[#8C0D17]/20' },
             { id: 'scorecard', name: 'Match Scorecard', desc: 'Classic Match score updates', icon: window.AppIcons.Trophy, color: 'text-[#FFEB00]', bg: 'bg-[#FFEB00]/10', border: 'border-[#FFEB00]/20' },
+            { id: 'innings_summary', name: 'Innings Summary', desc: 'Mid-match top performers', icon: window.AppIcons.List, color: 'text-[#8C0D17]', bg: 'bg-[#8C0D17]/10', border: 'border-[#8C0D17]/20' },
             { id: 'multi_result', name: 'Multi Results', desc: 'List of match scores', icon: window.AppIcons.List, color: 'text-[#8C0D17]', bg: 'bg-[#8C0D17]/10', border: 'border-[#8C0D17]/20' },
             { id: 'poll', name: 'Reaction Poll', desc: 'Facebook-style reaction polls', icon: window.AppIcons.Swap, color: 'text-[#FFEB00]', bg: 'bg-[#FFEB00]/10', border: 'border-[#FFEB00]/20' }
         ]
@@ -60,6 +61,7 @@ window.AppCategories = [
         tools: [
             { id: 'player', name: 'Player Profile', desc: 'Highlight player performance', icon: window.AppIcons.User, color: 'text-[#8C0D17]', bg: 'bg-[#8C0D17]/10', border: 'border-[#8C0D17]/20' },
             { id: 'career', name: 'Career Stats', desc: 'Overall career statistics', icon: window.AppIcons.Chart, color: 'text-[#FFEB00]', bg: 'bg-[#FFEB00]/10', border: 'border-[#FFEB00]/20' },
+            { id: 'motm_award', name: 'Man of the Match', desc: 'Post-match MVP award', icon: window.AppIcons.Trophy, color: 'text-[#8C0D17]', bg: 'bg-[#8C0D17]/10', border: 'border-[#8C0D17]/20' },
             { id: 'milestone', name: 'Milestones', desc: 'Birthdays and records', icon: window.AppIcons.Star, color: 'text-[#8C0D17]', bg: 'bg-[#8C0D17]/10', border: 'border-[#8C0D17]/20' }
         ]
     },
@@ -67,6 +69,7 @@ window.AppCategories = [
         name: "Media & Engagement",
         tools: [
             { id: 'news', name: 'Breaking News', desc: 'Urgent updates and headlines', icon: window.AppIcons.Megaphone, color: 'text-[#FFEB00]', bg: 'bg-[#FFEB00]/10', border: 'border-[#FFEB00]/20' },
+            { id: 'player_comparison', name: 'Player Comparison', desc: 'H2H player stats debate', icon: window.AppIcons.Swap, color: 'text-[#8C0D17]', bg: 'bg-[#8C0D17]/10', border: 'border-[#8C0D17]/20' },
             { id: 'discussion', name: 'Q&A / Discussion', desc: 'Text-heavy engagement posts', icon: window.AppIcons.Help, color: 'text-[#8C0D17]', bg: 'bg-[#8C0D17]/10', border: 'border-[#8C0D17]/20' },
             { id: 'statement', name: 'Quote Overlay', desc: 'Player quotes with avatar cutout', icon: window.AppIcons.Message, color: 'text-[#FFEB00]', bg: 'bg-[#FFEB00]/10', border: 'border-[#FFEB00]/20' }
         ]
@@ -118,5 +121,33 @@ window.AppDefaultFormData = {
         { id: 1, date: '২০ মার্চ', t1: 'আদমপুর', t1Sub: '১নং ওয়ার্ড', t2: 'মণিরামপুর', t2Sub: '১নং ওয়ার্ড' },
         { id: 2, date: '২১ মার্চ', t1: 'ফতেপুর', t1Sub: 'মমিন ট্রের্ডাস', t2: 'বাউবাডিয়া', t2Sub: 'একাদশ' },
         { id: 3, date: '২২ মার্চ', t1: 'শোলমারী', t1Sub: 'কাউন্সিল বয়েজ', t2: 'চেংগারা', t2Sub: 'একাদশ, গাংনী' }
-    ]
+    ],
+
+    // --- NEW TOOLS DEFAULT DATA ---
+
+    // Man of the Match
+    motmPlayerName: 'রিশাদ হোসেন',
+    motmTeam: 'ঢাকা গ্যাডিয়েটর্স',
+    motmSponsor: 'Powered by BDcast',
+    motmStat1: 'উইকেট: ৩/১৫',
+    motmStat2: 'ইকোনমি: ৫.২০',
+    motmStat3: 'ডট বল: ১২',
+
+    // Player Comparison
+    compPlayer1: 'সাকিব আল হাসান',
+    compPlayer2: 'রশিদ খান',
+    compStat1Label: 'ম্যাচ', compP1Stat1: '৪১২', compP2Stat1: '৩৮০',
+    compStat2Label: 'উইকেট', compP1Stat2: '৪৮৫', compP2Stat2: '৫১০',
+    compStat3Label: 'ইকোনমি', compP1Stat3: '৬.৭৮', compP2Stat3: '৬.১৮',
+    compStat4Label: 'সেরা বোলিং', compP1Stat4: '৫/২০', compP2Stat4: '৫/৩',
+
+    // Innings Summary
+    summaryTeamTitle: 'ঢাকা গ্যাডিয়েটর্স',
+    summaryTeamTotal: '১৮৫/৬ (২০ ওভার)',
+    summaryBat1: 'লিটন দাস - ৬২ (৪০)',
+    summaryBat2: 'আফিফ - ৪৫ (২৮)',
+    summaryBat3: 'নাঈম - ২৫ (১৫)',
+    summaryBowl1: 'রিশাদ - ৩/১৫',
+    summaryBowl2: 'তাসকিন - ২/২৮',
+    summaryBowl3: 'শরিফুল - ১/৩২',
 };
