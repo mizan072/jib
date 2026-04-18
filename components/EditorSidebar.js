@@ -2,13 +2,12 @@
 // Handles the tabs (Content, Teams, Style) and all the dynamic form inputs.
 
 window.EditorSidebar = function(props) {
-    // FIX: Correctly map the exact icon names from config.js
     const { 
         Upload: IconUpload, User: IconUser, Trash: IconTrash, Swap: IconSwap, 
         Football: IconFootball, Layout: IconLayout, Users: IconUsers, List: IconList, 
         Grid: IconGrid, Help: IconHelp, Chart: IconChart, Star: IconStar, 
         Calendar: IconCalendar, Eye: IconEye, Height: IconHeight, 
-        Megaphone: IconMegaphone, Message: IconMessage 
+        Megaphone: IconMegaphone, Message: IconMessage, Trophy: IconTrophy 
     } = window.AppIcons;
 
     const { formData, appMode, activeTab, setActiveTab } = props;
@@ -62,7 +61,7 @@ window.EditorSidebar = function(props) {
                                     </div>
                                 </div>
                                 
-                                {/* Hide Image 2/Avatar box if we are in 3v3 Clash mode, because players have their own boxes */}
+                                {/* Hide Image 2/Avatar box if we are in 3v3 Clash mode */}
                                 {appMode !== 'h2h_3v3' && (
                                     <div className="relative group flex-1">
                                         {appMode === 'statement' ? (
@@ -92,7 +91,7 @@ window.EditorSidebar = function(props) {
                                                         <input type="file" accept="image/*" onChange={(e) => props.onImageUpload(e, true)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
                                                         <div className="border-2 border-dashed border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-slate-950/50 group-hover:bg-slate-800/80 group-hover:border-blue-500/50 transition-all">
                                                             <div className="bg-slate-800 p-3 rounded-full shadow-lg text-blue-500 group-hover:scale-110 transition-transform"><IconUpload /></div>
-                                                            <span className="text-xs font-bold text-slate-400">{appMode === 'f_scorecard' ? 'Photo 2 (Inset)' : 'Photo 2 (Opt)'}</span>
+                                                            <span className="text-xs font-bold text-slate-400">{appMode === 'player_comparison' ? 'Photo 2 (Right Player)' : appMode === 'f_scorecard' ? 'Photo 2 (Inset)' : 'Photo 2 (Opt)'}</span>
                                                         </div>
                                                     </>
                                                 )
@@ -110,7 +109,7 @@ window.EditorSidebar = function(props) {
                                     <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Badge Text</label>
                                     <input type="text" name="badgeText" value={formData.badgeText} onChange={props.onChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-medium text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
                                 </div>
-                                {!['news', 'career', 'poll', 'milestone', 'statement', 'discussion', 'multi_result', 'multi_schedule', 'squad', 't_fixture', 'f_scorecard', 'h2h_3v3'].includes(appMode) && (
+                                {!['news', 'career', 'poll', 'milestone', 'statement', 'discussion', 'multi_result', 'multi_schedule', 'squad', 't_fixture', 'f_scorecard', 'h2h_3v3', 'motm_award', 'player_comparison', 'innings_summary'].includes(appMode) && (
                                     <div>
                                         <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Main Title</label>
                                         <input type="text" name="title" value={formData.title} onChange={props.onChange} className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-medium text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
@@ -125,7 +124,106 @@ window.EditorSidebar = function(props) {
 
                         {/* --- Tool Specific Forms --- */}
 
-                        {/* ---> NEW 3V3 CLASH UI (Player Names Removed) <--- */}
+                        {/* ---> NEW TOOL: Man of the Match <--- */}
+                        {appMode === 'motm_award' && (
+                            <div className="p-5 bg-amber-500/10 rounded-2xl border-l-4 border-amber-500 shadow-inner space-y-4">
+                                <h4 className="text-sm font-black text-amber-400 uppercase tracking-wider flex items-center gap-2 mb-4"><IconTrophy className="w-5 h-5"/> Man of the Match</h4>
+                                <div>
+                                    <label className="text-[10px] uppercase font-bold text-amber-300 mb-1.5 block ml-1">Player Name</label>
+                                    <input type="text" name="motmPlayerName" value={formData.motmPlayerName} onChange={props.onChange} className="w-full px-4 py-3 bg-slate-900 border border-amber-500/30 rounded-xl text-sm font-bold text-white focus:border-amber-500 transition-all" />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-[10px] uppercase font-bold text-amber-300 mb-1.5 block ml-1">Team Name</label>
+                                        <input type="text" name="motmTeam" value={formData.motmTeam} onChange={props.onChange} className="w-full px-4 py-3 bg-slate-900 border border-amber-500/30 rounded-xl text-sm font-bold text-white focus:border-amber-500 transition-all" />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] uppercase font-bold text-amber-300 mb-1.5 block ml-1">Sponsor / Subtitle</label>
+                                        <input type="text" name="motmSponsor" value={formData.motmSponsor} onChange={props.onChange} className="w-full px-4 py-3 bg-slate-900 border border-amber-500/30 rounded-xl text-sm font-bold text-white focus:border-amber-500 transition-all" />
+                                    </div>
+                                </div>
+                                <div className="pt-2 border-t border-amber-500/20 mt-4">
+                                    <label className="text-[10px] uppercase font-bold text-amber-300 mb-3 block ml-1">Key Match Statistics</label>
+                                    <div className="grid grid-cols-3 gap-3">
+                                        <input type="text" name="motmStat1" value={formData.motmStat1} onChange={props.onChange} placeholder="e.g. Runs: 85" className="w-full px-3 py-2.5 bg-slate-900 border border-amber-500/30 rounded-lg text-xs font-bold text-white text-center focus:border-amber-500 transition-all" />
+                                        <input type="text" name="motmStat2" value={formData.motmStat2} onChange={props.onChange} placeholder="e.g. Strike Rate: 160" className="w-full px-3 py-2.5 bg-slate-900 border border-amber-500/30 rounded-lg text-xs font-bold text-white text-center focus:border-amber-500 transition-all" />
+                                        <input type="text" name="motmStat3" value={formData.motmStat3} onChange={props.onChange} placeholder="e.g. Wickets: 2" className="w-full px-3 py-2.5 bg-slate-900 border border-amber-500/30 rounded-lg text-xs font-bold text-white text-center focus:border-amber-500 transition-all" />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ---> NEW TOOL: Player Comparison <--- */}
+                        {appMode === 'player_comparison' && (
+                            <div className="p-5 bg-violet-500/10 rounded-2xl border-l-4 border-violet-500 shadow-inner space-y-4">
+                                <h4 className="text-sm font-black text-violet-400 uppercase tracking-wider flex items-center gap-2 mb-4"><IconSwap className="w-5 h-5"/> Head-to-Head Comparison</h4>
+                                
+                                <div className="grid grid-cols-2 gap-4 border-b border-violet-500/20 pb-4">
+                                    <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                                        <label className="text-[10px] uppercase font-bold text-emerald-400 mb-1.5 block ml-1">Left Player (Image 1)</label>
+                                        <input type="text" name="compPlayer1" value={formData.compPlayer1} onChange={props.onChange} className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm font-bold text-white focus:border-emerald-500 transition-all" />
+                                    </div>
+                                    <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                                        <label className="text-[10px] uppercase font-bold text-rose-400 mb-1.5 block ml-1">Right Player (Image 2)</label>
+                                        <input type="text" name="compPlayer2" value={formData.compPlayer2} onChange={props.onChange} className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm font-bold text-white focus:border-rose-500 transition-all" />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3 pt-2">
+                                    <label className="text-[10px] uppercase font-bold text-violet-300 block ml-1">Comparison Stats Matrix</label>
+                                    <div className="grid grid-cols-[1.5fr_1fr_1fr] gap-2 mb-1 pl-1 pr-1">
+                                        <span className="text-[9px] font-bold text-slate-500 uppercase">Stat Label</span>
+                                        <span className="text-[9px] font-bold text-slate-500 uppercase text-center">Left Player</span>
+                                        <span className="text-[9px] font-bold text-slate-500 uppercase text-center">Right Player</span>
+                                    </div>
+                                    
+                                    {[1, 2, 3, 4].map(num => (
+                                        <div key={`compStat${num}`} className="grid grid-cols-[1.5fr_1fr_1fr] gap-2 items-center bg-slate-950 p-2 rounded-xl border border-slate-800 hover:border-violet-500/50 transition-colors">
+                                            <input type="text" name={`compStat${num}Label`} value={formData[`compStat${num}Label`]} onChange={props.onChange} placeholder="e.g. Matches" className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs font-bold text-white focus:border-violet-500 transition-all" />
+                                            <input type="text" name={`compP1Stat${num}`} value={formData[`compP1Stat${num}`]} onChange={props.onChange} placeholder="0" className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs font-bold text-center text-white focus:border-violet-500 transition-all" />
+                                            <input type="text" name={`compP2Stat${num}`} value={formData[`compP2Stat${num}`]} onChange={props.onChange} placeholder="0" className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs font-bold text-center text-white focus:border-violet-500 transition-all" />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ---> NEW TOOL: Innings Summary <--- */}
+                        {appMode === 'innings_summary' && (
+                            <div className="p-5 bg-teal-500/10 rounded-2xl border-l-4 border-teal-500 shadow-inner space-y-4">
+                                <h4 className="text-sm font-black text-teal-400 uppercase tracking-wider flex items-center gap-2 mb-4"><IconList className="w-5 h-5"/> Innings Summary</h4>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-teal-500/20 pb-5">
+                                    <div>
+                                        <label className="text-[10px] uppercase font-bold text-teal-300 mb-1.5 block ml-1">Batting Team Name</label>
+                                        <input type="text" name="summaryTeamTitle" value={formData.summaryTeamTitle} onChange={props.onChange} className="w-full px-4 py-3 bg-slate-900 border border-teal-500/30 rounded-xl text-sm font-bold text-white focus:border-teal-500 transition-all" />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] uppercase font-bold text-teal-300 mb-1.5 block ml-1">Total Score & Overs</label>
+                                        <input type="text" name="summaryTeamTotal" value={formData.summaryTeamTotal} onChange={props.onChange} placeholder="e.g. 185/6 (20 Overs)" className="w-full px-4 py-3 bg-slate-900 border border-teal-500/30 rounded-xl text-sm font-bold text-white focus:border-teal-500 transition-all" />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                                    {/* Batsmen Column */}
+                                    <div className="space-y-3 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                                        <label className="text-[10px] uppercase font-bold text-emerald-400 block ml-1 border-b border-slate-800 pb-2">Top Batsmen</label>
+                                        {[1, 2, 3].map(num => (
+                                            <input key={`summaryBat${num}`} type="text" name={`summaryBat${num}`} value={formData[`summaryBat${num}`]} onChange={props.onChange} placeholder="Player Name - 50 (30)" className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs font-bold text-white focus:border-emerald-500 transition-all" />
+                                        ))}
+                                    </div>
+
+                                    {/* Bowlers Column */}
+                                    <div className="space-y-3 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                                        <label className="text-[10px] uppercase font-bold text-rose-400 block ml-1 border-b border-slate-800 pb-2">Top Bowlers</label>
+                                        {[1, 2, 3].map(num => (
+                                            <input key={`summaryBowl${num}`} type="text" name={`summaryBowl${num}`} value={formData[`summaryBowl${num}`]} onChange={props.onChange} placeholder="Player Name - 3/15" className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs font-bold text-white focus:border-rose-500 transition-all" />
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {appMode === 'h2h_3v3' && (
                             <div className="p-5 bg-amber-500/10 rounded-2xl border-l-4 border-amber-500 shadow-inner space-y-4">
                                 <h4 className="text-sm font-black text-amber-400 uppercase tracking-wider flex items-center gap-2 mb-4"><IconUsers /> 3v3 Clash Setup</h4>
