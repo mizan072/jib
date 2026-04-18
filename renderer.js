@@ -20,9 +20,9 @@
         // Fill with shadow
         ctx.fillStyle = color;
         ctx.globalAlpha = opacity;
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-        ctx.shadowBlur = 20;
-        ctx.shadowOffsetY = 10;
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+        ctx.shadowBlur = 25;
+        ctx.shadowOffsetY = 15;
         ctx.fill();
 
         // Inner Light Border for Glass effect
@@ -30,6 +30,7 @@
         ctx.lineWidth = 2;
         ctx.strokeStyle = '#ffffff';
         ctx.shadowBlur = 0;
+        ctx.shadowOffsetY = 0;
         ctx.stroke();
         ctx.restore();
     }
@@ -93,83 +94,97 @@
         // --- SPECIFIC TOOL LAYOUTS ---
 
         // ==========================================
-        // 🏆 1. MAN OF THE MATCH (NEW)
+        // 🏆 1. MAN OF THE MATCH
         // ==========================================
         if (appMode === 'motm_award') {
-            // Draw heavy bottom gradient so text pops
-            let grad = ctx.createLinearGradient(0, h * 0.4, 0, h);
+            // Heavy bottom gradient
+            let grad = ctx.createLinearGradient(0, h * 0.3, 0, h);
             grad.addColorStop(0, 'rgba(0,0,0,0)');
-            grad.addColorStop(0.5, 'rgba(0,0,0,0.8)');
+            grad.addColorStop(0.6, 'rgba(0,0,0,0.85)');
             grad.addColorStop(1, 'rgba(0,0,0,0.95)');
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, w, h);
 
             // Top Badge
-            drawGlassPanel(ctx, 40, 40, 250, 60, 15, pColor, 0.9);
-            ctx.fillStyle = '#000'; ctx.font = 'bold 28px "Hind Siliguri", sans-serif'; ctx.textAlign = 'center';
-            ctx.fillText(formData.badgeText.toUpperCase(), 165, 80);
+            drawGlassPanel(ctx, 40, 40, 280, 70, 15, pColor, 0.9);
+            ctx.fillStyle = '#000'; ctx.font = '900 32px "Hind Siliguri", sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText(formData.badgeText.toUpperCase(), 180, 85);
 
             // MAN OF THE MATCH TITLE
-            ctx.fillStyle = '#ffffff'; ctx.font = 'black 80px "Hind Siliguri", sans-serif'; ctx.textAlign = 'center';
-            ctx.shadowColor = pColor; ctx.shadowBlur = 30;
-            ctx.fillText("MAN OF THE MATCH", w/2, h - 350);
+            ctx.fillStyle = '#ffffff'; 
+            ctx.font = '900 110px "Hind Siliguri", sans-serif'; 
+            ctx.textAlign = 'center';
+            // Glowing text shadow
+            ctx.shadowColor = pColor; ctx.shadowBlur = 40; ctx.shadowOffsetY = 0;
+            ctx.fillText("MAN OF THE MATCH", w/2, h - 360);
             ctx.shadowBlur = 0; // reset
 
             // Glass Stats Panel
-            drawGlassPanel(ctx, 50, h - 300, w - 100, 220, 30, '#1e293b', 0.85);
+            drawGlassPanel(ctx, 40, h - 310, w - 80, 240, 30, '#1e293b', 0.85);
             
             // Player & Team
-            ctx.fillStyle = pColor; ctx.font = 'black 65px "Hind Siliguri", sans-serif'; ctx.textAlign = 'center';
+            ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 5; // Text drop shadow
+            ctx.fillStyle = pColor; 
+            ctx.font = '900 85px "Hind Siliguri", sans-serif'; 
             ctx.fillText(formData.motmPlayerName, w/2, h - 210);
-            ctx.fillStyle = '#94a3b8'; ctx.font = 'bold 30px "Hind Siliguri", sans-serif';
+            
+            ctx.fillStyle = '#cbd5e1'; 
+            ctx.font = 'bold 40px "Hind Siliguri", sans-serif';
             ctx.fillText(formData.motmTeam, w/2, h - 160);
 
             // 3 Stats Row
-            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 35px "Hind Siliguri", sans-serif';
-            ctx.fillText(formData.motmStat1, w/2 - 250, h - 105);
-            ctx.fillText(formData.motmStat2, w/2, h - 105);
-            ctx.fillText(formData.motmStat3, w/2 + 250, h - 105);
+            ctx.fillStyle = '#ffffff'; 
+            ctx.font = 'bold 45px "Hind Siliguri", sans-serif';
+            ctx.fillText(formData.motmStat1, w/2 - 270, h - 100);
+            ctx.fillText(formData.motmStat2, w/2, h - 100);
+            ctx.fillText(formData.motmStat3, w/2 + 270, h - 100);
+            ctx.shadowColor = 'transparent'; // reset
 
         // ==========================================
-        // ⚖️ 2. PLAYER COMPARISON (H2H) (NEW)
+        // ⚖️ 2. PLAYER COMPARISON (H2H)
         // ==========================================
         } else if (appMode === 'player_comparison') {
             // Left Half
             ctx.save();
             ctx.beginPath(); ctx.rect(0, 0, w/2, h); ctx.clip();
             if (bgImage) drawTransformedImage(ctx, bgImage, img1Pos);
-            ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(0,0,w/2,h);
+            ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(0,0,w/2,h);
             ctx.restore();
 
             // Right Half
             ctx.save();
             ctx.beginPath(); ctx.rect(w/2, 0, w/2, h); ctx.clip();
             if (bgImage2) drawTransformedImage(ctx, bgImage2, img2Pos);
-            ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(w/2,0,w/2,h);
+            ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(w/2,0,w/2,h);
             ctx.restore();
 
             // Center Slanted Divider
             ctx.fillStyle = sColor;
             ctx.beginPath();
-            ctx.moveTo(w/2 - 20, 0); ctx.lineTo(w/2 + 20, 0);
-            ctx.lineTo(w/2 + 20, h); ctx.lineTo(w/2 - 20, h);
+            ctx.moveTo(w/2 - 25, 0); ctx.lineTo(w/2 + 25, 0);
+            ctx.lineTo(w/2 + 25, h); ctx.lineTo(w/2 - 25, h);
             ctx.fill();
 
-            // Player Names at Top
-            drawGlassPanel(ctx, 40, 40, w/2 - 80, 100, 20, '#000000', 0.8);
-            drawGlassPanel(ctx, w/2 + 40, 40, w/2 - 80, 100, 20, '#000000', 0.8);
-            ctx.fillStyle = pColor; ctx.font = 'black 50px "Hind Siliguri", sans-serif'; ctx.textAlign = 'center';
-            ctx.fillText(formData.compPlayer1, w/4, 108);
-            ctx.fillText(formData.compPlayer2, w*0.75, 108);
+            // Top Header Bars
+            drawGlassPanel(ctx, 30, 30, w/2 - 60, 110, 20, '#000000', 0.85);
+            drawGlassPanel(ctx, w/2 + 30, 30, w/2 - 60, 110, 20, '#000000', 0.85);
+            
+            ctx.shadowColor = 'rgba(0,0,0,1)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;
+            ctx.fillStyle = pColor; 
+            ctx.font = '900 65px "Hind Siliguri", sans-serif'; 
+            ctx.textAlign = 'center';
+            ctx.fillText(formData.compPlayer1, w/4, 110);
+            ctx.fillText(formData.compPlayer2, w*0.75, 110);
 
             // VS Badge Center
-            ctx.beginPath(); ctx.arc(w/2, 90, 50, 0, Math.PI*2); ctx.fillStyle = pColor; ctx.fill();
-            ctx.fillStyle = '#000'; ctx.font = 'black 40px Arial';
-            ctx.fillText("VS", w/2, 105);
+            ctx.shadowColor = 'rgba(0,0,0,0.5)';
+            ctx.beginPath(); ctx.arc(w/2, 85, 60, 0, Math.PI*2); ctx.fillStyle = pColor; ctx.fill();
+            ctx.fillStyle = '#000'; ctx.font = '900 50px Arial'; ctx.shadowColor = 'transparent';
+            ctx.fillText("VS", w/2, 102);
 
             // Stats Matrix Loop
-            let startY = 400;
-            const rowHeight = 120;
+            let startY = 380;
+            const rowHeight = 140; // Increased spacing
             
             for(let i=1; i<=4; i++) {
                 const label = formData[`compStat${i}Label`];
@@ -178,64 +193,88 @@
                 const p2Stat = formData[`compP2Stat${i}`];
 
                 // Center Label Pill
-                drawGlassPanel(ctx, w/2 - 120, startY, 240, 70, 35, pColor, 1);
-                ctx.fillStyle = '#000'; ctx.font = 'bold 35px "Hind Siliguri", sans-serif'; ctx.textAlign = 'center';
-                ctx.fillText(label, w/2, startY + 48);
+                drawGlassPanel(ctx, w/2 - 140, startY, 280, 80, 40, pColor, 1);
+                ctx.fillStyle = '#000'; ctx.font = '900 40px "Hind Siliguri", sans-serif'; ctx.textAlign = 'center';
+                ctx.fillText(label, w/2, startY + 54);
 
+                ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 15; ctx.shadowOffsetY = 5;
+                
                 // Player 1 Stat (Left)
-                ctx.fillStyle = '#fff'; ctx.font = 'black 65px "Hind Siliguri", sans-serif'; ctx.textAlign = 'right';
-                ctx.shadowColor = '#000'; ctx.shadowBlur = 10;
-                ctx.fillText(p1Stat, w/2 - 150, startY + 58);
+                ctx.fillStyle = '#ffffff'; 
+                ctx.font = '900 80px "Hind Siliguri", sans-serif'; 
+                ctx.textAlign = 'right';
+                ctx.fillText(p1Stat, w/2 - 160, startY + 68);
 
                 // Player 2 Stat (Right)
                 ctx.textAlign = 'left';
-                ctx.fillText(p2Stat, w/2 + 150, startY + 58);
-                ctx.shadowBlur = 0;
+                ctx.fillText(p2Stat, w/2 + 160, startY + 68);
+                
+                ctx.shadowColor = 'transparent'; // reset
 
                 startY += rowHeight;
             }
 
         // ==========================================
-        // 📊 3. INNINGS SUMMARY (NEW)
+        // 📊 3. INNINGS SUMMARY
         // ==========================================
         } else if (appMode === 'innings_summary') {
             // Top Banner
-            drawGlassPanel(ctx, 40, 40, w - 80, 200, 30, sColor, 0.9);
-            ctx.fillStyle = pColor; ctx.font = 'bold 40px "Hind Siliguri", sans-serif'; ctx.textAlign = 'center';
-            ctx.fillText("INNINGS BREAK - " + formData.summaryTeamTitle, w/2, 100);
-            ctx.fillStyle = '#ffffff'; ctx.font = 'black 90px "Hind Siliguri", sans-serif';
-            ctx.fillText(formData.summaryTeamTotal, w/2, 200);
+            drawGlassPanel(ctx, 40, 40, w - 80, 220, 30, sColor, 0.9);
+            
+            ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;
+            ctx.fillStyle = pColor; 
+            ctx.font = '900 50px "Hind Siliguri", sans-serif'; 
+            ctx.textAlign = 'center';
+            ctx.fillText("INNINGS BREAK - " + formData.summaryTeamTitle.toUpperCase(), w/2, 110);
+            
+            ctx.fillStyle = '#ffffff'; 
+            ctx.font = '900 115px "Hind Siliguri", sans-serif';
+            ctx.fillText(formData.summaryTeamTotal, w/2, 220);
+            ctx.shadowColor = 'transparent';
 
             // Left Panel (Batsmen)
-            drawGlassPanel(ctx, 40, 280, w/2 - 60, h - 450, 30, '#000000', 0.7);
-            ctx.fillStyle = pColor; ctx.font = 'bold 45px "Hind Siliguri", sans-serif'; ctx.textAlign = 'center';
-            ctx.fillText("TOP BATSMEN", w/4 + 10, 360);
+            drawGlassPanel(ctx, 40, 300, w/2 - 60, h - 480, 30, '#000000', 0.75);
+            ctx.fillStyle = pColor; 
+            ctx.font = '900 55px "Hind Siliguri", sans-serif'; 
+            ctx.textAlign = 'center';
+            ctx.fillText("TOP BATSMEN", w/4 + 10, 380);
             
-            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 40px "Hind Siliguri", sans-serif';
-            let bY = 460;
+            // Divider Line
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(80, 410); ctx.lineTo(w/2 - 40, 410); ctx.stroke();
+            
+            ctx.fillStyle = '#ffffff'; 
+            ctx.font = 'bold 45px "Hind Siliguri", sans-serif';
+            let bY = 490;
             [1, 2, 3].forEach(num => {
                 if(formData[`summaryBat${num}`]) {
                     ctx.fillText(formData[`summaryBat${num}`], w/4 + 10, bY);
-                    bY += 90;
+                    bY += 95;
                 }
             });
 
             // Right Panel (Bowlers)
-            drawGlassPanel(ctx, w/2 + 20, 280, w/2 - 60, h - 450, 30, '#000000', 0.7);
-            ctx.fillStyle = pColor; ctx.font = 'bold 45px "Hind Siliguri", sans-serif'; ctx.textAlign = 'center';
-            ctx.fillText("TOP BOWLERS", w*0.75 - 10, 360);
+            drawGlassPanel(ctx, w/2 + 20, 300, w/2 - 60, h - 480, 30, '#000000', 0.75);
+            ctx.fillStyle = pColor; 
+            ctx.font = '900 55px "Hind Siliguri", sans-serif'; 
+            ctx.textAlign = 'center';
+            ctx.fillText("TOP BOWLERS", w*0.75 - 10, 380);
             
-            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 40px "Hind Siliguri", sans-serif';
-            let bwY = 460;
+            // Divider Line
+            ctx.beginPath(); ctx.moveTo(w/2 + 60, 410); ctx.lineTo(w - 80, 410); ctx.stroke();
+
+            ctx.fillStyle = '#ffffff'; 
+            ctx.font = 'bold 45px "Hind Siliguri", sans-serif';
+            let bwY = 490;
             [1, 2, 3].forEach(num => {
                 if(formData[`summaryBowl${num}`]) {
                     ctx.fillText(formData[`summaryBowl${num}`], w*0.75 - 10, bwY);
-                    bwY += 90;
+                    bwY += 95;
                 }
             });
 
         // ==========================================
-        // 🗞️ 4. NEWS & QUOTES (Existing Refined)
+        // 🗞️ 4. NEWS & QUOTES 
         // ==========================================
         } else if (appMode === 'news' || appMode === 'statement') {
             const gradH = formData.newsGradientHeight !== undefined ? formData.newsGradientHeight : 0.6;
@@ -250,56 +289,54 @@
                 drawTransformedImage(ctx, avatarImage, avatarPos);
             }
 
-            // Top Badge
             drawGlassPanel(ctx, 40, 40, 250, 60, 15, pColor, 1);
             ctx.fillStyle = '#000'; ctx.font = 'bold 28px "Hind Siliguri", sans-serif'; ctx.textAlign = 'center';
             ctx.fillText(formData.badgeText.toUpperCase(), 165, 80);
 
-            // Quote Text
-            ctx.fillStyle = '#ffffff'; ctx.font = 'black 65px "Hind Siliguri", sans-serif'; ctx.textAlign = 'left';
+            ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 15; ctx.shadowOffsetY = 5;
+            ctx.fillStyle = '#ffffff'; ctx.font = '900 65px "Hind Siliguri", sans-serif'; ctx.textAlign = 'left';
             const authorY = drawSmartText(ctx, "“" + formData.quoteText + "”", 60, h - 350, w - 120, 85);
             
-            // Author Name
             ctx.fillStyle = pColor; ctx.font = 'bold 40px "Hind Siliguri", sans-serif';
             ctx.fillText("- " + formData.quoteAuthor, 60, authorY + 20);
+            ctx.shadowColor = 'transparent';
 
         // ==========================================
-        // 🏏 5. CLASSIC SCORECARD (Existing Refined)
+        // 🏏 5. CLASSIC SCORECARD 
         // ==========================================
         } else if (appMode === 'scorecard') {
-            // Main Glass Box
             drawGlassPanel(ctx, 40, h - 450, w - 80, 300, 40, '#1e293b', 0.85);
             
-            // Result Banner
             drawGlassPanel(ctx, 60, h - 480, w - 120, 80, 20, pColor, 1);
             ctx.fillStyle = '#000'; ctx.font = 'bold 35px "Hind Siliguri", sans-serif'; ctx.textAlign = 'center';
             ctx.fillText(formData.result, w/2, h - 425);
 
-            // Teams & Scores
+            ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 3;
             ctx.textAlign = 'left';
-            ctx.fillStyle = formData.team1Color || '#ffffff'; ctx.font = 'bold 50px "Hind Siliguri", sans-serif';
+            ctx.fillStyle = formData.team1Color || '#ffffff'; ctx.font = '900 50px "Hind Siliguri", sans-serif';
             ctx.fillText(formData.team1, 80, h - 300);
             ctx.textAlign = 'right';
-            ctx.fillStyle = '#ffffff'; ctx.font = 'black 65px "Hind Siliguri", sans-serif';
+            ctx.fillStyle = '#ffffff'; ctx.font = '900 65px "Hind Siliguri", sans-serif';
             ctx.fillText(formData.team1Score, w - 80, h - 300);
             ctx.fillStyle = '#94a3b8'; ctx.font = 'bold 30px "Hind Siliguri", sans-serif';
             ctx.fillText(formData.team1Overs, w - 80, h - 260);
 
-            // Divider line
-            ctx.strokeStyle = '#334155'; ctx.lineWidth = 2;
+            ctx.strokeStyle = '#334155'; ctx.lineWidth = 2; ctx.shadowColor = 'transparent';
             ctx.beginPath(); ctx.moveTo(80, h - 240); ctx.lineTo(w - 80, h - 240); ctx.stroke();
 
+            ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 3;
             ctx.textAlign = 'left';
-            ctx.fillStyle = formData.team2Color || '#ffffff'; ctx.font = 'bold 50px "Hind Siliguri", sans-serif';
+            ctx.fillStyle = formData.team2Color || '#ffffff'; ctx.font = '900 50px "Hind Siliguri", sans-serif';
             ctx.fillText(formData.team2, 80, h - 160);
             ctx.textAlign = 'right';
-            ctx.fillStyle = '#ffffff'; ctx.font = 'black 65px "Hind Siliguri", sans-serif';
+            ctx.fillStyle = '#ffffff'; ctx.font = '900 65px "Hind Siliguri", sans-serif';
             ctx.fillText(formData.team2Score, w - 80, h - 160);
             ctx.fillStyle = '#94a3b8'; ctx.font = 'bold 30px "Hind Siliguri", sans-serif';
             ctx.fillText(formData.team2Overs, w - 80, h - 120);
+            ctx.shadowColor = 'transparent';
 
         // ==========================================
-        // ⚽ 6. FOOTBALL PRO (Existing Refined)
+        // ⚽ 6. FOOTBALL PRO 
         // ==========================================
         } else if (appMode === 'f_scorecard') {
             if(bgImage2) {
@@ -315,29 +352,28 @@
             ctx.fillStyle = '#ffffff'; ctx.font = 'bold 30px "Hind Siliguri", sans-serif';
             ctx.fillText(formData.fMatchStatus, w/2, h - 330);
 
-            ctx.fillStyle = formData.team1Color; ctx.font = 'bold 50px "Hind Siliguri", sans-serif'; ctx.textAlign = 'right';
+            ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 5;
+            ctx.fillStyle = formData.team1Color; ctx.font = '900 50px "Hind Siliguri", sans-serif'; ctx.textAlign = 'right';
             ctx.fillText(formData.team1, w/2 - 150, h - 220);
             
-            ctx.fillStyle = formData.team2Color; ctx.font = 'bold 50px "Hind Siliguri", sans-serif'; ctx.textAlign = 'left';
+            ctx.fillStyle = formData.team2Color; ctx.font = '900 50px "Hind Siliguri", sans-serif'; ctx.textAlign = 'left';
             ctx.fillText(formData.team2, w/2 + 150, h - 220);
 
-            ctx.fillStyle = '#ffffff'; ctx.font = 'black 100px "Hind Siliguri", sans-serif'; ctx.textAlign = 'center';
+            ctx.fillStyle = '#ffffff'; ctx.font = '900 100px "Hind Siliguri", sans-serif'; ctx.textAlign = 'center';
             ctx.fillText(`${formData.team1Score} - ${formData.team2Score}`, w/2, h - 200);
+            ctx.shadowColor = 'transparent';
 
         // ==========================================
-        // ⚔️ 7. 3V3 CLASH (Existing Refined)
+        // ⚔️ 7. 3V3 CLASH 
         // ==========================================
         } else if (appMode === 'h2h_3v3') {
-            // Split Background
             ctx.fillStyle = formData.team1Color || '#1e293b'; ctx.fillRect(0, 0, w/2, h);
             ctx.fillStyle = formData.team2Color || '#8C0D17'; ctx.fillRect(w/2, 0, w/2, h);
 
-            // Draw player slots
             const slotWidth = 300; const slotHeight = 400;
             const drawPlayerSlot = (imgKey, x, y, posObj) => {
                 ctx.save();
                 ctx.beginPath();
-                // Parallelogram clip for premium sports feel
                 ctx.moveTo(x + 30, y); ctx.lineTo(x + slotWidth, y);
                 ctx.lineTo(x + slotWidth - 30, y + slotHeight); ctx.lineTo(x, y + slotHeight);
                 ctx.closePath(); ctx.clip();
@@ -349,19 +385,16 @@
                 ctx.restore();
             };
 
-            // T1 Left
             drawPlayerSlot('t1p1', 120, 200, clashPos.t1p1);
             drawPlayerSlot('t1p2', 60, 480, clashPos.t1p2);
             drawPlayerSlot('t1p3', 120, 760, clashPos.t1p3);
 
-            // T2 Right
             drawPlayerSlot('t2p1', w - 120 - slotWidth, 200, clashPos.t2p1);
             drawPlayerSlot('t2p2', w - 60 - slotWidth, 480, clashPos.t2p2);
             drawPlayerSlot('t2p3', w - 120 - slotWidth, 760, clashPos.t2p3);
 
-            // Center Banner
             drawGlassPanel(ctx, w/2 - 150, 40, 300, 100, 20, '#000', 0.9);
-            ctx.fillStyle = pColor; ctx.font = 'black 45px Arial'; ctx.textAlign = 'center';
+            ctx.fillStyle = pColor; ctx.font = '900 45px Arial'; ctx.textAlign = 'center';
             ctx.fillText("VS", w/2, 110);
             
             drawGlassPanel(ctx, 40, h - 160, w - 80, 100, 20, '#000', 0.8);
@@ -370,7 +403,7 @@
         }
 
         // --- GLOBAL FOOTER ---
-        if (appMode !== 'h2h_3v3') { // 3v3 has its own footer layout
+        if (appMode !== 'h2h_3v3') { 
             drawGlassPanel(ctx, 0, h - 70, w, 70, 0, '#000000', 0.8);
             ctx.fillStyle = pColor; ctx.font = 'bold 24px "Hind Siliguri", sans-serif'; ctx.textAlign = 'center';
             ctx.fillText(formData.footerHandle, w/2, h - 25);
