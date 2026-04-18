@@ -1,14 +1,13 @@
 const { useState, useEffect, useRef } = React;
 
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztp3j5Kh1tmcMcQpXfgNp9mhYQRchm2iSB-fPAk-V5ikDcXHcJlmVJ-yb93iIiycJ7/exec"; 
-const DOWNLOAD_COST = 5; 
 
 function App() {
     const canvasRef = useRef(null);
     
     // --- STATE MANAGEMENT ---
     const [currentView, setCurrentView] = useState('home'); 
-    const [appMode, setAppMode] = useState('h2h_3v3'); // Temporarily load the new tool by default for testing
+    const [appMode, setAppMode] = useState('h2h_3v3');
     const [activeTab, setActiveTab] = useState('match');
     
     // Global Images
@@ -19,38 +18,41 @@ function App() {
     const [img2Pos, setImg2Pos] = useState({ x: 0, y: 0, scale: 1 });
     const [avatarPos, setAvatarPos] = useState({ x: 0, y: 0, scale: 1 });
 
-    // ---> NEW 3V3 CLASH IMAGES STATE <---
+    // 3v3 CLASH IMAGES STATE
     const [clashImages, setClashImages] = useState({
         t1p1: null, t1p2: null, t1p3: null,
         t2p1: null, t2p2: null, t2p3: null
     });
     
-    // We default scale to a generic 300x400 cutout size
     const defaultClashScale = { x: 0, y: 0, scale: 1 };
     const [clashPos, setClashPos] = useState({
         t1p1: {...defaultClashScale}, t1p2: {...defaultClashScale}, t1p3: {...defaultClashScale},
         t2p1: {...defaultClashScale}, t2p2: {...defaultClashScale}, t2p3: {...defaultClashScale}
     });
     
+    // UI Modals & Processing
     const [showBuyModal, setShowBuyModal] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false); 
-    
-    const [userId, setUserId] = useState('');
-    const [points, setPoints] = useState(0);
-    const [isCheckingPoints, setIsCheckingPoints] = useState(true);
-    
     const [appNotification, setAppNotification] = useState(null);
     const [showAppNotification, setShowAppNotification] = useState(false);
     const [toastMsg, setToastMsg] = useState(null);
 
-    // Pull defaults from config.js
+    // SUBSCRIPTION & LICENSE SYSTEM
+    const [userId, setUserId] = useState('');
+    const [subStatus, setSubStatus] = useState({ isValid: false, expireDate: 'Checking...', userMessage: '', userStatus: 'Inactive' });
+    const [isCheckingSub, setIsCheckingSub] = useState(true);
+    const [licenseKey, setLicenseKey] = useState('');
+    const [isActivating, setIsActivating] = useState(false);
+
+    // Form Data
     const [formData, setFormData] = useState(window.AppDefaultFormData);
 
     // --- INITIALIZATION ---
     useEffect(() => {
         let storedId = localStorage.getItem('poster_user_id');
         if (!storedId) { storedId = 'u_' + Math.random().toString(36).substr(2, 9); localStorage.setItem('poster_user_id', storedId); }
-        setUserId(storedId); fetchPoints(storedId);
+        setUserId(storedId); 
+        checkSubscription(storedId);
 
         const img = new Image(); img.crossOrigin = "Anonymous"; img.src = "https://images.unsplash.com/photo-1531415074968-036ba1b575da?q=80&w=1080&auto=format&fit=crop";
         img.onload = () => { 
@@ -60,15 +62,23 @@ function App() {
         };
     }, []);
 
-    // --- USER & POINTS ---
-    const fetchPoints = async (uid) => {
-        if(GOOGLE_SCRIPT_URL.includes("xxxxxxxx")) { setPoints(0); setIsCheckingPoints(false); return; }
-        setIsCheckingPoints(true);
+    // --- LICENSE & SUBSCRIPTION CALLS ---
+    const checkSubscription = async (uid) => {
+        if(GOOGLE_SCRIPT_URL.includes("xxxxxxxx")) { 
+            setSubStatus({ isValid: true, expireDate: 'Lifetime', userMessage: 'Demo Mode Active', userStatus: 'Active' }); 
+            setIsCheckingSub(false); return; 
+        }
+        setIsCheckingSub(true);
         try {
-            const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=check&userId=${uid}`);
+            const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=check&userId=${uid}&t=${Date.now()}`);
             const data = await response.json();
             if (data.status === 'success') {
-                setPoints(Number(data.points) || 0);
+                setSubStatus({ 
+                    isValid: data.isValid, 
+                    expireDate: data.expireDate, 
+                    userMessage: data.userMessage,
+                    userStatus: data.userStatus
+                });
                 if (data.notification && data.notification.status === 'ON') {
                     const msgId = data.notification.title + data.notification.message;
                     if (localStorage.getItem('dismissed_notification') !== msgId) {
@@ -77,8 +87,36 @@ function App() {
                     }
                 }
             }
-        } catch (error) { console.error("Fetch Error:", error); setPoints(0); }
-        setIsCheckingPoints(false);
+        } catch (error) { 
+            console.error("Fetch Error:", error); 
+            setSubStatus({ isValid: false, expireDate: 'Error', userMessage: 'Network error.', userStatus: 'Error' }); 
+        }
+        setIsCheckingSub(false);
+    };
+
+    const handleActivateKey = async () => {
+        if (!licenseKey.trim()) return showToast("Please enter a key!");
+        setIsActivating(true);
+        try {
+            const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=activate&userId=${userId}&key=${licenseKey.trim()}&t=${Date.now()}`);
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                setSubStatus({ 
+                    isValid: data.isValid, 
+                    expireDate: data.expireDate, 
+                    userMessage: data.userMessage,
+                    userStatus: data.userStatus
+                });
+                setLicenseKey(''); // Clear input
+                showToast("🎉 License Activated Successfully!");
+            } else {
+                showToast(data.message); 
+            }
+        } catch (error) { 
+            showToast("Network Error."); 
+        }
+        setIsActivating(false);
     };
 
     const showToast = (msg) => { setToastMsg(msg); setTimeout(() => setToastMsg(null), 3000); };
@@ -105,10 +143,7 @@ function App() {
     const drawCanvas = () => {
         const canvas = canvasRef.current; 
         if (!canvas || !window.PosterRenderer) return;
-        
         canvas.width = 1080; canvas.height = 1200;
-        
-        // Pass everything to the Renderer, including the new clash states
         window.PosterRenderer(
             canvas.getContext('2d'), 1080, 1200, appMode, formData, 
             { bgImage, bgImage2, avatarImage, clashImages }, 
@@ -148,7 +183,6 @@ function App() {
         }; reader.readAsDataURL(file);
     };
 
-    // ---> NEW 3V3 CLASH UPLOAD HANDLER <---
     const handleClashUpload = (e, slotId) => {
         const file = e.target.files[0]; if (!file) return;
         const reader = new FileReader();
@@ -156,7 +190,6 @@ function App() {
             const img = new Image();
             img.onload = () => {
                 setClashImages(prev => ({ ...prev, [slotId]: img }));
-                // We use a generic cutout size of 300x400 for the math calculations later
                 const scale = Math.max(300 / img.width, 400 / img.height);
                 setClashPos(prev => ({ 
                     ...prev, 
@@ -177,19 +210,35 @@ function App() {
     // --- HIGH RES EXPORT ---
     const handleDownloadClick = async () => {
         if (isProcessing) return; 
-        if (points < DOWNLOAD_COST) { setShowBuyModal(true); return; }
+        
+        // Block if subscription is not active
+        if (!subStatus.isValid && !GOOGLE_SCRIPT_URL.includes("xxxxxxxx")) { 
+            setShowBuyModal(true); 
+            return; 
+        }
+
         setIsProcessing(true);
 
+        // Bypass backend entirely if demo URL is active
         if(GOOGLE_SCRIPT_URL.includes("xxxxxxxx")) { 
-            performHighResDownload(); setPoints(prev => prev - DOWNLOAD_COST); setIsProcessing(false); return; 
+            performHighResDownload(); 
+            setIsProcessing(false); 
+            return; 
         }
 
         try {
-            const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=deduct&userId=${userId}&amount=${DOWNLOAD_COST}`);
+            const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=export&userId=${userId}&t=${Date.now()}`);
             const data = await response.json();
-            if (data.status === 'success') { setPoints(data.points); performHighResDownload(); } 
-            else { showToast("Insufficient points to export!"); }
-        } catch (error) { showToast("Network Error."); }
+            
+            if (data.status === 'success') { 
+                performHighResDownload(); 
+            } else { 
+                showToast(data.message); 
+                setShowBuyModal(true);
+            }
+        } catch (error) { 
+            showToast("Network Error."); 
+        }
         setIsProcessing(false);
     };
 
@@ -221,18 +270,21 @@ function App() {
                 }}
                 showBuyModal={showBuyModal}
                 onCloseBuyModal={() => setShowBuyModal(false)}
-                points={points}
-                downloadCost={DOWNLOAD_COST}
+                subStatus={subStatus}
+                licenseKey={licenseKey}
+                setLicenseKey={setLicenseKey}
+                onActivateKey={handleActivateKey}
+                isActivating={isActivating}
                 userId={userId}
                 onCopyId={copyId}
-                onRefreshPoints={() => fetchPoints(userId)}
+                onRefreshPoints={() => checkSubscription(userId)}
             />
 
             <window.Header 
                 currentView={currentView}
                 appMode={appMode}
-                points={points}
-                isCheckingPoints={isCheckingPoints}
+                points={subStatus.isValid ? "PRO Active" : "No Plan"}
+                isCheckingPoints={isCheckingSub}
                 isProcessing={isProcessing}
                 onBuyClick={() => setShowBuyModal(true)}
                 onBack={() => setCurrentView('home')}
@@ -267,7 +319,6 @@ function App() {
                                 img1Pos={img1Pos} setImg1Pos={setImg1Pos}
                                 img2Pos={img2Pos} setImg2Pos={setImg2Pos}
                                 avatarPos={avatarPos} setAvatarPos={setAvatarPos}
-                                // Pass down clash state for interaction tracking later
                                 clashImages={clashImages}
                                 clashPos={clashPos} setClashPos={setClashPos}
                                 onReset={resetImagePositions}
@@ -310,7 +361,6 @@ function App() {
                                 onChange={handleChange}
                                 onImageUpload={handleImageUpload}
                                 onAvatarUpload={handleAvatarUpload}
-                                // Pass down new clash handlers
                                 clashImages={clashImages}
                                 onClashUpload={handleClashUpload}
                                 hasBgImage2={!!bgImage2}
