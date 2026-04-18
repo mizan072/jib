@@ -110,6 +110,7 @@ function App() {
                 });
                 setLicenseKey(''); // Clear input
                 showToast("🎉 License Activated Successfully!");
+                setShowBuyModal(false); // Auto close modal on success
             } else {
                 showToast(data.message); 
             }
@@ -121,6 +122,23 @@ function App() {
 
     const showToast = (msg) => { setToastMsg(msg); setTimeout(() => setToastMsg(null), 3000); };
     const copyId = () => { navigator.clipboard.writeText(userId); showToast("Account ID copied to clipboard!"); };
+
+    // ==========================================
+    // --- TOOL SELECTION GATEKEEPER ---
+    // ==========================================
+    const handleToolSelect = (toolId) => {
+        // Block access if subscription is invalid (and not in demo mode)
+        if (!subStatus.isValid && !GOOGLE_SCRIPT_URL.includes("xxxxxxxx")) {
+            setShowBuyModal(true);
+            return;
+        }
+        
+        // If valid, allow access
+        setAppMode(toolId);
+        setActiveTab('match');
+        setCurrentView('editor');
+        window.scrollTo(0, 0);
+    };
 
     // --- FORM ACTIONS ---
     const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -294,9 +312,7 @@ function App() {
             <main className="flex-1 w-full p-4 md:p-6 max-w-7xl mx-auto">
                 {currentView === 'home' ? (
                     <window.ToolGrid 
-                        onSelectTool={(toolId) => { 
-                            setAppMode(toolId); setActiveTab('match'); setCurrentView('editor'); window.scrollTo(0,0); 
-                        }} 
+                        onSelectTool={handleToolSelect} 
                     />
                 ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animation-slideUpFade">
@@ -304,7 +320,11 @@ function App() {
                         <div className="lg:col-span-5 xl:col-span-5 space-y-6">
                             <div className="flex gap-2 overflow-x-auto custom-scroll pb-2 px-1">
                                 {window.AppCategories.flatMap(c=>c.tools).map(toolConfig => (
-                                    <button key={toolConfig.id} onClick={() => setAppMode(toolConfig.id)} className={`whitespace-nowrap px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 ${appMode === toolConfig.id ? 'bg-gradient-to-r from-rose-500 to-red-600 text-white shadow-[0_0_15px_rgba(225,29,72,0.3)]' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-800/50'}`}>
+                                    <button 
+                                        key={toolConfig.id} 
+                                        onClick={() => handleToolSelect(toolConfig.id)} 
+                                        className={`whitespace-nowrap px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 ${appMode === toolConfig.id ? 'bg-gradient-to-r from-rose-500 to-red-600 text-white shadow-[0_0_15px_rgba(225,29,72,0.3)]' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-800/50'}`}
+                                    >
                                         {toolConfig.name}
                                     </button>
                                 ))}
